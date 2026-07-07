@@ -1,52 +1,29 @@
-import { apiClient } from "../../../services/apiClient";
-import type { ApiResponse } from "../../../services/apiResponse.types";
-import type { Project } from "../../../types/project.types";
+import { apiClient } from "@/services/apiClient";
+import { ENDPOINTS } from "@/services/endpoints";
+import type { ApiResponse } from "@/services/apiResponse.types";
+import type { Project } from "@/types/project.types";
 
-/**
- * Matches ProjectController exactly:
- *   GET /projects           -> index()    all published projects
- *   GET /projects/featured  -> featured()  up to 3 featured + published
- *   GET /projects/{slug}    -> show($slug) single published project
- *
- * IMPORTANT: register the /projects/featured route BEFORE
- * /projects/{slug} in routes/api.php on the backend, or Laravel will treat
- * "featured" as a slug and it will 404. Flag this to your backend friend
- * if the featured endpoint isn't working.
- */
 export const projectsService = {
+  // LIVE — GET /projects (filters status === 'published' server-side)
   async getAll(): Promise<Project[]> {
-    const { data } = await apiClient.get<ApiResponse<Project[]>>("/projects");
-
-    if (!data.success) {
-      throw new Error(data.message ?? "Failed to load projects");
-    }
-
+    const { data } = await apiClient.get<ApiResponse<Project[]>>(ENDPOINTS.projects);
     return data.data;
   },
 
+  // LIVE — GET /projects/featured (limit 3, is_featured = true)
+  // ⚠️ Backend route ordering matters: /projects/featured MUST be registered
+  // before /projects/{slug} in routes/api.php, or Laravel treats "featured"
+  // as a slug param and 404s. Flag to backend if this ever breaks.
   async getFeatured(): Promise<Project[]> {
-    const { data } = await apiClient.get<ApiResponse<Project[]>>(
-      "/projects/featured"
-    );
-
-    if (!data.success) {
-      throw new Error(data.message ?? "Failed to load featured projects");
-    }
-
+    const { data } = await apiClient.get<ApiResponse<Project[]>>(ENDPOINTS.projectsFeatured);
     return data.data;
   },
 
-  async getBySlug(slug: string): Promise<Project | null> {
-    try {
-      const { data } = await apiClient.get<ApiResponse<Project>>(
-        `/projects/${slug}`
-      );
-
-      if (!data.success) return null;
-      return data.data;
-    } catch (error) {
-      // controller returns a 404 with { success: false } when not found
-      return null;
-    }
+  // LIVE — GET /projects/{slug}
+  async getBySlug(slug: string): Promise<Project> {
+    const { data } = await apiClient.get<ApiResponse<Project>>(
+      `${ENDPOINTS.projects}/${slug}`
+    );
+    return data.data;
   },
 };

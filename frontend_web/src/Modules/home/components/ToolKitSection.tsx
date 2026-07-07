@@ -1,23 +1,17 @@
-import type { Skill } from "../../../types/skill.types";
-import { SkillBarList } from "../../about/components/SkillBarList";
+import { SkillBarList } from "@/Modules/about/components/SkillBarList";
+import type { Skill } from "@/types/skill.types";
 
-interface ToolkitSectionProps {
+interface ToolKitSectionProps {
   skills: Skill[];
+  isLoading: boolean;
+  error: string | null;
 }
 
-export function ToolkitSection({ skills }: ToolkitSectionProps) {
+export function ToolKitSection({ skills, isLoading, error }: ToolKitSectionProps) {
   return (
-    <section className="mx-auto max-w-6xl px-6 py-20">
-      <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
-        Toolkit
-      </h2>
-      <p className="mt-2 text-slate-500 dark:text-slate-400">
-        Technologies I reach for most often.
-      </p>
-
-      <div className="mt-10">
-        <SkillBarList skills={skills} />
-      </div>
+    <section className="py-12 px-4 max-w-3xl mx-auto">
+      <h2 className="text-xl font-semibold text-foreground mb-6 text-center">Toolkit</h2>
+      <SkillBarList skills={skills} isLoading={isLoading} error={error} />
     </section>
   );
 }

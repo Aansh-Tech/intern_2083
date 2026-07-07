@@ -1,83 +1,64 @@
 import { useState, type FormEvent } from "react";
-import { Button } from "../../../common/components/Button";
-import type { Comment } from "../../../types/comment.types";
+import { Button } from "@/common/components/Button";
+import { commentsService } from "../services/comments.service";
+import type { Comment, CommentPayload } from "@/types/comment.types";
 
 interface CommentFormProps {
-  blogPostId: string;
-  onSubmit: (comment: Comment) => void;
+  postSlug: string;
+  onCommentAdded: (comment: Comment) => void;
 }
 
-export function CommentForm({ blogPostId, onSubmit }: CommentFormProps) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+export function CommentForm({ postSlug, onCommentAdded }: CommentFormProps) {
+  const [authorName, setAuthorName] = useState("");
   const [content, setContent] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    setError(null);
 
-    if (!name || !email || !content) {
-      setError("Please fill in your name, email, and comment.");
-      return;
+    if (!authorName.trim() || !content.trim()) return;
+
+    setStatus("submitting");
+    setErrorMessage(null);
+
+    const payload: CommentPayload = { author_name: authorName, content };
+
+    try {
+      const newComment = await commentsService.submit(postSlug, payload);
+      onCommentAdded(newComment);
+      setAuthorName("");
+      setContent("");
+      setStatus("idle");
+    } catch (err) {
+      setStatus("error");
+      setErrorMessage(
+        err instanceof Error ? err.message : "Couldn't post your comment right now."
+      );
     }
-
-    setSubmitting(true);
-
-    // TODO: once the API is ready, replace this with:
-    // const comment = await commentsService.create(blogPostId, { name, email, content });
-    await new Promise((resolve) => setTimeout(resolve, 400));
-
-    const comment: Comment = {
-      id: crypto.randomUUID(),
-      blogPostId,
-      name,
-      content,
-      createdAt: new Date().toISOString(),
-    };
-
-    onSubmit(comment);
-    setName("");
-    setEmail("");
-    setContent("");
-    setSubmitting(false);
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {error && (
-        <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 dark:bg-red-500/10 dark:text-red-300">
-          {error}
-        </p>
-      )}
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Name"
-          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-        />
-        <input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          type="email"
-          placeholder="Email"
-          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-        />
-      </div>
-
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <input
+        type="text"
+        placeholder="Your name"
+        value={authorName}
+        onChange={(e) => setAuthorName(e.target.value)}
+        className="w-full rounded-md border border-border bg-background px-3 py-2 text-foreground"
+      />
       <textarea
+        placeholder="Add a comment..."
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        rows={4}
-        placeholder="Share your thoughts…"
-        className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+        rows={3}
+        className="w-full rounded-md border border-border bg-background px-3 py-2 text-foreground"
       />
-
-      <Button type="submit" size="sm" disabled={submitting}>
-        {submitting ? "Posting…" : "Post comment"}
+      {status === "error" && errorMessage && (
+        <p className="text-sm text-red-500">{errorMessage}</p>
+      )}
+      <Button type="submit" variant="primary" disabled={status === "submitting"}>
+        {status === "submitting" ? "Posting..." : "Post comment"}
       </Button>
     </form>
   );

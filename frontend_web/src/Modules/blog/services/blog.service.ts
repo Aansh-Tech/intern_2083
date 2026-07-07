@@ -1,31 +1,25 @@
-import type { BlogPost } from "../../../types/blogPost.types";
-import { mockBlogPosts } from "../mock/blog.mock";
+import { apiClient } from "@/services/apiClient";
+import { ENDPOINTS } from "@/services/endpoints";
+import type { ApiResponse } from "@/services/apiResponse.types";
+import type { BlogPost } from "@/types/blogPost.types";
 
-/**
- * BlogPostController is currently EMPTY on the backend (no index/show
- * methods yet). Every function here returns mock data so the UI keeps
- * working. Once the backend adds:
- *   GET /blog-posts        -> index()
- *   GET /blog-posts/{slug} -> show($slug)
- * replace the body of each function below with:
- *
- *   import { apiClient } from "../../../services/apiClient";
- *   import type { ApiResponse } from "../../../services/apiResponse.types";
- *
- *   async getAll(): Promise<BlogPost[]> {
- *     const { data } = await apiClient.get<ApiResponse<BlogPost[]>>("/blog-posts");
- *     if (!data.success) throw new Error(data.message ?? "Failed to load posts");
- *     return data.data;
- *   }
- */
 export const blogService = {
+  // NOT LIVE YET — BlogPostController has no methods implemented.
+  // Calling the real endpoint anyway so this works the moment backend adds it.
   async getAll(): Promise<BlogPost[]> {
-    return Promise.resolve(mockBlogPosts);
+    const { data } = await apiClient.get<ApiResponse<BlogPost[]>>(ENDPOINTS.blogPosts);
+    return data.data;
   },
 
-  async getBySlug(slug: string): Promise<BlogPost | null> {
-    return Promise.resolve(
-      mockBlogPosts.find((post) => post.slug === slug) ?? null
+  async getLatestPosts(limit = 3): Promise<BlogPost[]> {
+    const posts = await this.getAll();
+    return posts.slice(0, limit);
+  },
+
+  async getBySlug(slug: string): Promise<BlogPost> {
+    const { data } = await apiClient.get<ApiResponse<BlogPost>>(
+      `${ENDPOINTS.blogPosts}/${slug}`
     );
+    return data.data;
   },
 };

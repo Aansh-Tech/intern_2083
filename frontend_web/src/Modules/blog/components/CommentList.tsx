@@ -1,6 +1,6 @@
-import { formatDate } from "../../../common/utils/formatDate";
-import { EmptyState } from "../../../common/components/EmptyState";
-import type { Comment } from "../../../types/comment.types";
+import { EmptyState } from "@/common/components/EmptyState";
+import { formatDate } from "@/common/utils/formatDate";
+import type { Comment } from "@/types/comment.types";
 
 interface CommentListProps {
   comments: Comment[];
@@ -17,25 +17,16 @@ export function CommentList({ comments }: CommentListProps) {
   }
 
   return (
-    <ul className="space-y-6">
+    <div className="flex flex-col gap-4">
       {comments.map((comment) => (
-        <li
-          key={comment.id}
-          className="rounded-2xl border border-slate-200 p-5 dark:border-slate-800"
-        >
-          <div className="flex items-center justify-between">
-            <p className="font-medium text-slate-900 dark:text-white">
-              {comment.name}
-            </p>
-            <p className="text-xs text-slate-400 dark:text-slate-500">
-              {formatDate(comment.createdAt)}
-            </p>
+        <div key={comment.id} className="border-b border-border pb-4">
+          <div className="flex justify-between items-center mb-1">
+            <p className="text-sm font-medium text-foreground">{comment.author_name}</p>
+            <p className="text-xs text-muted-foreground">{formatDate(comment.created_at)}</p>
           </div>
-          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-            {comment.content}
-          </p>
-        </li>
+          <p className="text-sm text-foreground">{comment.content}</p>
+        </div>
       ))}
-    </ul>
+    </div>
   );
 }

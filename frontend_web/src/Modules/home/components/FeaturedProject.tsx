@@ -1,35 +1,31 @@
-import type { Project } from "../../../types/project.types";
-import { ProjectCard } from "../../projects/components/ProjectCard";
-import { EmptyState } from "../../../common/components/EmptyState";
+import { Loader } from "@/common/components/Loader";
+import { EmptyState } from "@/common/components/EmptyState";
+import { ProjectCard } from "@/Modules/projects/components/ProjectCard";
+import type { Project } from "@/types/project.types";
 
-interface FeaturedProjectsProps {
+interface FeaturedProjectProps {
   projects: Project[];
+  isLoading: boolean;
+  error: string | null;
 }
 
-export function FeaturedProjects({ projects }: FeaturedProjectsProps) {
-  return (
-    <section className="mx-auto max-w-6xl px-6 py-20">
-      <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
-        Featured work
-      </h2>
-      <p className="mt-2 text-slate-500 dark:text-slate-400">
-        A few projects I'm proud to have shipped.
-      </p>
+export function FeaturedProject({ projects, isLoading, error }: FeaturedProjectProps) {
+  if (isLoading) return <Loader />;
+  if (error) return <EmptyState title="Couldn't load projects" description={error} />;
+  if (projects.length === 0) {
+    return <EmptyState title="No featured projects yet" description="Check back soon." />;
+  }
 
-      {projects.length === 0 ? (
-        <div className="mt-10">
-          <EmptyState
-            title="No featured projects yet"
-            description="Mark a project as featured from the admin dashboard to show it here."
-          />
-        </div>
-      ) : (
-        <div className="mt-10 grid gap-6 md:grid-cols-2">
-          {projects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
-          ))}
-        </div>
-      )}
+  return (
+    <section className="py-12 px-4">
+      <h2 className="text-xl font-semibold text-foreground mb-6 text-center">
+        Featured Projects
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        {projects.map((project) => (
+          <ProjectCard key={project.id} project={project} />
+        ))}
+      </div>
     </section>
   );
 }

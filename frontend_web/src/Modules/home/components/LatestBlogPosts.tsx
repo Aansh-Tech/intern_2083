@@ -1,35 +1,42 @@
-import type { BlogPost } from "../../../types/blogPost.types";
-import { BlogCard } from "../../blog/components/BlogCard";
-import { EmptyState } from "../../../common/components/EmptyState";
+import { Loader } from "@/common/components/Loader";
+import { EmptyState } from "@/common/components/EmptyState";
+import { BlogCard } from "@/Modules/blog/components/BlogCard";
+import type { BlogPost } from "@/types/blogPost.types";
 
 interface LatestBlogPostsProps {
   posts: BlogPost[];
+  isLoading: boolean;
+  error: string | null;
 }
 
-export function LatestBlogPosts({ posts }: LatestBlogPostsProps) {
-  return (
-    <section className="mx-auto max-w-6xl px-6 py-20">
-      <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
-        From the journal
-      </h2>
-      <p className="mt-2 text-slate-500 dark:text-slate-400">
-        Recent thoughts on design and engineering.
-      </p>
+export function LatestBlogPosts({ posts, isLoading, error }: LatestBlogPostsProps) {
+  if (isLoading) return <Loader />;
 
-      {posts.length === 0 ? (
-        <div className="mt-10">
-          <EmptyState
-            title="No posts published yet"
-            description="Publish a blog post from the admin dashboard to show it here."
-          />
-        </div>
-      ) : (
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
-          {posts.map((post) => (
-            <BlogCard key={post.id} post={post} />
-          ))}
-        </div>
-      )}
+  // Backend BlogPostController is empty — this error is expected right now,
+  // not a bug. Shown honestly instead of faked with mock posts.
+  if (error) {
+    return (
+      <EmptyState
+        title="Blog coming soon"
+        description="Posts will appear here once the blog backend is live."
+      />
+    );
+  }
+
+  if (posts.length === 0) {
+    return <EmptyState title="No posts yet" description="Check back soon." />;
+  }
+
+  return (
+    <section className="py-12 px-4">
+      <h2 className="text-xl font-semibold text-foreground mb-6 text-center">
+        Latest from the blog
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        {posts.map((post) => (
+          <BlogCard key={post.id} post={post} />
+        ))}
+      </div>
     </section>
   );
 }

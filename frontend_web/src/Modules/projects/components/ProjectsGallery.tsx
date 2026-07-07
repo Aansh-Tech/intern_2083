@@ -1,80 +1,59 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-interface ProjectGalleryProps {
+interface ProjectsGalleryProps {
   images: string[];
 }
 
-export function ProjectGallery({ images }: ProjectGalleryProps) {
+export function ProjectsGallery({ images }: ProjectsGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
 
-  if (images.length === 0) {
-    return (
-      <div className="flex h-72 items-center justify-center rounded-2xl border border-dashed border-slate-300 text-slate-400 dark:border-slate-700 dark:text-slate-600">
-        <div className="flex flex-col items-center gap-2">
-          <ImageOff className="h-6 w-6" />
-          <span className="text-sm">No images added yet</span>
-        </div>
-      </div>
-    );
+  if (images.length === 0) return null;
+
+  function goPrev() {
+    setActiveIndex((i) => (i === 0 ? images.length - 1 : i - 1));
   }
 
-  function goTo(index: number) {
-    setActiveIndex((index + images.length) % images.length);
+  function goNext() {
+    setActiveIndex((i) => (i === images.length - 1 ? 0 : i + 1));
   }
 
   return (
-    <div>
-      <div className="relative overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-900">
-        <img
-          src={images[activeIndex]}
-          alt={`Project screenshot ${activeIndex + 1}`}
-          className="h-96 w-full object-cover"
-        />
-
-        {images.length > 1 && (
-          <>
-            <button
-              type="button"
-              aria-label="Previous image"
-              onClick={() => goTo(activeIndex - 1)}
-              className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 text-slate-900 hover:bg-white dark:bg-slate-900/80 dark:text-white dark:hover:bg-slate-900"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              aria-label="Next image"
-              onClick={() => goTo(activeIndex + 1)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 text-slate-900 hover:bg-white dark:bg-slate-900/80 dark:text-white dark:hover:bg-slate-900"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          </>
-        )}
-      </div>
+    <div className="relative rounded-lg overflow-hidden border border-border">
+      <img
+        src={images[activeIndex]}
+        alt={`Project screenshot ${activeIndex + 1}`}
+        className="w-full aspect-video object-cover"
+      />
 
       {images.length > 1 && (
-        <div className="mt-4 flex gap-2">
-          {images.map((image, index) => (
-            <button
-              key={image}
-              type="button"
-              onClick={() => goTo(index)}
-              className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
-                index === activeIndex
-                  ? "border-indigo-500"
-                  : "border-transparent opacity-60 hover:opacity-100"
-              }`}
-            >
-              <img
-                src={image}
-                alt=""
-                className="h-full w-full object-cover"
+        <>
+          <button
+            onClick={goPrev}
+            aria-label="Previous image"
+            className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-background/80 p-2"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <button
+            onClick={goNext}
+            aria-label="Next image"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-background/80 p-2"
+          >
+            <ChevronRight size={20} />
+          </button>
+
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+            {images.map((_, i) => (
+              <span
+                key={i}
+                className={`h-1.5 w-1.5 rounded-full ${
+                  i === activeIndex ? "bg-foreground" : "bg-muted-foreground/50"
+                }`}
               />
-            </button>
-          ))}
-        </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
