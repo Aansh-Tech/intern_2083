@@ -10,7 +10,6 @@ class CommentController extends Controller
 {
     public function store(Request $request)
     {
-        // Validate the request
         $validated = $request->validate([
             'blog_post_id' => 'required|exists:blog_posts,id',
             'name' => 'required|string|max:255',
@@ -18,13 +17,12 @@ class CommentController extends Controller
             'content' => 'required|string|min:3',
         ]);
 
-        // Create the comment
         $comment = Comment::create([
             'blog_post_id' => $validated['blog_post_id'],
             'name' => $validated['name'],
             'email' => $validated['email'],
             'content' => $validated['content'],
-            'status' => 'pending', // Comments need admin approval
+            'status' => 'pending',
             'ip_address' => $request->ip(),
         ]);
 
