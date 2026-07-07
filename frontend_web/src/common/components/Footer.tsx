@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { NAV_LINKS, ROUTES } from "../constants/routes";
-import { SITE_CONFIG } from "../constants/siteConfig";
 
 // TODO: replace with real data from social_links API once ready
 const SOCIAL_LINKS = [
@@ -8,6 +7,13 @@ const SOCIAL_LINKS = [
   { platform: "LinkedIn", url: "https://linkedin.com" },
   { platform: "Twitter", url: "https://twitter.com" },
 ];
+
+// Hardcoded site config (remove SITE_CONFIG import)
+const SITE_CONFIG = {
+  brandPrefix: 'MARCHETTI',
+  brandSuffix: 'DEV',
+  footerBlurb: 'Building digital experiences with passion and precision.'
+};
 
 export function Footer() {
   const year = new Date().getFullYear();
