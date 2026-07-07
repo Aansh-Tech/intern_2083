@@ -1,6 +1,5 @@
 import { BlogCard } from "../components/BlogCard";
 import { EmptyState } from "../../../common/components/EmptyState";
-import { mockBlogPosts } from "../mock/blog.mock";
 
 // TODO: once the API is ready, replace mockBlogPosts with:
 // const { data: posts } = useQuery(["blogPosts"], blogService.getAll);

@@ -1,40 +1,51 @@
-import type { Skill } from "../../../types/skill.types";
+import { Loader } from "@/common/components/Loader";
+import { EmptyState } from "@/common/components/EmptyState";
+import type { Skill } from "@/types/skill.types";
 
 interface SkillBarListProps {
   skills: Skill[];
+  isLoading: boolean;
+  error: string | null;
 }
 
-export function SkillBarList({ skills }: SkillBarListProps) {
-  const categories = Array.from(new Set(skills.map((s) => s.category)));
+const FALLBACK_CATEGORY = "Skills";
+
+export function SkillBarList({ skills, isLoading, error }: SkillBarListProps) {
+  if (isLoading) return <Loader />;
+  if (error) return <EmptyState title="Couldn't load skills" description={error} />;
+  if (skills.length === 0) return <EmptyState title="No skills yet" description="Nothing added yet." />;
+
+  const grouped = skills.reduce<Record<string, Skill[]>>((acc, skill) => {
+    const category = skill.category ?? FALLBACK_CATEGORY;
+    acc[category] = acc[category] ?? [];
+    acc[category].push(skill);
+    return acc;
+  }, {});
 
   return (
-    <div className="grid gap-10 md:grid-cols-3">
-      {categories.map((category) => (
+    <div className="flex flex-col gap-6">
+      {Object.entries(grouped).map(([category, categorySkills]) => (
         <div key={category}>
-          <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+          <h3 className="mb-3 text-sm font-medium text-muted-foreground uppercase tracking-wide">
             {category}
           </h3>
-          <div className="space-y-5">
-            {skills
-              .filter((skill) => skill.category === category)
-              .map((skill) => (
-                <div key={skill.id}>
-                  <div className="mb-1.5 flex items-center justify-between text-sm">
-                    <span className="font-medium text-slate-900 dark:text-white">
-                      {skill.name}
-                    </span>
-                    <span className="text-slate-400 dark:text-slate-500">
-                      {skill.percentage}%
-                    </span>
-                  </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                    <div
-                      className="h-full rounded-full bg-indigo-500 transition-all dark:bg-indigo-400"
-                      style={{ width: `${skill.percentage}%` }}
-                    />
-                  </div>
+          <div className="flex flex-col gap-3">
+            {categorySkills.map((skill) => (
+              <div key={skill.id}>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-foreground">{skill.name}</span>
+                  {typeof skill.percentage === "number" && (
+                    <span className="text-muted-foreground">{skill.percentage}%</span>
+                  )}
                 </div>
-              ))}
+                <div className="h-2 w-full rounded-full bg-border">
+                  <div
+                    className="h-2 rounded-full bg-primary"
+                    style={{ width: `${skill.percentage ?? 0}%` }}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       ))}

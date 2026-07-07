@@ -1,9 +1,8 @@
-import { projectsService } from "../../projects/services/projects.service";
+import { projectsService } from "../../projects/Services/projects.service";
 import { aboutService } from "../../about/services/about.service";
 import type { Project } from "../../../types/project.types";
 import type { Skill } from "../../../types/skill.types";
 import type { BlogPost } from "../../../types/blogPost.types";
-import { mockLatestPosts } from "../mock/home.mock";
 
 /**
  * Home page needs data from three different resources. Featured projects

@@ -1,87 +1,101 @@
-import { Link2, Download, Mail, Phone } from "lucide-react";
-import { Button } from "../../../common/components/Button";
-import type { Profile } from "../../../types/profile.types";
+import { Loader } from "@/common/components/Loader";
+import { EmptyState } from "@/common/components/EmptyState";
+import { Button } from "@/common/components/Button";
+import { Link2 } from "lucide-react";
+import { SITE_CONFIG } from "@/common/constants/siteConfig";
+import type { Profile } from "@/types/profile.types";
+import type { SocialLink } from "@/types/socialLink.types";
 
 interface ProfileHeaderProps {
-  profile: Profile;
+  profile: Profile | null;
+  socialLinks: SocialLink[];
+  isLoading: boolean;
+  error: string | null;
 }
 
-export function ProfileHeader({ profile }: ProfileHeaderProps) {
+export function ProfileHeader({
+  profile,
+  socialLinks,
+  isLoading,
+  error,
+}: ProfileHeaderProps) {
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  if (error) {
+    return (
+      <EmptyState
+        title="Couldn't load profile"
+        description={error}
+      />
+    );
+  }
+
+  if (!profile) {
+    return (
+      <EmptyState
+        title="No profile data"
+        description="Nothing to show yet."
+      />
+    );
+  }
+
   return (
-    <section className="mx-auto max-w-6xl px-6 py-20">
-      <div className="flex flex-col items-start gap-10 md:flex-row">
-        {/* Photo placeholder */}
-        <div className="h-32 w-32 shrink-0 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-          {profile.photoUrl ? (
-            <img
-              src={profile.photoUrl}
-              alt={profile.name}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-slate-400 dark:text-slate-600">
-              {profile.name.charAt(0)}
-            </div>
+    <section className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:text-left">
+      <img
+        src={profile.profile_photo}
+        alt={SITE_CONFIG.ownerName}
+        className="h-32 w-32 rounded-full object-cover border border-border"
+      />
+
+      <div className="flex flex-col gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold text-foreground">
+            {SITE_CONFIG.ownerName}
+          </h1>
+
+          {profile.title && (
+            <p className="text-muted-foreground">{profile.title}</p>
           )}
         </div>
 
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-            {profile.name}
-          </h1>
-          <p className="mt-1 text-indigo-600 dark:text-indigo-400">
-            {profile.title}
+        {profile.bio && (
+          <p className="max-w-prose text-foreground">
+            {profile.bio}
           </p>
+        )}
 
-          {profile.bio.split("\n\n").map((paragraph, i) => (
-            <p
-              key={i}
-              className="mt-4 max-w-2xl text-slate-500 dark:text-slate-400"
-            >
-              {paragraph}
-            </p>
-          ))}
+        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+          <span>{SITE_CONFIG.ownerEmail}</span>
+          {profile.phone && <span>{profile.phone}</span>}
+          {profile.address && <span>{profile.address}</span>}
+        </div>
 
-          <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
-            <a
-              href={`mailto:${profile.email}`}
-              className="inline-flex items-center gap-1.5 hover:text-indigo-600 dark:hover:text-indigo-300"
-            >
-              <Mail className="h-4 w-4" />
-              {profile.email}
-            </a>
-            {profile.phone && (
-              <span className="inline-flex items-center gap-1.5">
-                <Phone className="h-4 w-4" />
-                {profile.phone}
-              </span>
-            )}
-          </div>
-
-          <div className="mt-6 flex flex-wrap items-center gap-4">
-            {profile.socialLinks.map((social) => (
+        {socialLinks.length > 0 && (
+          <div className="flex gap-3">
+            {socialLinks.map((link) => (
               <a
-                key={social.platform}
-                href={social.url}
+                key={link.id}
+                href={link.url}
                 target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-300"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
               >
-                <Link2 className="h-4 w-4" />
-                {social.platform}
+                <Link2 size={16} />
+                {link.platform}
               </a>
             ))}
           </div>
+        )}
 
-          {profile.resumePath && (
-            <a href={profile.resumePath} download className="mt-8 inline-block">
-              <Button variant="primary" size="sm">
-                <Download className="h-4 w-4" />
-                Download résumé
-              </Button>
+        {profile.resume_path && (
+          <Button variant="primary">
+            <a href={profile.resume_path} download>
+              Download résumé
             </a>
-          )}
-        </div>
+          </Button>
+        )}
       </div>
     </section>
   );
