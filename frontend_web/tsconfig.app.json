@@ -22,13 +22,8 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
 
-<<<<<<< HEAD
     "paths": {
       "@/*": ["./src/*"]
-=======
-     "paths": {
-      "@/*":["./src/*"]
->>>>>>> 3ade61f52a6befb329a7a948d0b360c7b7c31861
     }
   },
   "include": ["src"]
