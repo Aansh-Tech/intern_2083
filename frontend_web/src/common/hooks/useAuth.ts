@@ -1,35 +1,17 @@
-import { useState, useCallback } from "react";
-
-const TOKEN_KEY = "auth_token";
+import { useContext } from "react";
+import { AuthContext } from "../../app/providers/AuthProvider";
 
 /**
- * Simple admin auth hook. Reads/writes a bearer token to localStorage.
- * apiClient.ts already reads this same key and attaches it to every
- * request, so login/logout here is all that's needed to wire up admin
- * auth once the backend's login endpoint exists.
- *
- * TODO: once AuthController exists on the backend, replace login()'s
- * body with a real POST /admin/login call that returns a token.
+ * useAuth
+ * Access admin auth state (token, login, logout) from anywhere.
+ * Must be used within <AuthProvider>.
  */
 export function useAuth() {
-  const [token, setToken] = useState<string | null>(() =>
-    localStorage.getItem(TOKEN_KEY)
-  );
+  const ctx = useContext(AuthContext);
 
-  const login = useCallback((newToken: string) => {
-    localStorage.setItem(TOKEN_KEY, newToken);
-    setToken(newToken);
-  }, []);
+  if (!ctx) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
 
-  const logout = useCallback(() => {
-    localStorage.removeItem(TOKEN_KEY);
-    setToken(null);
-  }, []);
-
-  return {
-    token,
-    isAuthenticated: Boolean(token),
-    login,
-    logout,
-  };
+  return ctx;
 }
