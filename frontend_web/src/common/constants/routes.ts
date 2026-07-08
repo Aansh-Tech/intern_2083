@@ -7,6 +7,7 @@ export const ROUTES = {
   blogDetails: (slug: string) => `/blog/${slug}`,
   contact: "/contact",
   adminLogin: "/admin/login",
+  adminDashboard: "/admin/dashboard",
 } as const;
 
 export const NAV_LINKS = [

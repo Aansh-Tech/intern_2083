@@ -1,6 +1,6 @@
+// modules/about/pages/AboutPage.tsx
 
 import { useEffect, useState } from "react";
-import { PublicLayout } from "@/common/layouts/PublicLayout";
 import { ProfileHeader } from "../components/ProfileHeader";
 import { SkillBarList } from "../components/SkillBarList";
 import { CertificatesSection } from "../components/CertificatesSection";
@@ -48,20 +48,23 @@ export function AboutPage() {
   }, []);
 
   return (
-    <PublicLayout>
-      <div className="mx-auto max-w-4xl flex flex-col gap-12 px-4 py-12">
-        <ProfileHeader profile={profile} socialLinks={socialLinks} isLoading={isLoading} error={error} />
+    <div className="mx-auto max-w-4xl flex flex-col gap-12 px-4 py-12">
+      <ProfileHeader
+        profile={profile}
+        socialLinks={socialLinks}
+        isLoading={isLoading}
+        error={error}
+      />
 
-        <section>
-          <h2 className="text-xl font-semibold mb-6 text-foreground">Skills & Craft</h2>
-          <SkillBarList skills={skills} isLoading={isLoading} error={error} />
-        </section>
+      <section>
+        <h2 className="text-xl font-semibold mb-6 text-foreground">Skills & Craft</h2>
+        <SkillBarList skills={skills} isLoading={isLoading} error={error} />
+      </section>
 
-        <section>
-          <h2 className="text-xl font-semibold mb-6 text-foreground">Certificates</h2>
-          <CertificatesSection />
-        </section>
-      </div>
-    </PublicLayout>
+      <section>
+        <h2 className="text-xl font-semibold mb-6 text-foreground">Certificates</h2>
+        <CertificatesSection />
+      </section>
+    </div>
   );
 }

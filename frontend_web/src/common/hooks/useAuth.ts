@@ -3,7 +3,7 @@ import { AuthContext } from "../../app/providers/AuthProvider";
 
 /**
  * useAuth
- * Access admin auth state (token, login, logout) from anywhere.
+ * Access admin auth state (user, login, logout) from anywhere.
  * Must be used within <AuthProvider>.
  */
 export function useAuth() {
