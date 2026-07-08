@@ -1,7 +1,7 @@
 import { NavLink, Link } from "react-router-dom";
 import { NAV_LINKS, ROUTES } from "../constants/routes";
 import { SITE_CONFIG } from "../constants/siteConfig";
-import { ThemeToggle } from "./ThemeToggle";
+import { ThemeToggle } from "./Themetoggle";
 
 export function Navbar() {
   return (
@@ -21,7 +21,7 @@ export function Navbar() {
           <span className="text-indigo-600 dark:text-indigo-400">
             {SITE_CONFIG.brandPrefix}
           </span>
-          /{SITE_CONFIG.brandSuffix}
+            {SITE_CONFIG.brandSuffix}
         </Link>
 
         {/* Nav links */}
