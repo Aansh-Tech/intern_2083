@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\BlogPostController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\ContactController;
@@ -14,6 +15,14 @@ Route::get('/test', function () {
     return response()->json([
         'message' => 'API is working!'
     ]);
+});
+
+// Auth (session-based via Sanctum SPA auth)
+// Frontend calls: POST /api/login, POST /api/logout, GET /api/user
+Route::post('/login', [AuthController::class, 'login']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/user', [AuthController::class, 'user']);
 });
 
 Route::prefix('v1')->group(function () {
