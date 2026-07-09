@@ -1,10 +1,11 @@
+// app/routes.tsx
+
 import { Navigate, Route, Routes } from "react-router-dom";
 import type { ReactNode } from "react";
 import { ROUTES } from "../common/constants/routes";
 import { PublicLayout } from "../common/layouts/PublicLayout";
 import { AdminLayout } from "../common/layouts/AdminLayout";
 import { useAuth } from "../common/hooks/useAuth";
-
 import { HomePage } from "../Modules/home/pages/HomePage";
 import { AboutPage } from "../Modules/about/pages/AboutPage";
 import { ContactPage } from "../Modules/contact/pages/ContactPage";
@@ -12,21 +13,24 @@ import { ProjectsListPage } from "../Modules/projects/pages/ProjectsListPage";
 import { ProjectsDetailsPage } from "../Modules/projects/pages/ProjectsDetailsPage";
 import { BlogListPage } from "../Modules/blog/pages/BlogListPage";
 import { BlogDetailsPage } from "../Modules/blog/pages/BlogDetailsPage";
-
 import { AdminLoginPage } from "../Modules/admin/auth/pages/AdminLoginPages";
 import { DashboardOverviewPage } from "../Modules/admin/dashboard/pages/DashboardOverviewPage";
+import { ManageProjectsPage } from "../Modules/admin/projects/pages/ManageProjectsPage";
+import { ManageSkillsPage } from "../Modules/admin/skills/pages/ManageSkillsPage";
+import { ManageSocialLinksPage } from "../Modules/admin/scoialLinks/pages/ManageSocialLinkPage";
+// import { ManageContactMessagesPage } from "../Modules/admin/contact/pages/ManageContactMessagesPage";
+// import { ManageBlogPostsPage } from "../Modules/admin/blog/pages/ManageBlogPostsPage";
+// import { ManageCommentsPage } from "../Modules/admin/comments/pages/ManageCommentsPage";
+// import { ManageCertificatesPage } from "../Modules/admin/certificates/pages/ManageCertificatesPage";
 
 function RequireAdminAuth({ children }: { children: ReactNode }) {
   const { isAuthenticated, isCheckingSession } = useAuth();
-
   if (isCheckingSession) {
     return <div className="p-8 text-center text-slate-400">Loading…</div>;
   }
-
   if (!isAuthenticated) {
     return <Navigate to={ROUTES.adminLogin} replace />;
   }
-
   return <>{children}</>;
 }
 
@@ -91,6 +95,7 @@ export function AppRoutes() {
       />
 
       <Route path={ROUTES.adminLogin} element={<AdminLoginPage />} />
+
       <Route
         path={ROUTES.adminDashboard}
         element={
@@ -101,6 +106,71 @@ export function AppRoutes() {
           /* </RequireAdminAuth> */
         }
       />
+
+      <Route
+        path={ROUTES.adminProjects}
+        element={
+          <AdminLayout>
+            <ManageProjectsPage />
+          </AdminLayout>
+       }
+        />
+
+      <Route
+        path={ROUTES.adminSkills}
+        element={
+          <AdminLayout>
+            <ManageSkillsPage />
+          </AdminLayout>
+        }
+      />
+
+      <Route
+        path={ROUTES.adminSocialLinks}
+        element={
+          <AdminLayout>
+            <ManageSocialLinksPage />
+          </AdminLayout>
+        }
+      />
+
+      {/*
+      <Route
+        path="/admin/contact-messages"
+        element={
+          <AdminLayout>
+            <ManageContactMessagesPage />
+          </AdminLayout>
+        }
+      />
+
+      <Route
+        path="/admin/blog-posts"
+        element={
+          <AdminLayout>
+            <ManageBlogPostsPage />
+          </AdminLayout>
+        }
+      />
+
+      <Route
+        path="/admin/comments"
+        element={
+          <AdminLayout>
+            <ManageCommentsPage />
+          </AdminLayout>
+        }
+      />
+
+      <Route
+        path="/admin/certificates"
+        element={
+          <AdminLayout>
+            <ManageCertificatesPage />
+          </AdminLayout>
+        }
+      />
+      */}
     </Routes>
   );
 }

@@ -12,9 +12,9 @@ export function BlogCard({ post }: BlogCardProps) {
   return (
     <Card>
       <Link to={`${ROUTES.blog}/${post.slug}`} className="block">
-        {post.cover_image && (
+        {post.featured_image && (
           <img
-            src={post.cover_image}
+            src={post.featured_image}
             alt={post.title}
             className="w-full aspect-video object-cover rounded-md mb-3"
           />

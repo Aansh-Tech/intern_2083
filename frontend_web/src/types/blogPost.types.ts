@@ -4,7 +4,7 @@ export interface BlogPost {
   slug: string;
   excerpt: string;
   content: string;
-  cover_image?: string;
+  featured_image?: string;
   published_at: string;
   created_at: string;
 }

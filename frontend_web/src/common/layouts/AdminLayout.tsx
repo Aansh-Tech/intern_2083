@@ -1,3 +1,5 @@
+// common/layouts/AdminLayout.tsx
+
 import type { ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
@@ -9,6 +11,9 @@ interface AdminLayoutProps {
 
 const ADMIN_NAV_LINKS = [
   { label: "Dashboard", to: ROUTES.adminDashboard },
+  { label: "Projects", to: ROUTES.adminProjects },
+  { label: "Skills", to: ROUTES.adminSkills },
+  { label: "Social Links", to: ROUTES.adminSocialLinks },
 ];
 
 export function AdminLayout({ children }: AdminLayoutProps) {
@@ -29,7 +34,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             {user.name}
           </p>
         )}
-
         <nav className="space-y-1">
           {ADMIN_NAV_LINKS.map((link) => (
             <Link
@@ -41,7 +45,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             </Link>
           ))}
         </nav>
-
         <button
           type="button"
           onClick={handleLogout}
@@ -50,7 +53,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           Log out
         </button>
       </aside>
-
       <main className="flex-1 p-8">{children}</main>
     </div>
   );

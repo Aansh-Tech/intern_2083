@@ -1,3 +1,5 @@
+// common/constants/routes.ts
+
 export const ROUTES = {
   home: "/",
   about: "/about",
@@ -6,8 +8,18 @@ export const ROUTES = {
   blog: "/blog",
   blogDetails: (slug: string) => `/blog/${slug}`,
   contact: "/contact",
+
   adminLogin: "/admin/login",
   adminDashboard: "/admin/dashboard",
+  adminProjects: "/admin/projects",
+  adminSkills: "/admin/skills",
+  adminSocialLinks: "/admin/social-links",
+
+  // Disabled until backend support exists — see routes.tsx for commented-out routes
+  // adminContactMessages: "/admin/contact-messages",
+  // adminBlogPosts: "/admin/blog-posts",
+  // adminComments: "/admin/comments",
+  // adminCertificates: "/admin/certificates",
 } as const;
 
 export const NAV_LINKS = [
@@ -16,4 +28,11 @@ export const NAV_LINKS = [
   { label: "Projects", to: ROUTES.projects },
   { label: "Blog", to: ROUTES.blog },
   { label: "Contact", to: ROUTES.contact },
+] as const;
+
+export const ADMIN_NAV_LINKS = [
+  { label: "Dashboard", to: ROUTES.adminDashboard },
+  { label: "Projects", to: ROUTES.adminProjects },
+  { label: "Skills", to: ROUTES.adminSkills },
+  { label: "Social Links", to: ROUTES.adminSocialLinks },
 ] as const;

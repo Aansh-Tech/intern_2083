@@ -65,9 +65,9 @@ export function BlogDetailsPage() {
 
       {!isLoading && !error && post && (
         <div className="flex flex-col gap-6">
-          {post.cover_image && (
+          {post.featured_image && (
             <img
-              src={post.cover_image}
+              src={post.featured_image}
               alt={post.title}
               className="w-full aspect-video object-cover rounded-md"
             />

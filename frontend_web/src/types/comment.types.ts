@@ -1,7 +1,7 @@
 export interface Comment {
   id: number;
   blog_post_id: number;
-  author_name: string;
+  name: string;
   content: string;
   created_at: string;
 }
