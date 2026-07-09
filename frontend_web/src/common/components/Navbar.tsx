@@ -6,11 +6,11 @@ import { ThemeToggle } from "./Themetoggle";
 export function Navbar() {
   return (
     <header
-      className="
-        sticky top-0 z-50 border-b border-slate-200/70 bg-white/80
-        backdrop-blur-md
-        dark:border-slate-800/70 dark:bg-slate-950/80
-      "
+  className="
+    sticky top-0 z-50 border-b border-slate-200/70 bg-slate-100/80
+    backdrop-blur-md
+    dark:border-slate-800/70 dark:bg-slate-950/80
+  "
     >
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         {/* Logo */}

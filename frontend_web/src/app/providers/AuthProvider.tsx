@@ -1,17 +1,22 @@
 import {
   createContext,
   useState,
+  useEffect,
   useCallback,
   type ReactNode,
 } from "react";
-
-const TOKEN_KEY = "auth_token";
+import {
+  authService,
+  type AdminUser,
+  type LoginCredentials,
+} from "../../Modules/admin/auth/services/auth.services";
 
 interface AuthContextValue {
-  token: string | null;
+  user: AdminUser | null;
   isAuthenticated: boolean;
-  login: (token: string) => void;
-  logout: () => void;
+  isCheckingSession: boolean;
+  login: (credentials: LoginCredentials) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextValue | undefined>(
@@ -19,34 +24,41 @@ export const AuthContext = createContext<AuthContextValue | undefined>(
 );
 
 /**
- * Holds admin auth state app-wide so the Navbar, AdminLayout, and guarded
- * routes all see the same login state instantly -- not just on their own
- * mount. apiClient.ts reads the same "auth_token" localStorage key and
- * attaches it to every request automatically.
- *
- * TODO: once the backend's admin login endpoint exists, call it inside
- * login() and pass the returned token through, e.g.:
- *   const { data } = await apiClient.post("/admin/login", credentials);
- *   login(data.token);
+ * Auth is session/cookie-based, so there's nothing to read from
+ * localStorage on load. Instead, ask the backend "who is currently
+ * logged in?" once when the app mounts.
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(() =>
-    localStorage.getItem(TOKEN_KEY)
-  );
+  const [user, setUser] = useState<AdminUser | null>(null);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
 
-  const login = useCallback((newToken: string) => {
-    localStorage.setItem(TOKEN_KEY, newToken);
-    setToken(newToken);
+  useEffect(() => {
+    authService.getCurrentUser().then((currentUser) => {
+      setUser(currentUser);
+      setIsCheckingSession(false);
+    });
   }, []);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem(TOKEN_KEY);
-    setToken(null);
+  const login = useCallback(async (credentials: LoginCredentials) => {
+    await authService.login(credentials);
+    const currentUser = await authService.getCurrentUser();
+    setUser(currentUser);
+  }, []);
+
+  const logout = useCallback(async () => {
+    await authService.logout();
+    setUser(null);
   }, []);
 
   return (
     <AuthContext.Provider
-      value={{ token, isAuthenticated: Boolean(token), login, logout }}
+      value={{
+        user,
+        isAuthenticated: Boolean(user),
+        isCheckingSession,
+        login,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>

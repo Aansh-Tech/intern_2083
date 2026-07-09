@@ -1,7 +1,8 @@
+// modules/blog/pages/BlogDetailsPage.tsx
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
-import { PublicLayout } from "@/common/layouts/PublicLayout";
 import { Loader } from "@/common/components/Loader";
 import { EmptyState } from "@/common/components/EmptyState";
 import { formatDate } from "@/common/utils/formatDate";
@@ -50,48 +51,46 @@ export function BlogDetailsPage() {
   }
 
   return (
-    <PublicLayout>
-      <div className="mx-auto max-w-3xl px-4 py-12">
-        <button
-          onClick={() => navigate(-1)}
-          className="mb-6 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ChevronLeft size={16} />
-          Back
-        </button>
+    <div className="mx-auto max-w-3xl px-4 py-12">
+      <button
+        onClick={() => navigate(-1)}
+        className="mb-6 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ChevronLeft size={16} />
+        Back
+      </button>
 
-        {isLoading && <Loader />}
-        {error && <EmptyState title="Couldn't load this post" description={error} />}
+      {isLoading && <Loader />}
+      {error && <EmptyState title="Couldn't load this post" description={error} />}
 
-        {!isLoading && !error && post && (
-          <div className="flex flex-col gap-6">
-            {post.cover_image && (
-              <img
-                src={post.cover_image}
-                alt={post.title}
-                className="w-full aspect-video object-cover rounded-md"
-              />
-            )}
+      {!isLoading && !error && post && (
+        <div className="flex flex-col gap-6">
+          {post.cover_image && (
+            <img
+              src={post.cover_image}
+              alt={post.title}
+              className="w-full aspect-video object-cover rounded-md"
+            />
+          )}
 
-            <div>
-              <p className="text-sm text-muted-foreground mb-2">
-                {formatDate(post.published_at)}
-              </p>
-              <h1 className="text-3xl font-semibold text-foreground">{post.title}</h1>
-            </div>
-
-            <div className="text-foreground whitespace-pre-line">{post.content}</div>
-
-            <section className="pt-6 border-t border-border">
-              <h2 className="text-xl font-semibold text-foreground mb-4">Comments</h2>
-              <CommentList comments={comments} />
-              <div className="mt-6">
-                <CommentForm postSlug={slug!} onCommentAdded={handleCommentAdded} />
-              </div>
-            </section>
+          <div>
+            <p className="text-sm text-muted-foreground mb-2">
+              {formatDate(post.published_at)}
+            </p>
+            <h1 className="text-3xl font-semibold text-foreground">{post.title}</h1>
           </div>
-        )}
-      </div>
-    </PublicLayout>
+
+          <div className="text-foreground whitespace-pre-line">{post.content}</div>
+
+          <section className="pt-6 border-t border-border">
+            <h2 className="text-xl font-semibold text-foreground mb-4">Comments</h2>
+            <CommentList comments={comments} />
+            <div className="mt-6">
+              <CommentForm postSlug={slug!} onCommentAdded={handleCommentAdded} />
+            </div>
+          </section>
+        </div>
+      )}
+    </div>
   );
 }

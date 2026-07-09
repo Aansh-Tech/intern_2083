@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { PublicLayout } from "@/common/layouts/PublicLayout";
 import { HeroSection } from "../components/HeroSection";
 import { FeaturedProject } from "../components/FeaturedProject";
 import { ToolKitSection } from "../components/ToolKitSection";
@@ -13,7 +12,6 @@ export function HomePage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [posts, setPosts] = useState<BlogPost[]>([]);
-
   const [projectsState, setProjectsState] = useState<{ loading: boolean; error: string | null }>({
     loading: true,
     error: null,
@@ -29,7 +27,6 @@ export function HomePage() {
 
   useEffect(() => {
     let isMounted = true;
-
     homeService
       .getFeaturedProjects()
       .then((data) => isMounted && setProjects(data))
@@ -54,7 +51,7 @@ export function HomePage() {
   }, []);
 
   return (
-    <PublicLayout>
+    <>
       <HeroSection />
       <FeaturedProject
         projects={projects}
@@ -63,6 +60,6 @@ export function HomePage() {
       />
       <ToolKitSection skills={skills} isLoading={skillsState.loading} error={skillsState.error} />
       <LatestBlogPosts posts={posts} isLoading={postsState.loading} error={postsState.error} />
-    </PublicLayout>
+    </>
   );
 }

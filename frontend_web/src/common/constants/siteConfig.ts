@@ -1,9 +1,10 @@
 export const SITE_CONFIG = {
-  brandPrefix: "Anish",
+
+  brandPrefix: "Sangam",
   brandSuffix: "Shrestha",
-  ownerName: "Anish Shrestha",
+  ownerName: "Sangam Shrestha",
   ownerEmail: "shresthaanish51@example.com",
   footerBlurb: "Building thoughtful software and writing about the process along the way.",
-  siteTitle: "Anish Shrestha — Portfolio & Blog",
+  siteTitle: "Sangam Shrestha — Portfolio & Blog",
   siteDescription: "Personal portfolio and blog.",
 } as const;

@@ -8,28 +8,28 @@ interface AdminLayoutProps {
 }
 
 const ADMIN_NAV_LINKS = [
-  { label: "Dashboard", to: "/admin" },
-  { label: "Profile", to: "/admin/profile" },
-  { label: "Skills", to: "/admin/skills" },
-  { label: "Projects", to: "/admin/projects" },
-  { label: "Blog Posts", to: "/admin/blog-posts" },
-  { label: "Comments", to: "/admin/comments" },
-  { label: "Contact Messages", to: "/admin/contact-messages" },
+  { label: "Dashboard", to: ROUTES.adminDashboard },
 ];
 
 export function AdminLayout({ children }: AdminLayoutProps) {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    await logout();
     navigate(ROUTES.adminLogin);
   }
 
   return (
     <div className="flex min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white">
       <aside className="w-64 shrink-0 border-r border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
-        <p className="mb-8 text-lg font-bold">Admin</p>
+        <p className="mb-1 text-lg font-bold">Admin</p>
+        {user && (
+          <p className="mb-8 text-sm text-slate-500 dark:text-slate-400">
+            {user.name}
+          </p>
+        )}
+
         <nav className="space-y-1">
           {ADMIN_NAV_LINKS.map((link) => (
             <Link
@@ -41,6 +41,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             </Link>
           ))}
         </nav>
+
         <button
           type="button"
           onClick={handleLogout}
