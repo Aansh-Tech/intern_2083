@@ -2,6 +2,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ThemeProvider } from "../context/ThemeProvider";
 import { useTheme } from "../context/useTheme";
+import "../../global.css";
 
 function RootLayoutInner() {
   const { isDark } = useTheme();

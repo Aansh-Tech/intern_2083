@@ -1,9 +1,11 @@
 import { TouchableOpacity, StyleSheet } from "react-native";
 import { Shield } from "lucide-react-native";
+import { useRouter } from "expo-router";
 import { useTheme } from "../../context/useTheme";
 
 export default function AdminButton() {
   const { colors } = useTheme();
+  const router = useRouter();
 
   return (
     <TouchableOpacity
@@ -14,6 +16,7 @@ export default function AdminButton() {
           borderColor: colors.border,
         },
       ]}
+      onPress={() => router.push("/admin")}
       activeOpacity={0.7}
     >
       <Shield size={18} color={colors.secondaryText} />

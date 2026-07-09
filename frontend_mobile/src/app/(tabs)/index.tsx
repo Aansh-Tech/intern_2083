@@ -1,4 +1,4 @@
-import { SafeAreaView, ScrollView, StyleSheet } from "react-native";
+import { SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
 import Header from "../../components/homepage/Header";
 import HeroSection from "../../components/homepage/HeroSection";
 import CTASection from "../../components/homepage/CTASection";
@@ -30,3 +30,4 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
 });
+
