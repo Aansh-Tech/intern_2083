@@ -12,9 +12,6 @@ class AuthController extends Controller
 {
     /**
      * POST /api/login
-     *
-     * The frontend must first GET /sanctum/csrf-cookie, then send this
-     * request with credentials: 'include' so the session cookie is set.
      */
     public function login(Request $request): JsonResponse
     {
@@ -51,8 +48,6 @@ class AuthController extends Controller
 
     /**
      * GET /api/user
-     *
-     * Lets the frontend check "am I logged in?" on page load/refresh.
      */
     public function user(Request $request): JsonResponse
     {
