@@ -1,15 +1,34 @@
-import { View, Text, StyleSheet, SafeAreaView } from "react-native";
+import { useState, useMemo } from "react";
+import { View, ScrollView, StyleSheet } from "react-native";
+import Header from "../../components/homepage/Header";
+import PageHeader from "../../components/work/PageHeader";
+import FilterTabs, { FilterValue } from "../../components/work/FilterTabs";
+import ProjectList from "../../components/work/Projectlist";
+import { projects } from "../../components/work/ProjectsData";
 import { useTheme } from "../../context/useTheme";
 
 export default function ProjectScreen() {
   const { colors } = useTheme();
+  const [activeFilter, setActiveFilter] = useState<FilterValue>("all");
+
+  const filteredProjects = useMemo(() => {
+    if (activeFilter === "all") return projects;
+    if (activeFilter === "featured") return projects.filter((p) => p.featured);
+    return projects.filter((p) => p.status === activeFilter);
+  }, [activeFilter]);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.text }]}>Projects</Text>
-      </View>
-    </SafeAreaView>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Header />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        <PageHeader />
+        <FilterTabs active={activeFilter} onChange={setActiveFilter} />
+        <ProjectList projects={filteredProjects} />
+      </ScrollView>
+    </View>
   );
 }
 
@@ -17,13 +36,37 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  content: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
+  scrollContent: {
+    paddingBottom: 40,
   },
 });
+
+// import { View, Text, StyleSheet, SafeAreaView } from "react-native";
+// import { useTheme } from "../../context/useTheme";
+
+// export default function ProjectScreen() {
+//   const { colors } = useTheme();
+
+//   return (
+//     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+//       <View style={styles.content}>
+//         <Text style={[styles.title, { color: colors.text }]}>Projects</Text>
+//       </View>
+//     </SafeAreaView>
+//   );
+// }
+
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//   },
+//   content: {
+//     flex: 1,
+//     alignItems: "center",
+//     justifyContent: "center",
+//   },
+//   title: {
+//     fontSize: 28,
+//     fontWeight: "bold",
+//   },
+// });
