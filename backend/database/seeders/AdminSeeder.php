@@ -10,10 +10,6 @@ class AdminSeeder extends Seeder
 {
     /**
      * Seed the single admin account for the portfolio.
-     *
-     * Credentials are read from .env so they never end up hardcoded
-     * in source control. Uses updateOrCreate so re-running the seeder
-     * is safe and just resets the password/name instead of duplicating.
      */
     public function run(): void
     {

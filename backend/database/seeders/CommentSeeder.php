@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Comment;
-use App\Models\BlogPost;  // Make sure this line exists
+use App\Models\BlogPost;
 
 class CommentSeeder extends Seeder
 {
@@ -20,22 +20,22 @@ class CommentSeeder extends Seeder
         $comments = [
             [
                 'blog_post_id' => $firstPost->id,
-                'name' => 'John Doe',
-                'email' => 'john@example.com',
+                'name' => 'Anuska Magar',
+                'email' => 'anuska@gmail.com',
                 'content' => 'Great article! Very helpful.',
                 'status' => 'approved',
             ],
             [
                 'blog_post_id' => $firstPost->id,
-                'name' => 'Jane Smith',
-                'email' => 'jane@example.com',
+                'name' => 'Ram Bahadur',
+                'email' => 'ram@gmail.com',
                 'content' => 'Thanks for sharing this information.',
                 'status' => 'approved',
             ],
             [
                 'blog_post_id' => $firstPost->id,
-                'name' => 'Mike Johnson',
-                'email' => 'mike@example.com',
+                'name' => 'Sita Sharma',
+                'email' => 'sita@gmail.com',
                 'content' => 'I have a question about the authentication part.',
                 'status' => 'pending',
             ],
