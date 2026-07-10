@@ -58,8 +58,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       {/* Sidebar */}
       <aside className="flex w-64 shrink-0 flex-col border-r border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
         <Link to={ROUTES.home} className="mb-8 text-lg font-bold tracking-tight">
-          <span className="text-indigo-600 dark:text-indigo-400">MARCHETTI</span>
-          /DEV
+          <span className="text-indigo-600 dark:text-indigo-400">Anish</span>
+          Shrestha
         </Link>
 
         <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-600">

@@ -10,8 +10,8 @@ const SOCIAL_LINKS = [
 
 // Hardcoded site config (remove SITE_CONFIG import)
 const SITE_CONFIG = {
-  brandPrefix: 'MARCHETTI',
-  brandSuffix: 'DEV',
+  brandPrefix: 'Anish',
+  brandSuffix: 'Shrestha',
   footerBlurb: 'Building digital experiences with passion and precision.'
 };
 
