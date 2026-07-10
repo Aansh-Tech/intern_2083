@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { View, ScrollView, StyleSheet } from "react-native";
+import { View, ScrollView } from "react-native";
 import Header from "../../components/homepage/Header";
 import PageHeader from "../../components/work/PageHeader";
 import FilterTabs, { FilterValue } from "../../components/work/FilterTabs";
@@ -18,29 +18,18 @@ export default function ProjectScreen() {
   }, [activeFilter]);
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View className="flex-1" style={{ backgroundColor: colors.background }}>
       <Header />
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        <PageHeader />
-        <FilterTabs active={activeFilter} onChange={setActiveFilter} />
-        <ProjectList projects={filteredProjects} />
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View className="pb-10">
+          <PageHeader />
+          <FilterTabs active={activeFilter} onChange={setActiveFilter} />
+          <ProjectList projects={filteredProjects} />
+        </View>
       </ScrollView>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 40,
-  },
-});
-
 // import { View, Text, StyleSheet, SafeAreaView } from "react-native";
 // import { useTheme } from "../../context/useTheme";
 

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text } from "react-native";
 import { useTheme } from "../../context/useTheme";
 
 interface SectionHeadingProps {
@@ -10,26 +10,13 @@ export default function SectionHeading({ eyebrow, title }: SectionHeadingProps) 
   const { colors } = useTheme();
 
   return (
-    <View style={styles.container}>
-      <Text style={[styles.eyebrow, { color: colors.primary }]}>{eyebrow}</Text>
-      <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+    <View className="px-5 pt-10 gap-1">
+      <Text className="text-[13px] font-semibold tracking-[2px]" style={{ color: colors.primary }}>
+        {eyebrow}
+      </Text>
+      <Text className="text-[28px] font-bold" style={{ color: colors.text }}>
+        {title}
+      </Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 20,
-    paddingTop: 40,
-    gap: 4,
-  },
-  eyebrow: {
-    fontSize: 13,
-    fontWeight: "600",
-    letterSpacing: 2,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-  },
-});

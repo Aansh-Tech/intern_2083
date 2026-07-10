@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import { Text, TouchableOpacity, ScrollView, View } from "react-native";
 import { useTheme } from "../../context/useTheme";
 
 export type FilterValue = "all" | "featured" | "completed" | "in-progress";
@@ -22,57 +22,33 @@ export default function FilterTabs({ active, onChange }: FilterTabsProps) {
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      style={styles.scroll}
-      contentContainerStyle={styles.container}
+      className="flex-grow-0"
     >
-      {filters.map((filter) => {
-        const isActive = active === filter.value;
+      <View className="flex-row px-5 pt-6 gap-2.5">
+        {filters.map((filter) => {
+          const isActive = active === filter.value;
 
-        return (
-          <TouchableOpacity
-            key={filter.value}
-            onPress={() => onChange(filter.value)}
-            activeOpacity={0.7}
-            style={[
-              styles.pill,
-              {
+          return (
+            <TouchableOpacity
+              key={filter.value}
+              onPress={() => onChange(filter.value)}
+              activeOpacity={0.7}
+              className="px-[18px] py-2.5 rounded-full border"
+              style={{
                 backgroundColor: isActive ? colors.primary : colors.card,
                 borderColor: isActive ? colors.primary : colors.border,
-              },
-            ]}
-          >
-            <Text
-              style={[
-                styles.label,
-                { color: isActive ? colors.text : colors.secondaryText },
-              ]}
+              }}
             >
-              {filter.label}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
+              <Text
+                className="text-sm font-semibold"
+                style={{ color: isActive ? colors.text : colors.secondaryText }}
+              >
+                {filter.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  scroll: {
-    flexGrow: 0,
-  },
-  container: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    gap: 10,
-  },
-  pill: {
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 100,
-    borderWidth: 1,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-});

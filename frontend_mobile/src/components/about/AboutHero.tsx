@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, Linking } from "react-native";
+import { View, Text, TouchableOpacity, Linking } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useTheme } from "../../context/useTheme";
@@ -16,10 +16,10 @@ const profile = {
 const socialLinks = [
   { key: "github", iconName: "logo-github", url: "https://github.com/aneez11" },
   { key: "linkedin", iconName: "logo-linkedin", url: "https://www.linkedin.com/in/anish-shrestha-4ba524122/" },
-  { key: "twitter", iconName: "logo-twitter", url: "https://twitter.com/" },
+  { key: "facebook", iconName: "logo-facebook", url: "https://www.facebook.com/shresthaanish51" },
   { key: "instagram", iconName: "logo-instagram", url: "https://www.instagram.com/aneez_st" },
   { key: "mail", iconName: "mail-outline", url: "mailto:shresthaanish51@gmail.com" },
-] as const; 
+] as const;
 
 export default function AboutHero() {
   const { colors } = useTheme();
@@ -33,54 +33,60 @@ export default function AboutHero() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={[styles.eyebrow, { color: colors.primary }]}>ABOUT</Text>
+    <View className="px-5 pt-7 gap-4">
+      {/* Eyebrow */}
+      <Text className="text-[13px] font-semibold tracking-[2px]" style={{ color: colors.primary }}>
+        ABOUT
+      </Text>
 
-      <View style={styles.identity}>
+      {/* Identity */}
+      <View className="flex-row items-center gap-4">
         <LinearGradient
           colors={["#A855F7", "#EC4899"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={styles.avatar}
+          className="w-16 h-16 rounded-full items-center justify-center"
         >
-          <Text style={styles.avatarText}>{initials}</Text>
+          <Text className="text-[22px] font-bold text-white">{initials}</Text>
         </LinearGradient>
 
-        <View style={styles.identityText}>
-          <Text style={[styles.name, { color: colors.text }]}>
+        <View className="flex-1 gap-0.5">
+          <Text className="text-2xl font-bold" style={{ color: colors.text }}>
             {profile.name}
           </Text>
-          <Text style={[styles.role, { color: colors.secondaryText }]}>
+          <Text className="text-sm" style={{ color: colors.secondaryText }}>
             {profile.role}
           </Text>
         </View>
       </View>
 
+      {/* Bio paragraphs */}
       {profile.bio.map((paragraph, i) => (
-        <Text key={i} style={[styles.bio, { color: colors.secondaryText }]}>
+        <Text key={i} className="text-[15px] leading-[22px]" style={{ color: colors.secondaryText }}>
           {paragraph}
         </Text>
       ))}
 
+      {/* Resume button */}
       <TouchableOpacity
-        style={[styles.resumeButton, { backgroundColor: colors.primary }]}
+        className="flex-row items-center justify-center gap-2 h-[54px] rounded-2xl mt-1"
+        style={{ backgroundColor: colors.primary }}
         activeOpacity={0.85}
         onPress={() => openLink(profile.resumeUrl)}
       >
         <Ionicons name="download-outline" size={18} color={colors.text} />
-        <Text style={[styles.resumeText, { color: colors.text }]}>
+        <Text className="text-base font-semibold" style={{ color: colors.text }}>
           Download résumé
         </Text>
       </TouchableOpacity>
 
-      <View style={styles.socialRow}>
+      {/* Social row */}
+      <View className="flex-row gap-2.5 mt-1">
         {socialLinks.map(({ key, iconName, url }) => (
           <TouchableOpacity
             key={key}
-            style={[
-              styles.socialCard,
-              { backgroundColor: colors.card, borderColor: colors.border },
-            ]}
+            className="flex-1 aspect-square rounded-[14px] border items-center justify-center"
+            style={[{ backgroundColor: colors.card, borderColor: colors.border }]}
             activeOpacity={0.7}
             onPress={() => openLink(url)}
           >
@@ -91,74 +97,3 @@ export default function AboutHero() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 20,
-    paddingTop: 28,
-    gap: 16,
-  },
-  eyebrow: {
-    fontSize: 13,
-    fontWeight: "600",
-    letterSpacing: 2,
-  },
-  identity: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-  },
-  avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarText: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-  },
-  identityText: {
-    flex: 1,
-    gap: 2,
-  },
-  name: {
-    fontSize: 24,
-    fontWeight: "bold",
-  },
-  role: {
-    fontSize: 14,
-  },
-  bio: {
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  resumeButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    height: 54,
-    borderRadius: 16,
-    marginTop: 4,
-  },
-  resumeText: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  socialRow: {
-    flexDirection: "row",
-    gap: 10,
-    marginTop: 4,
-  },
-  socialCard: {
-    flex: 1,
-    aspectRatio: 1,
-    borderRadius: 14,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

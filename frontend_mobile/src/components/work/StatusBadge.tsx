@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text } from "react-native";
 
 export type BadgeVariant = "completed" | "featured" | "in-progress";
 
@@ -19,22 +19,16 @@ export default function StatusBadge({ variant }: StatusBadgeProps) {
   const { bg, text, label } = variantStyles[variant];
 
   return (
-    <View style={[styles.badge, { backgroundColor: bg }]}>
-      <Text style={[styles.text, { color: text }]}>{label}</Text>
+    <View
+      className="px-3 py-[5px] rounded-full self-start"
+      style={{ backgroundColor: bg }}
+    >
+      <Text
+        className="text-[11px] font-bold tracking-[0.5px]"
+        style={{ color: text }}
+      >
+        {label}
+      </Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  badge: {
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 100,
-    alignSelf: "flex-start",
-  },
-  text: {
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 0.5,
-  },
-});

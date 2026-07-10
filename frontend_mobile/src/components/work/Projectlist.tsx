@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text } from "react-native";
 import ProjectCard from "./ProjectCard";
 import { Project } from "./ProjectsData";
 import { useTheme } from "../../context/useTheme";
@@ -12,8 +12,11 @@ export default function ProjectList({ projects }: ProjectListProps) {
 
   if (projects.length === 0) {
     return (
-      <View style={styles.empty}>
-        <Text style={{ color: colors.secondaryText, fontSize: 15 }}>
+      <View className="px-5 pt-15 items-center">
+        <Text
+          className="text-[15px]"
+          style={{ color: colors.secondaryText }}
+        >
           No projects match this filter yet.
         </Text>
       </View>
@@ -21,23 +24,10 @@ export default function ProjectList({ projects }: ProjectListProps) {
   }
 
   return (
-    <View style={styles.container}>
+    <View className="px-5 pt-6 gap-6">
       {projects.map((project) => (
         <ProjectCard key={project.id} project={project} />
       ))}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    gap: 24,
-  },
-  empty: {
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    alignItems: "center",
-  },
-});
