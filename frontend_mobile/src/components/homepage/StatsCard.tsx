@@ -20,10 +20,10 @@ export default function StatsCard({ value, title }: StatsCardProps) {
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
     paddingVertical: 24,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     alignItems: "center",
   },
   value: {

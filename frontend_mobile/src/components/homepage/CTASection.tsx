@@ -10,19 +10,19 @@ export default function CTASection() {
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        style={[styles.primaryButton, { backgroundColor: colors.primary }]}
+        style={[styles.button, { backgroundColor: colors.primary }]}
         onPress={() => router.push("/(tabs)/project")}
         activeOpacity={0.8}
       >
-        <Text style={[styles.primaryText, { color: colors.text }]}>View projects</Text>
+        <Text style={[styles.buttonText, { color: colors.text }]}>View projects</Text>
         <ArrowRight size={18} color={colors.text} />
       </TouchableOpacity>
       <TouchableOpacity
-        style={[styles.secondaryButton, { backgroundColor: colors.card, borderColor: colors.border }]}
+        style={[styles.button, styles.secondary, { backgroundColor: colors.card, borderColor: colors.border }]}
         onPress={() => router.push("/(tabs)/contact")}
         activeOpacity={0.8}
       >
-        <Text style={[styles.secondaryText, { color: colors.text }]}>Get in touch</Text>
+        <Text style={[styles.buttonText, { color: colors.text }]}>Get in touch</Text>
       </TouchableOpacity>
     </View>
   );
@@ -30,30 +30,23 @@ export default function CTASection() {
 
 const styles = StyleSheet.create({
   container: {
+    flexDirection: "row",
     paddingHorizontal: 20,
-    paddingTop: 32,
-    gap: 14,
+    gap: 12,
   },
-  primaryButton: {
+  button: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 30,
-    height: 58,
+    height: 52,
+    borderRadius: 999,
     gap: 8,
   },
-  primaryText: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  secondaryButton: {
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 30,
-    height: 58,
+  secondary: {
     borderWidth: 1,
   },
-  secondaryText: {
+  buttonText: {
     fontSize: 16,
     fontWeight: "600",
   },

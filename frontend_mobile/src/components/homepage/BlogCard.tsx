@@ -15,26 +15,60 @@ function BlogCard({ date, title, link }: BlogCardProps) {
   const router = useRouter();
 
   return (
-    <TouchableOpacity
-      className="flex-row items-center justify-between rounded-[20] border p-5"
-      style={{ backgroundColor: colors.card, borderColor: colors.border }}
-      onPress={() => router.push(link as any)}
-      activeOpacity={0.7}
-    >
-      <View className="flex-1 gap-1.5 mr-3">
-        <Text className="text-xs font-medium" style={{ color: colors.secondaryText }}>{date}</Text>
-        <Text className="text-base font-semibold leading-[22]" style={{ color: colors.text }} numberOfLines={2}>
-          {title}
-        </Text>
-      </View>
-      <View
-        className="w-9 h-9 rounded-full items-center justify-center"
-        style={{ backgroundColor: colors.background }}
+  <TouchableOpacity
+    activeOpacity={0.8}
+    onPress={() => router.push(link as any)}
+    className="rounded-[24px] border p-6"
+    style={{
+      backgroundColor: colors.card,
+      borderColor: colors.border,
+    }}
+  >
+    <View className="flex-row justify-between items-start">
+      <Text
+        className="text-[12px] font-semibold uppercase tracking-[1px]"
+        style={{ color: colors.secondaryText }}
       >
-        <ArrowUpRight size={16} color={colors.primary} />
-      </View>
-    </TouchableOpacity>
-  );
+        {date}
+      </Text>
+
+      <ArrowUpRight
+        size={18}
+        color={colors.secondaryText}
+      />
+    </View>
+
+    <Text
+      className="mt-5 text-[20px] font-semibold leading-8"
+      style={{ color: colors.text }}
+      numberOfLines={3}
+    >
+      {title}
+    </Text>
+  </TouchableOpacity>
+);
+
+  // return (
+  //   <TouchableOpacity
+  //     className="flex-row items-center justify-between rounded-[20] border p-5"
+  //     style={{ backgroundColor: colors.card, borderColor: colors.border }}
+  //     onPress={() => router.push(link as any)}
+  //     activeOpacity={0.7}
+  //   >
+  //     <View className="flex-1 gap-1.5 mr-3">
+  //       <Text className="text-xs font-medium" style={{ color: colors.secondaryText }}>{date}</Text>
+  //       <Text className="text-base font-semibold leading-[22]" style={{ color: colors.text }} numberOfLines={2}>
+  //         {title}
+  //       </Text>
+  //     </View>
+  //     <View
+  //       className="w-9 h-9 rounded-full items-center justify-center"
+  //       style={{ backgroundColor: colors.background }}
+  //     >
+  //       <ArrowUpRight size={16} color={colors.primary} />
+  //     </View>
+  //   </TouchableOpacity>
+  // );
 }
 
 export default memo(BlogCard);

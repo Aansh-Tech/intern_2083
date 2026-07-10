@@ -10,9 +10,9 @@ export default function LatestWriting() {
   const router = useRouter();
 
   return (
-    <View className="pt-[60px] pb-10">
+    <View className="pt-14 pb-6">
       <View className="flex-row justify-between items-start px-5">
-        <SectionTitle subtitle="JOURNAL" title="Latest writing" />
+        <SectionTitle subtitle="BLOG" title="Latest writing" />
         <TouchableOpacity
           onPress={() => router.push("/(tabs)/blog")}
           activeOpacity={0.7}
