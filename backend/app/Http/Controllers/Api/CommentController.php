@@ -3,11 +3,50 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\BlogPost;
 use App\Models\Comment;
 use Illuminate\Http\Request;
 
 class CommentController extends Controller
 {
+    public function index($slug)
+    {
+        $post = BlogPost::where('slug', $slug)->first();
+
+        if (!$post) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Blog post not found'
+            ], 404);
+        }
+
+        $comments = $post->comments()->latest()->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $comments
+        ]);
+    }
+
+    public function destroy($id)
+    {
+        $comment = Comment::find($id);
+
+        if (!$comment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Comment not found'
+            ], 404);
+        }
+
+        $comment->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Comment deleted successfully.'
+        ]);
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
