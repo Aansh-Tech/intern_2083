@@ -4,7 +4,7 @@ import { useTheme } from "../../context/useTheme";
 export default function Logo() {
   const { colors } = useTheme();
 
-  return <Text style={[styles.logo, { color: colors.text }]}>Manxekoname</Text>;
+  return <Text style={[styles.logo, { color: colors.text }]}>Anish Shrestha</Text>;
 }
 
 const styles = StyleSheet.create({

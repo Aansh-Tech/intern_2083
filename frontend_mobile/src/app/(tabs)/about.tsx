@@ -1,15 +1,25 @@
-import { View, Text, StyleSheet, SafeAreaView } from "react-native";
+import { View, ScrollView, StyleSheet } from "react-native";
+import Header from "../../components/homepage/Header";
+import AboutHero from "../../components/about/AboutHero";
+import SkillsSection from "../../components/about/Skills";
+import CertificatesSection from "../../components/about/Certificate";
 import { useTheme } from "../../context/useTheme";
 
 export default function AboutScreen() {
   const { colors } = useTheme();
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.text }]}>About</Text>
-      </View>
-    </SafeAreaView>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Header />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        <AboutHero />
+        <SkillsSection />
+        <CertificatesSection />
+      </ScrollView>
+    </View>
   );
 }
 
@@ -17,13 +27,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  content: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
+  scrollContent: {
+    paddingBottom: 40,
   },
 });
