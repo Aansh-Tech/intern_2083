@@ -18,10 +18,11 @@ import { DashboardOverviewPage } from "../Modules/admin/dashboard/pages/Dashboar
 import { ManageProjectsPage } from "../Modules/admin/projects/pages/ManageProjectsPage";
 import { ManageSkillsPage } from "../Modules/admin/skills/pages/ManageSkillsPage";
 import { ManageSocialLinksPage } from "../Modules/admin/scoialLinks/pages/ManageSocialLinkPage";
-// import { ManageContactMessagesPage } from "../Modules/admin/contact/pages/ManageContactMessagesPage";
-// import { ManageBlogPostsPage } from "../Modules/admin/blog/pages/ManageBlogPostsPage";
-// import { ManageCommentsPage } from "../Modules/admin/comments/pages/ManageCommentsPage";
-// import { ManageCertificatesPage } from "../Modules/admin/certificates/pages/ManageCertificatesPage";
+import { ManageContactMessagesPage } from "../Modules/admin/contact/pages/ManageContactMessagePage";
+import { ManageBlogPostsPage } from "../Modules/admin/blog/pages/ManageBlogPostPage";
+import { ManageCommentsPage } from "../Modules/admin/comments/pages/ManageCommentPage";
+import { ManageAboutPage } from "../Modules/admin/about/pages/ManageAboutPage";
+import { ManageCertificatesPage } from "../Modules/admin/certificates/pages/ManageCertificatesPage";
 
 function RequireAdminAuth({ children }: { children: ReactNode }) {
   const { isAuthenticated, isCheckingSession } = useAuth();
@@ -133,8 +134,6 @@ export function AppRoutes() {
           </AdminLayout>
         }
       />
-
-      {/*
       <Route
         path="/admin/contact-messages"
         element={
@@ -161,7 +160,16 @@ export function AppRoutes() {
           </AdminLayout>
         }
       />
-
+      <Route 
+        path="/admin/about"   
+        element={ 
+          <RequireAdminAuth>
+            <AdminLayout>
+              <ManageAboutPage />
+            </AdminLayout>
+          </RequireAdminAuth>
+        } />
+      
       <Route
         path="/admin/certificates"
         element={
@@ -170,7 +178,7 @@ export function AppRoutes() {
           </AdminLayout>
         }
       />
-      */}
+      
     </Routes>
   );
 }

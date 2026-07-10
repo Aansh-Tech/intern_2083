@@ -19,7 +19,7 @@ export const ROUTES = {
   // adminContactMessages: "/admin/contact-messages",
   // adminBlogPosts: "/admin/blog-posts",
   // adminComments: "/admin/comments",
-  // adminCertificates: "/admin/certificates",
+  adminCertificates: "/admin/certificates",
 } as const;
 
 export const NAV_LINKS = [

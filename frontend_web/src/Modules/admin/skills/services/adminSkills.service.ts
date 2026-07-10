@@ -1,35 +1,28 @@
 import { apiClient } from "@/services/apiClient";
-import { ENDPOINTS } from "@/services/endpoints";
-import type { ApiResponse } from "@/services/apiResponse.types";
+import type { ApiResponse } from "@/types/apiResponse.types";
 import type { Skill } from "@/types/skill.types";
-
-export interface SkillPayload {
-  name: string;
-  display_order?: number;
-  proficiency?: number; // renamed from `percentage`
-  category?: string;
-}
 
 export const adminSkillsService = {
   async getAll(): Promise<Skill[]> {
-    const { data } = await apiClient.get<ApiResponse<Skill[]>>(ENDPOINTS.skills);
+    const { data } = await apiClient.get<ApiResponse<Skill[]>>("/v1/skills");
+    if (!data.success) throw new Error(data.message ?? "Failed to load skills");
     return data.data;
   },
 
-  async create(payload: SkillPayload): Promise<Skill> {
-    const { data } = await apiClient.post<ApiResponse<Skill>>(ENDPOINTS.skills, payload);
+  async create(payload: Partial<Skill>): Promise<Skill> {
+    const { data } = await apiClient.post<ApiResponse<Skill>>("/v1/skills", payload);
+    if (!data.success) throw new Error(data.message ?? "Failed to create skill");
     return data.data;
   },
 
-  async update(id: string, payload: SkillPayload): Promise<Skill> {
-    const { data } = await apiClient.put<ApiResponse<Skill>>(
-      `${ENDPOINTS.skills}/${id}`,
-      payload
-    );
+  async update(id: string, payload: Partial<Skill>): Promise<Skill> {
+    const { data } = await apiClient.put<ApiResponse<Skill>>(`/v1/skills/${id}`, payload);
+    if (!data.success) throw new Error(data.message ?? "Failed to update skill");
     return data.data;
   },
 
-  async delete(id: string): Promise<void> {
-    await apiClient.delete(`${ENDPOINTS.skills}/${id}`);
+  async remove(id: string): Promise<void> {
+    const { data } = await apiClient.delete<ApiResponse<null>>(`/v1/skills/${id}`);
+    if (!data.success) throw new Error(data.message ?? "Failed to delete skill");
   },
 };

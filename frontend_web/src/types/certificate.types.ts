@@ -1,12 +1,12 @@
-/**
- * NOTE: there is currently NO CertificateController or Certificate model
- * on the backend at all. This type exists only because the live UI shows
- * a certificates section. Ask the backend team to add this table/endpoint,
- * or drop the section from the UI until they do. Stays mock-only for now.
- */
 export interface Certificate {
-  id: string;
+  id: number;
+  profile_id: number;
   title: string;
-  category: string;
-  url: string;
+  issuer: string;
+  issue_date?: string;
+  expiry_date?: string;
+  credential_url?: string;
+  image?: string;
+  description?: string;
+  display_order?: number;
 }

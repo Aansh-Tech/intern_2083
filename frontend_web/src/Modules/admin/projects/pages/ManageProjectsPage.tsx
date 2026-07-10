@@ -1,3 +1,5 @@
+// Modules/admin/projects/pages/ManageProjectsPage.tsx
+
 import { useEffect, useState, type FormEvent } from "react";
 import { AdminTable } from "@/common/components/admin/AdminTable";
 import { AdminModal } from "@/common/components/admin/AdminModal";
@@ -8,11 +10,14 @@ import type { Project } from "@/types/project.types";
 const EMPTY_FORM: ProjectPayload = {
   title: "",
   slug: "",
+  subtitle: "",
   description: "",
-  status: "published",
+  content: "",
+  status: "draft",
   is_featured: false,
   github_link: "",
   live_link: "",
+  technologies: "",
 };
 
 export function ManageProjectsPage() {
@@ -55,11 +60,15 @@ export function ManageProjectsPage() {
     setForm({
       title: project.title,
       slug: project.slug,
-      description: project.description,
+      subtitle: project.subtitle ?? "",
+      description: project.description ?? "",
+      content: project.content ?? "",
       status: project.status,
       is_featured: project.is_featured,
       github_link: project.github_link ?? "",
       live_link: project.live_link ?? "",
+      technologies: project.technologies ?? "",
+      completed_at: project.completed_at,
     });
     setFormError(null);
     setIsModalOpen(true);
@@ -146,39 +155,70 @@ export function ManageProjectsPage() {
             className="rounded-md border border-border bg-background px-3 py-2 text-foreground"
             required
           />
+          <input
+            type="text"
+            placeholder="Subtitle (optional)"
+            value={form.subtitle ?? ""}
+            onChange={(e) => setForm({ ...form, subtitle: e.target.value })}
+            className="rounded-md border border-border bg-background px-3 py-2 text-foreground"
+          />
           <textarea
-            placeholder="Description"
-            value={form.description}
+            placeholder="Short description"
+            value={form.description ?? ""}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
             rows={3}
             className="rounded-md border border-border bg-background px-3 py-2 text-foreground"
-            required
           />
-          <input
-            type="text"
-            placeholder="Status (e.g. published, draft)"
-            value={form.status}
-            onChange={(e) => setForm({ ...form, status: e.target.value })}
+          <textarea
+            placeholder="Full content (optional)"
+            value={form.content ?? ""}
+            onChange={(e) => setForm({ ...form, content: e.target.value })}
+            rows={4}
             className="rounded-md border border-border bg-background px-3 py-2 text-foreground"
           />
           <input
+            type="text"
+            placeholder="Technologies, comma-separated (optional)"
+            value={form.technologies ?? ""}
+            onChange={(e) => setForm({ ...form, technologies: e.target.value })}
+            className="rounded-md border border-border bg-background px-3 py-2 text-foreground"
+          />
+          <select
+            value={form.status ?? "draft"}
+            onChange={(e) =>
+              setForm({ ...form, status: e.target.value as "draft" | "published" | "archived" })
+            }
+            className="rounded-md border border-border bg-background px-3 py-2 text-foreground"
+          >
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+            <option value="archived">Archived</option>
+          </select>
+          <input
             type="url"
             placeholder="GitHub link"
-            value={form.github_link}
+            value={form.github_link ?? ""}
             onChange={(e) => setForm({ ...form, github_link: e.target.value })}
             className="rounded-md border border-border bg-background px-3 py-2 text-foreground"
           />
           <input
             type="url"
             placeholder="Live demo link"
-            value={form.live_link}
+            value={form.live_link ?? ""}
             onChange={(e) => setForm({ ...form, live_link: e.target.value })}
+            className="rounded-md border border-border bg-background px-3 py-2 text-foreground"
+          />
+          <input
+            type="date"
+            placeholder="Completed date (optional)"
+            value={form.completed_at ?? ""}
+            onChange={(e) => setForm({ ...form, completed_at: e.target.value || undefined })}
             className="rounded-md border border-border bg-background px-3 py-2 text-foreground"
           />
           <label className="flex items-center gap-2 text-sm text-foreground">
             <input
               type="checkbox"
-              checked={form.is_featured}
+              checked={form.is_featured ?? false}
               onChange={(e) => setForm({ ...form, is_featured: e.target.checked })}
             />
             Featured

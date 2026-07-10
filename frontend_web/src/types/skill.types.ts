@@ -4,6 +4,7 @@ export interface Skill {
   name: string;
   photo?: string;
   display_order?: number;
-  proficiency?: number; // renamed from `percentage` — confirmed real field, 0–100
-  category?: string; // still not in DB schema — unchanged
+  percentage?: number;
+  category?: string;
+  certificate_image?: string; // NEW -- not in the original DB schema, confirm with backend that /v1/skills accepts this field
 }
