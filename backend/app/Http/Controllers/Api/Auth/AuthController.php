@@ -10,9 +10,6 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    /**
-     * POST /api/login
-     */
     public function login(Request $request): JsonResponse
     {
         $credentials = $request->validate([
@@ -20,35 +17,28 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+        if (! Auth::attempt($credentials)) {
             throw ValidationException::withMessages([
                 'email' => ['These credentials do not match our records.'],
             ]);
         }
 
-        $request->session()->regenerate();
+        $user = Auth::user();
+        $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
-            'user' => Auth::user(),
+            'user' => $user,
+            'token' => $token,
         ]);
     }
 
-    /**
-     * POST /api/logout
-     */
     public function logout(Request $request): JsonResponse
     {
-        Auth::guard('web')->logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logged out']);
     }
 
-    /**
-     * GET /api/user
-     */
     public function user(Request $request): JsonResponse
     {
         return response()->json($request->user());
