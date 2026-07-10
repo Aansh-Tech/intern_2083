@@ -8,6 +8,35 @@ use Illuminate\Http\Request;
 
 class ContactController extends Controller
 {
+    public function index()
+    {
+        $messages = ContactMessage::latest()->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $messages
+        ]);
+    }
+
+    public function destroy($id)
+    {
+        $message = ContactMessage::find($id);
+
+        if (!$message) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Message not found'
+            ], 404);
+        }
+
+        $message->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Deleted.'
+        ]);
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([

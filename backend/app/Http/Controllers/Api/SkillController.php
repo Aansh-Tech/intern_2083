@@ -82,20 +82,14 @@ class SkillController extends Controller
 
     private function validateSkill(Request $request, bool $isUpdate = false): array
     {
-        if ($request->has('percentage') && !$request->has('proficiency')) {
-            $request->merge(['proficiency' => $request->input('percentage')]);
-        }
-
         $rule = $isUpdate ? 'sometimes|required' : 'required';
 
-        $validated = $request->validate([
+        return $request->validate([
             'name' => "$rule|string|max:255",
             'category' => 'nullable|string|max:255',
             'proficiency' => 'nullable|integer|min:0|max:100',
             'icon' => 'nullable|string|max:255',
             'display_order' => 'nullable|integer',
         ]);
-
-        return $validated;
     }
 }
