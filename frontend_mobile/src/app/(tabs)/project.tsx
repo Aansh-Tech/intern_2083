@@ -4,18 +4,20 @@ import Header from "../../components/homepage/Header";
 import PageHeader from "../../components/work/PageHeader";
 import FilterTabs, { FilterValue } from "../../components/work/FilterTabs";
 import ProjectList from "../../components/work/Projectlist";
-import { projects } from "../../components/work/ProjectsData";
+import { useProject } from "../../context/ProjectContext";
 import { useTheme } from "../../context/useTheme";
 
 export default function ProjectScreen() {
   const { colors } = useTheme();
+  const { projects, loading } = useProject();
   const [activeFilter, setActiveFilter] = useState<FilterValue>("all");
 
   const filteredProjects = useMemo(() => {
+    if (loading) return [];
     if (activeFilter === "all") return projects;
     if (activeFilter === "featured") return projects.filter((p) => p.featured);
     return projects.filter((p) => p.status === activeFilter);
-  }, [activeFilter]);
+  }, [activeFilter, projects, loading]);
 
   return (
     <View className="flex-1" style={{ backgroundColor: colors.background }}>
@@ -24,7 +26,7 @@ export default function ProjectScreen() {
         <View className="pb-10">
           <PageHeader />
           <FilterTabs active={activeFilter} onChange={setActiveFilter} />
-          <ProjectList projects={filteredProjects} />
+          <ProjectList projects={filteredProjects as any} />
         </View>
       </ScrollView>
     </View>

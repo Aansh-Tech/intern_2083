@@ -1,18 +1,87 @@
-import { View, Text } from "react-native";
+import { useState, useCallback, useMemo } from "react";
+import { View } from "react-native";
 import AdminLayout from "../../components/adminoverview/AdminLayout";
-import { useTheme } from "../../context/useTheme";
+import InboxHeader from "../../components/admininbox/InboxHeader";
+import SearchBar from "../../components/admininbox/SearchBar";
+import FilterTabs from "../../components/admininbox/FilterTabs";
+import type { FilterValue } from "../../components/admininbox/FilterTabs";
+import InboxList from "../../components/admininbox/InboxList";
+import EmptyInbox from "../../components/admininbox/EmptyInbox";
+import MessageModal from "../../components/admininbox/MessageModal";
+import { useInbox } from "../../context/InboxContext";
+import type { InboxMessage } from "../../types/inbox";
 
 export default function AdminInboxScreen() {
-  const { colors } = useTheme();
+  const { messages, loading, unreadCount, markAsRead, deleteMessage } = useInbox();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filter, setFilter] = useState<FilterValue>("all");
+  const [selectedMessage, setSelectedMessage] = useState<InboxMessage | null>(null);
+
+  const displayedMessages = useMemo(() => {
+    let result = messages;
+
+    if (filter === "new") {
+      result = result.filter((m) => !m.isRead);
+    } else if (filter === "read") {
+      result = result.filter((m) => m.isRead);
+    }
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (m) =>
+          m.name.toLowerCase().includes(q) ||
+          m.email.toLowerCase().includes(q) ||
+          m.subject.toLowerCase().includes(q)
+      );
+    }
+
+    return result;
+  }, [messages, filter, searchQuery]);
+
+  const handleMessagePress = useCallback(
+    (msg: InboxMessage) => {
+      setSelectedMessage(msg);
+      if (!msg.isRead) {
+        markAsRead(msg.id);
+      }
+    },
+    [markAsRead]
+  );
+
+  const handleDone = useCallback(
+    (id: string) => {
+      markAsRead(id);
+    },
+    [markAsRead]
+  );
+
+  const handleDelete = useCallback(
+    (id: string) => {
+      deleteMessage(id);
+    },
+    [deleteMessage]
+  );
 
   return (
     <AdminLayout>
-      <View className="px-5 pt-4">
-        <Text className="text-[22px] font-bold" style={{ color: colors.text }}>Inbox</Text>
-        <Text className="text-[15px] mt-1" style={{ color: colors.secondaryText }}>
-          Review messages from your portfolio contact form.
-        </Text>
+      <InboxHeader unreadCount={unreadCount} />
+      <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
+      <View className="pt-4">
+        <FilterTabs value={filter} onChange={setFilter} />
       </View>
+      {loading ? null : displayedMessages.length === 0 ? (
+        <EmptyInbox />
+      ) : (
+        <InboxList messages={displayedMessages} onMessagePress={handleMessagePress} />
+      )}
+      <MessageModal
+        message={selectedMessage}
+        visible={!!selectedMessage}
+        onClose={() => setSelectedMessage(null)}
+        onDone={handleDone}
+        onDelete={handleDelete}
+      />
     </AdminLayout>
   );
 }

@@ -36,9 +36,11 @@ import Header from "../../components/homepage/Header";
 import ContactInfoCard from "../../components/contactpage/ContactInfoCard";
 import ContactInput from "../../components/contactpage/ContactInput";
 import { useTheme } from "../../context/useTheme";
+import { useInbox } from "../../context/InboxContext";
 
 export default function ContactScreen() {
   const { colors } = useTheme();
+  const { addMessage } = useInbox();
   const router = useRouter();
 
   const [name, setName] = useState("");
@@ -46,6 +48,7 @@ export default function ContactScreen() {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; email?: string; subject?: string; message?: string }>({});
 
   const validate = useCallback(() => {
@@ -59,14 +62,18 @@ export default function ContactScreen() {
     return Object.keys(newErrors).length === 0;
   }, [name, email, subject, message]);
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     if (!validate()) return;
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      console.log("Name:", name, "Email:", email, "Subject:", subject, "Message:", message);
-    }, 1000);
-  }, [validate, name, email, subject, message]);
+    await addMessage({ name, email, subject, message });
+    setName("");
+    setEmail("");
+    setSubject("");
+    setMessage("");
+    setLoading(false);
+    setSuccess(true);
+    setTimeout(() => setSuccess(false), 3000);
+  }, [validate, name, email, subject, message, addMessage]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -157,6 +164,17 @@ export default function ContactScreen() {
               </>
             )}
           </TouchableOpacity>
+
+          {success && (
+            <View
+              className="rounded-2xl items-center py-3 px-4"
+              style={{ backgroundColor: "#065F46" }}
+            >
+              <Text className="text-[14px] font-semibold" style={{ color: "#FFFFFF" }}>
+                Message sent successfully!
+              </Text>
+            </View>
+          )}
         </View>
 
         <View style={{ height: 40 }} />
