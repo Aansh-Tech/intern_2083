@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef, type ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { InboxMessage } from "../types/inbox";
 import { seedMessages } from "../data/inbox";
@@ -24,6 +24,8 @@ const InboxContext = createContext<InboxContextType | null>(null);
 export function InboxProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<InboxMessage[]>([]);
   const [loading, setLoading] = useState(true);
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
 
   const loadMessages = useCallback(async () => {
     try {
@@ -58,7 +60,7 @@ export function InboxProvider({ children }: { children: ReactNode }) {
   const addMessage = useCallback(
     async (data: { name: string; email: string; subject: string; message: string }) => {
       const raw = await AsyncStorage.getItem(STORAGE_KEY);
-      const current: InboxMessage[] = raw ? JSON.parse(raw) : messages;
+      const current: InboxMessage[] = raw ? JSON.parse(raw) : messagesRef.current;
       const newMsg: InboxMessage = {
         id: generateId(),
         name: data.name.trim(),
@@ -71,29 +73,29 @@ export function InboxProvider({ children }: { children: ReactNode }) {
       current.unshift(newMsg);
       await persist(current);
     },
-    [persist, messages]
+    [persist]
   );
 
   const markAsRead = useCallback(
     async (id: string) => {
       const raw = await AsyncStorage.getItem(STORAGE_KEY);
-      const current: InboxMessage[] = raw ? JSON.parse(raw) : messages;
+      const current: InboxMessage[] = raw ? JSON.parse(raw) : messagesRef.current;
       const index = current.findIndex((m) => m.id === id);
       if (index === -1) return;
       current[index] = { ...current[index], isRead: true };
       await persist(current);
     },
-    [persist, messages]
+    [persist]
   );
 
   const deleteMessage = useCallback(
     async (id: string) => {
       const raw = await AsyncStorage.getItem(STORAGE_KEY);
-      const current: InboxMessage[] = raw ? JSON.parse(raw) : messages;
+      const current: InboxMessage[] = raw ? JSON.parse(raw) : messagesRef.current;
       const filtered = current.filter((m) => m.id !== id);
       await persist(filtered);
     },
-    [persist, messages]
+    [persist]
   );
 
   const unreadCount = useMemo(() => messages.filter((m) => !m.isRead).length, [messages]);

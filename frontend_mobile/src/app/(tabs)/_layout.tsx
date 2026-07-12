@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, memo, useCallback } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Animated } from "react-native";
 import { Tabs, useRouter, usePathname } from "expo-router";
 import { Home, Briefcase, BookOpen, User, Mail } from "lucide-react-native";
@@ -12,7 +12,7 @@ const iconMap = {
   user: User,
   mail: Mail,
 } as const;
- 
+
 const tabConfig = [
   { name: "index" as const, icon: "home" as keyof typeof iconMap, title: "Home" },
   { name: "project" as const, icon: "briefcase" as keyof typeof iconMap, title: "Projects" },
@@ -21,7 +21,7 @@ const tabConfig = [
   { name: "contact" as const, icon: "mail" as keyof typeof iconMap, title: "Contact" },
 ];
 
-function TabBarItem({
+const TabBarItem = memo(function TabBarItem({
   tab,
   active,
   onPress,
@@ -63,9 +63,9 @@ function TabBarItem({
       </Text>
     </TouchableOpacity>
   );
-}
+});
 
-function CustomTabBar() {
+const CustomTabBar = memo(function CustomTabBar() {
   const router = useRouter();
   const pathname = usePathname();
   const { colors } = useTheme();
@@ -74,17 +74,17 @@ function CustomTabBar() {
 
   const navigate = useCallback(
     (name: string) => {
+      if (name === currentTab) return;
       const tab = name === "index" ? "/" : `/${name}`;
       router.navigate(tab as any);
     },
-    [router]
+    [router, currentTab]
   );
 
   return (
     <View style={[styles.tabBar, { backgroundColor: colors.header, borderTopColor: colors.border }]}>
       {tabConfig.map((tab) => {
         const active = currentTab === tab.name;
-
         return (
           <TabBarItem
             key={tab.name}
@@ -97,16 +97,17 @@ function CustomTabBar() {
       })}
     </View>
   );
-}
+});
 
 export default function TabLayout() {
-  const { colors } = useTheme();
-
   return (
     <Tabs
       initialRouteName="index"
       tabBar={() => <CustomTabBar />}
-      screenOptions={{ headerShown: false }}
+      screenOptions={{
+        headerShown: false,
+        lazy: false,
+      }}
     >
       <Tabs.Screen name="index" />
       <Tabs.Screen name="project" />

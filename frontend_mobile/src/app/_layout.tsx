@@ -3,15 +3,25 @@ import { StatusBar } from "expo-status-bar";
 import { ThemeProvider } from "../context/ThemeProvider";
 import { ProjectProvider } from "../context/ProjectContext";
 import { InboxProvider } from "../context/InboxContext";
+import { CommentProvider } from "../context/CommentContext";
+import { SkillsProvider } from "../context/SkillsContext";
 import { useTheme } from "../context/useTheme";
 import "../../global.css";
 
 function RootLayoutInner() {
-  const { isDark } = useTheme();
+  const { isDark, colors } = useTheme();
 
   return (
     <>
-      <Stack screenOptions={{ headerShown: false }}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          animation: "slide_from_right",
+          animationDuration: 200,
+          gestureEnabled: true,
+          contentStyle: { backgroundColor: colors.background },
+        }}
+      >
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="admin" />
       </Stack>
@@ -25,7 +35,11 @@ export default function RootLayout() {
     <ThemeProvider>
       <ProjectProvider>
         <InboxProvider>
-          <RootLayoutInner />
+          <CommentProvider>
+            <SkillsProvider>
+              <RootLayoutInner />
+            </SkillsProvider>
+          </CommentProvider>
         </InboxProvider>
       </ProjectProvider>
     </ThemeProvider>

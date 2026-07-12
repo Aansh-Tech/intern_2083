@@ -2,11 +2,12 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { Code2 } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import SkillBar from "./SkillBar";
-import { skills } from "../../data/skills";
 import { useTheme } from "../../context/useTheme";
+import { useSkills } from "../../context/SkillsContext";
 
 export default function ToolkitSection() {
   const { colors } = useTheme();
+  const { skills } = useSkills();
   const router = useRouter();
 
   return (
