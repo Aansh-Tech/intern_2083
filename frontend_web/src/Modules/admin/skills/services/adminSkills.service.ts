@@ -8,20 +8,17 @@ export const adminSkillsService = {
     if (!data.success) throw new Error(data.message ?? "Failed to load skills");
     return data.data;
   },
-
   async create(payload: Partial<Skill>): Promise<Skill> {
     const { data } = await apiClient.post<ApiResponse<Skill>>("/v1/skills", payload);
     if (!data.success) throw new Error(data.message ?? "Failed to create skill");
     return data.data;
   },
-
-  async update(id: string, payload: Partial<Skill>): Promise<Skill> {
+  async update(id: number, payload: Partial<Skill>): Promise<Skill> {
     const { data } = await apiClient.put<ApiResponse<Skill>>(`/v1/skills/${id}`, payload);
     if (!data.success) throw new Error(data.message ?? "Failed to update skill");
     return data.data;
   },
-
-  async remove(id: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     const { data } = await apiClient.delete<ApiResponse<null>>(`/v1/skills/${id}`);
     if (!data.success) throw new Error(data.message ?? "Failed to delete skill");
   },

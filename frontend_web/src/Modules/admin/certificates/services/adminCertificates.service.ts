@@ -6,6 +6,7 @@ import type { Certificate } from "@/types/certificate.types";
 export interface CertificatePayload {
   title: string;
   issuer: string;
+  skill_id?: number;
   issue_date?: string;
   expiry_date?: string;
   credential_url?: string;

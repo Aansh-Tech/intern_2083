@@ -1,127 +1,86 @@
-import { useEffect, useState, type FormEvent } from "react";
-import { AdminTable } from "@/common/components/admin/AdminTable";
-import { AdminModal } from "@/common/components/admin/AdminModal";
+import { useEffect, useState } from "react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/common/components/Button";
-import { adminSocialLinksService, type SocialLinkPayload } from "../services/adminSocialLinks.service";
+import { AdminTable } from "@/common/components/admin/AdminTable";
+import { AdminModal } from "@/Modules/admin/components/AdminModal";
+import { adminSocialLinksService } from "../services/adminSocialLinks.service";
 import type { SocialLink } from "@/types/socialLink.types";
 
-const EMPTY_FORM: SocialLinkPayload = { platform: "", url: "" };
+const emptyForm: Partial<SocialLink> = { platform: "", url: "" };
+const FIELD_CLASS = "w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white";
+const LABEL_CLASS = "mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300";
 
 export function ManageSocialLinksPage() {
   const [links, setLinks] = useState<SocialLink[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<SocialLinkPayload>(EMPTY_FORM);
-  const [isSaving, setIsSaving] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [form, setForm] = useState<Partial<SocialLink>>(emptyForm);
 
   async function loadLinks() {
-    setIsLoading(true);
-    setError(null);
-    try {
-      setLinks(await adminSocialLinksService.getAll());
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load social links.");
-    } finally {
-      setIsLoading(false);
-    }
+    setLoading(true);
+    setLinks(await adminSocialLinksService.getAll());
+    setLoading(false);
   }
 
-  useEffect(() => {
+  useEffect(() => { loadLinks(); }, []);
+
+  function openAddModal() { setEditingId(null); setForm(emptyForm); setModalOpen(true); }
+  function openEditModal(link: SocialLink) { setEditingId(link.id); setForm(link); setModalOpen(true); }
+
+  async function handleSave() {
+    if (editingId) await adminSocialLinksService.update(editingId, form);
+    else await adminSocialLinksService.create(form);
+    setModalOpen(false);
     loadLinks();
-  }, []);
-
-  function openCreateModal() {
-    setEditingId(null);
-    setForm(EMPTY_FORM);
-    setFormError(null);
-    setIsModalOpen(true);
   }
 
-  function openEditModal(link: SocialLink) {
-    setEditingId(link.id);
-    setForm({ platform: link.platform, url: link.url, icon: link.icon, display_order: link.display_order });
-    setFormError(null);
-    setIsModalOpen(true);
-  }
-
-  async function handleDelete(link: SocialLink) {
-    if (!confirm(`Delete "${link.platform}"?`)) return;
-    try {
-      await adminSocialLinksService.delete(link.id);
-      setLinks((prev) => prev.filter((l) => l.id !== link.id));
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete social link.");
-    }
-  }
-
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    setIsSaving(true);
-    setFormError(null);
-    try {
-      if (editingId) {
-        const updated = await adminSocialLinksService.update(editingId, form);
-        setLinks((prev) => prev.map((l) => (l.id === editingId ? updated : l)));
-      } else {
-        const created = await adminSocialLinksService.create(form);
-        setLinks((prev) => [...prev, created]);
-      }
-      setIsModalOpen(false);
-    } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Failed to save social link.");
-    } finally {
-      setIsSaving(false);
-    }
+  async function handleDelete(id: number) {
+    if (!confirm("Delete this link?")) return;
+    await adminSocialLinksService.remove(id);
+    loadLinks();
   }
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Social Links</h1>
-          <p className="text-muted-foreground mt-1">Manage links shown on your About page.</p>
+          <h1 className="text-2xl font-bold">Social Links</h1>
+          <p className="mt-1 text-slate-500 dark:text-slate-400">Links shown in your footer and About page.</p>
         </div>
-        <Button variant="primary" onClick={openCreateModal}>Add link</Button>
+        <Button onClick={openAddModal}><Plus className="h-4 w-4" />Add link</Button>
       </div>
-
-      {error && <p className="text-sm text-red-500 mb-4">{error}</p>}
-
-      <AdminTable
-        columns={[
-          { header: "Platform", accessor: (l) => l.platform },
-          { header: "URL", accessor: (l) => l.url },
-          { header: "Order", accessor: (l) => l.display_order ?? "—" },
-        ]}
-        rows={links}
-        keyExtractor={(l) => l.id}
-        onEdit={openEditModal}
-        onDelete={handleDelete}
-        isLoading={isLoading}
-        emptyMessage="No social links yet — add your first one."
-      />
-
-      <AdminModal title={editingId ? "Edit social link" : "Add social link"} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <input type="text" placeholder="Platform (e.g. GitHub)" value={form.platform}
-            onChange={(e) => setForm({ ...form, platform: e.target.value })}
-            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" required />
-          <input type="url" placeholder="URL" value={form.url}
-            onChange={(e) => setForm({ ...form, url: e.target.value })}
-            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" required />
-          <input type="text" placeholder="Icon (optional)" value={form.icon ?? ""}
-            onChange={(e) => setForm({ ...form, icon: e.target.value })}
-            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" />
-          <input type="number" placeholder="Display order (optional)" value={form.display_order ?? ""}
-            onChange={(e) => setForm({ ...form, display_order: e.target.value ? Number(e.target.value) : undefined })}
-            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" />
-          {formError && <p className="text-sm text-red-500">{formError}</p>}
-          <Button type="submit" variant="primary" disabled={isSaving}>
-            {isSaving ? "Saving..." : editingId ? "Save changes" : "Create link"}
-          </Button>
-        </form>
+      <div className="mt-6">
+        {loading ? <p className="text-slate-500">Loading…</p> : (
+          <AdminTable rows={links} keyExtractor={(l) => l.id} emptyMessage="No social links yet."
+  columns={[
+    { header: "Platform", accessor: (l) => l.platform },
+    { header: "URL", accessor: (l) => l.url },
+    { header: "Actions", accessor: (l) => (
+                <div className="flex gap-3">
+                  <button onClick={() => openEditModal(l)} aria-label="Edit"><Pencil className="h-4 w-4 text-slate-500 hover:text-indigo-600" /></button>
+                  <button onClick={() => handleDelete(l.id)} aria-label="Delete"><Trash2 className="h-4 w-4 text-slate-500 hover:text-red-600" /></button>
+                </div>
+              )},
+            ]}
+          />
+        )}
+      </div>
+      <AdminModal open={modalOpen} title={editingId ? "Edit link" : "Add link"} onClose={() => setModalOpen(false)}>
+        <div className="space-y-4">
+          <div>
+            <label className={LABEL_CLASS}>Platform</label>
+            <input placeholder="e.g. GitHub" value={form.platform ?? ""} onChange={(e) => setForm({ ...form, platform: e.target.value })} className={FIELD_CLASS} />
+          </div>
+          <div>
+            <label className={LABEL_CLASS}>URL</label>
+            <input placeholder="https://..." value={form.url ?? ""} onChange={(e) => setForm({ ...form, url: e.target.value })} className={FIELD_CLASS} />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <Button variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
+            <Button onClick={handleSave}>Save</Button>
+          </div>
+        </div>
       </AdminModal>
     </div>
   );

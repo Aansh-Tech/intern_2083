@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Trash2 } from "lucide-react";
-import { AdminTable } from "../../components/AdminTable";
+import { AdminTable } from "@/common/components/admin/AdminTable";
 import { adminContactMessagesService } from "../services/adminContact.services";
 import type { ContactMessage } from "../../../../types/contactMessage.types";
 

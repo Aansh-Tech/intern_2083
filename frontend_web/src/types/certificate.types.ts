@@ -1,6 +1,7 @@
 export interface Certificate {
   id: number;
   profile_id: number;
+  skill_id?: number; // confirmed — backend added this column
   title: string;
   issuer: string;
   issue_date?: string;

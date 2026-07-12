@@ -1,15 +1,5 @@
-import {
-  createContext,
-  useState,
-  useEffect,
-  useCallback,
-  type ReactNode,
-} from "react";
-import {
-  authService,
-  type AdminUser,
-  type LoginCredentials,
-} from "../../Modules/admin/auth/services/auth.services";
+import { createContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { authService, type AdminUser, type LoginCredentials } from "@/Modules/admin/auth/services/auth.services";
 
 interface AuthContextValue {
   user: AdminUser | null;
@@ -19,29 +9,27 @@ interface AuthContextValue {
   logout: () => Promise<void>;
 }
 
-export const AuthContext = createContext<AuthContextValue | undefined>(
-  undefined
-);
+export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-/**
- * Auth is session/cookie-based, so there's nothing to read from
- * localStorage on load. Instead, ask the backend "who is currently
- * logged in?" once when the app mounts.
- */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AdminUser | null>(null);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
     authService.getCurrentUser().then((currentUser) => {
-      setUser(currentUser);
-      setIsCheckingSession(false);
+      if (isMounted) {
+        setUser(currentUser);
+        setIsCheckingSession(false);
+      }
     });
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const login = useCallback(async (credentials: LoginCredentials) => {
-    await authService.login(credentials);
-    const currentUser = await authService.getCurrentUser();
+    const currentUser = await authService.login(credentials);
     setUser(currentUser);
   }, []);
 
@@ -51,15 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: Boolean(user),
-        isCheckingSession,
-        login,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={{ user, isAuthenticated: Boolean(user), isCheckingSession, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

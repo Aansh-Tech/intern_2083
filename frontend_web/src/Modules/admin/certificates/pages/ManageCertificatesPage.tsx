@@ -1,17 +1,17 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { AdminTable } from "@/common/components/admin/AdminTable";
-import { AdminModal } from "@/common/components/admin/AdminModal";
+import { AdminTable } from "../../components/AdminTable";
+import { AdminModal } from "../../components/AdminModal";
 import { Button } from "@/common/components/Button";
-import {
-  adminCertificatesService,
-  type CertificatePayload,
-} from "../services/adminCertificates.service";
+import { adminCertificatesService, type CertificatePayload } from "../services/adminCertificates.service";
+import { adminSkillsService } from "../../skills/services/adminSkills.service";
 import type { Certificate } from "@/types/certificate.types";
+import type { Skill } from "@/types/skill.types";
 
 const EMPTY_FORM: CertificatePayload = { title: "", issuer: "" };
 
 export function ManageCertificatesPage() {
   const [certificates, setCertificates] = useState<Certificate[]>([]);
+  const [skills, setSkills] = useState<Skill[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,11 +21,16 @@ export function ManageCertificatesPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  async function loadCertificates() {
+  async function loadData() {
     setIsLoading(true);
     setError(null);
     try {
-      setCertificates(await adminCertificatesService.getAll());
+      const [certsData, skillsData] = await Promise.all([
+        adminCertificatesService.getAll(),
+        adminSkillsService.getAll(),
+      ]);
+      setCertificates(certsData);
+      setSkills(skillsData);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load certificates.");
     } finally {
@@ -34,7 +39,7 @@ export function ManageCertificatesPage() {
   }
 
   useEffect(() => {
-    loadCertificates();
+    loadData();
   }, []);
 
   function openCreateModal() {
@@ -49,6 +54,7 @@ export function ManageCertificatesPage() {
     setForm({
       title: cert.title,
       issuer: cert.issuer,
+      skill_id: cert.skill_id,
       issue_date: cert.issue_date,
       expiry_date: cert.expiry_date,
       credential_url: cert.credential_url,
@@ -70,7 +76,7 @@ export function ManageCertificatesPage() {
     }
   }
 
-  async function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsSaving(true);
     setFormError(null);
@@ -90,6 +96,11 @@ export function ManageCertificatesPage() {
     }
   }
 
+  function skillName(skillId?: number) {
+    if (!skillId) return "—";
+    return skills.find((s) => Number(s.id) === skillId)?.name ?? "—";
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -97,9 +108,7 @@ export function ManageCertificatesPage() {
           <h1 className="text-2xl font-bold text-foreground">Certificates</h1>
           <p className="text-muted-foreground mt-1">Manage certificates shown on your About page.</p>
         </div>
-        <Button variant="primary" onClick={openCreateModal}>
-          Add certificate
-        </Button>
+        <Button variant="primary" onClick={openCreateModal}>Add certificate</Button>
       </div>
 
       {error && <p className="text-sm text-red-500 mb-4">{error}</p>}
@@ -108,6 +117,7 @@ export function ManageCertificatesPage() {
         columns={[
           { header: "Title", accessor: (c) => c.title },
           { header: "Issuer", accessor: (c) => c.issuer },
+          { header: "Linked skill", accessor: (c) => skillName(c.skill_id) },
           { header: "Issued", accessor: (c) => c.issue_date ?? "—" },
         ]}
         rows={certificates}
@@ -118,63 +128,37 @@ export function ManageCertificatesPage() {
         emptyMessage="No certificates yet — add your first one."
       />
 
-      <AdminModal
-        title={editingId ? "Edit certificate" : "Add certificate"}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      >
+      <AdminModal title={editingId ? "Edit certificate" : "Add certificate"} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <input
-            type="text"
-            placeholder="Title"
-            value={form.title}
+          <input type="text" placeholder="Title" value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
-            className="rounded-md border border-border bg-background px-3 py-2 text-foreground"
-            required
-          />
-          <input
-            type="text"
-            placeholder="Issuer"
-            value={form.issuer}
+            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" required />
+          <input type="text" placeholder="Issuer" value={form.issuer}
             onChange={(e) => setForm({ ...form, issuer: e.target.value })}
-            className="rounded-md border border-border bg-background px-3 py-2 text-foreground"
-            required
-          />
-          <input
-            type="date"
-            placeholder="Issue date"
-            value={form.issue_date ?? ""}
+            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" required />
+
+          <select value={form.skill_id ?? ""}
+            onChange={(e) => setForm({ ...form, skill_id: e.target.value ? Number(e.target.value) : undefined })}
+            className="rounded-md border border-border bg-background px-3 py-2 text-foreground">
+            <option value="">No linked skill</option>
+            {skills.map((skill) => (
+              <option key={skill.id} value={skill.id}>{skill.name}</option>
+            ))}
+          </select>
+
+          <input type="date" value={form.issue_date ?? ""}
             onChange={(e) => setForm({ ...form, issue_date: e.target.value || undefined })}
-            className="rounded-md border border-border bg-background px-3 py-2 text-foreground"
-          />
-          <input
-            type="date"
-            placeholder="Expiry date"
-            value={form.expiry_date ?? ""}
+            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" />
+          <input type="date" value={form.expiry_date ?? ""}
             onChange={(e) => setForm({ ...form, expiry_date: e.target.value || undefined })}
-            className="rounded-md border border-border bg-background px-3 py-2 text-foreground"
-          />
-          <input
-            type="url"
-            placeholder="Credential URL"
-            value={form.credential_url ?? ""}
+            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" />
+          <input type="url" placeholder="Credential URL" value={form.credential_url ?? ""}
             onChange={(e) => setForm({ ...form, credential_url: e.target.value })}
-            className="rounded-md border border-border bg-background px-3 py-2 text-foreground"
-          />
-          <input
-            type="text"
-            placeholder="Image URL"
-            value={form.image ?? ""}
-            onChange={(e) => setForm({ ...form, image: e.target.value })}
-            className="rounded-md border border-border bg-background px-3 py-2 text-foreground"
-          />
-          <textarea
-            placeholder="Description"
-            value={form.description ?? ""}
+            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" />
+          <textarea placeholder="Description" value={form.description ?? ""}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
             rows={3}
-            className="rounded-md border border-border bg-background px-3 py-2 text-foreground"
-          />
+            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" />
 
           {formError && <p className="text-sm text-red-500">{formError}</p>}
 

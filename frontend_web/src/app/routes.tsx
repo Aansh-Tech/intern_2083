@@ -35,150 +35,36 @@ function RequireAdminAuth({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+function ProtectedAdminPage({ children }: { children: ReactNode }) {
+  return (
+    <RequireAdminAuth>
+      <AdminLayout>{children}</AdminLayout>
+    </RequireAdminAuth>
+  );
+}
+
 export function AppRoutes() {
   return (
     <Routes>
-      <Route
-        path={ROUTES.home}
-        element={
-          <PublicLayout>
-            <HomePage />
-          </PublicLayout>
-        }
-      />
-      <Route
-        path={ROUTES.about}
-        element={
-          <PublicLayout>
-            <AboutPage />
-          </PublicLayout>
-        }
-      />
-      <Route
-        path={ROUTES.projects}
-        element={
-          <PublicLayout>
-            <ProjectsListPage />
-          </PublicLayout>
-        }
-      />
-      <Route
-        path={ROUTES.projectDetails(":slug")}
-        element={
-          <PublicLayout>
-            <ProjectsDetailsPage />
-          </PublicLayout>
-        }
-      />
-      <Route
-        path={ROUTES.blog}
-        element={
-          <PublicLayout>
-            <BlogListPage />
-          </PublicLayout>
-        }
-      />
-      <Route
-        path={ROUTES.blogDetails(":slug")}
-        element={
-          <PublicLayout>
-            <BlogDetailsPage />
-          </PublicLayout>
-        }
-      />
-      <Route
-        path={ROUTES.contact}
-        element={
-          <PublicLayout>
-            <ContactPage />
-          </PublicLayout>
-        }
-      />
+      <Route path={ROUTES.home} element={<PublicLayout><HomePage /></PublicLayout>} />
+      <Route path={ROUTES.about} element={<PublicLayout><AboutPage /></PublicLayout>} />
+      <Route path={ROUTES.projects} element={<PublicLayout><ProjectsListPage /></PublicLayout>} />
+      <Route path={ROUTES.projectDetails(":slug")} element={<PublicLayout><ProjectsDetailsPage /></PublicLayout>} />
+      <Route path={ROUTES.blog} element={<PublicLayout><BlogListPage /></PublicLayout>} />
+      <Route path={ROUTES.blogDetails(":slug")} element={<PublicLayout><BlogDetailsPage /></PublicLayout>} />
+      <Route path={ROUTES.contact} element={<PublicLayout><ContactPage /></PublicLayout>} />
 
       <Route path={ROUTES.adminLogin} element={<AdminLoginPage />} />
 
-      <Route
-        path={ROUTES.adminDashboard}
-        element={
-          // <RequireAdminAuth>
-            <AdminLayout>
-              <DashboardOverviewPage />
-            </AdminLayout>
-          /* </RequireAdminAuth> */
-        }
-      />
-
-      <Route
-        path={ROUTES.adminProjects}
-        element={
-          <AdminLayout>
-            <ManageProjectsPage />
-          </AdminLayout>
-       }
-        />
-
-      <Route
-        path={ROUTES.adminSkills}
-        element={
-          <AdminLayout>
-            <ManageSkillsPage />
-          </AdminLayout>
-        }
-      />
-
-      <Route
-        path={ROUTES.adminSocialLinks}
-        element={
-          <AdminLayout>
-            <ManageSocialLinksPage />
-          </AdminLayout>
-        }
-      />
-      <Route
-        path="/admin/contact-messages"
-        element={
-          <AdminLayout>
-            <ManageContactMessagesPage />
-          </AdminLayout>
-        }
-      />
-
-      <Route
-        path="/admin/blog-posts"
-        element={
-          <AdminLayout>
-            <ManageBlogPostsPage />
-          </AdminLayout>
-        }
-      />
-
-      <Route
-        path="/admin/comments"
-        element={
-          <AdminLayout>
-            <ManageCommentsPage />
-          </AdminLayout>
-        }
-      />
-      <Route 
-        path="/admin/about"   
-        element={ 
-          <RequireAdminAuth>
-            <AdminLayout>
-              <ManageAboutPage />
-            </AdminLayout>
-          </RequireAdminAuth>
-        } />
-      
-      <Route
-        path="/admin/certificates"
-        element={
-          <AdminLayout>
-            <ManageCertificatesPage />
-          </AdminLayout>
-        }
-      />
-      
+      <Route path={ROUTES.adminDashboard} element={<ProtectedAdminPage><DashboardOverviewPage /></ProtectedAdminPage>} />
+      <Route path={ROUTES.adminProjects} element={<ProtectedAdminPage><ManageProjectsPage /></ProtectedAdminPage>} />
+      <Route path={ROUTES.adminSkills} element={<ProtectedAdminPage><ManageSkillsPage /></ProtectedAdminPage>} />
+      <Route path={ROUTES.adminSocialLinks} element={<ProtectedAdminPage><ManageSocialLinksPage /></ProtectedAdminPage>} />
+      <Route path="/admin/contact-messages" element={<ProtectedAdminPage><ManageContactMessagesPage /></ProtectedAdminPage>} />
+      <Route path="/admin/blog-posts" element={<ProtectedAdminPage><ManageBlogPostsPage /></ProtectedAdminPage>} />
+      <Route path="/admin/comments" element={<ProtectedAdminPage><ManageCommentsPage /></ProtectedAdminPage>} />
+      <Route path="/admin/about" element={<ProtectedAdminPage><ManageAboutPage /></ProtectedAdminPage>} />
+      <Route path="/admin/certificates" element={<ProtectedAdminPage><ManageCertificatesPage /></ProtectedAdminPage>} />
     </Routes>
   );
 }

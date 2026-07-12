@@ -1,35 +1,34 @@
-import { useEffect, useState } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
-import { Button } from "../../../../common/components/Button";
-import { Badge } from "../../../../common/components/Badge";
-import { AdminTable } from "../../components/AdminTable";
+import { useEffect, useState, type FormEvent } from "react";
+import { AdminTable } from "@/common/components/admin/AdminTable";
 import { AdminModal } from "../../components/AdminModal";
-import { adminBlogPostsService } from "../services/adminBlogPost.service";
-import type { BlogPost } from "../../../../types/blogPost.types";
+import { Button } from "@/common/components/Button";
+import { getErrorMessage } from "@/common/utils/getErrorMessage";
+import { adminBlogPostsService, type BlogPostPayload } from "../services/adminBlogPost.service";
+import type { BlogPost } from "@/types/blogPost.types";
 
-const emptyForm: Partial<BlogPost> = {
-  title: "",
-  slug: "",
-  excerpt: "",
-  content: "",
-  status: "draft",
-  allow_comments: true,
-};
+const EMPTY_FORM: BlogPostPayload = { title: "", slug: "", content: "", status: "draft", allow_comments: true };
 
 export function ManageBlogPostsPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [form, setForm] = useState<Partial<BlogPost>>(emptyForm);
+  const [form, setForm] = useState<BlogPostPayload>(EMPTY_FORM);
+  const [tagsInput, setTagsInput] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   async function loadPosts() {
-    setLoading(true);
+    setIsLoading(true);
+    setError(null);
     try {
-      const data = await adminBlogPostsService.getAll();
-      setPosts(data);
+      setPosts(await adminBlogPostsService.getAll());
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to load blog posts."));
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   }
 
@@ -37,138 +36,141 @@ export function ManageBlogPostsPage() {
     loadPosts();
   }, []);
 
-  function openAddModal() {
+  function openCreateModal() {
     setEditingId(null);
-    setForm(emptyForm);
-    setModalOpen(true);
+    setForm(EMPTY_FORM);
+    setTagsInput("");
+    setFormError(null);
+    setIsModalOpen(true);
   }
 
   function openEditModal(post: BlogPost) {
     setEditingId(post.id);
-    setForm(post);
-    setModalOpen(true);
+    setForm({
+      title: post.title,
+      slug: post.slug,
+      excerpt: post.excerpt,
+      content: post.content,
+      featured_image: post.featured_image,
+      category: post.category,
+      status: post.status,
+      published_at: post.published_at,
+      allow_comments: post.allow_comments,
+    });
+    setTagsInput(post.tags?.join(", ") ?? "");
+    setFormError(null);
+    setIsModalOpen(true);
   }
 
-  async function handleSave() {
-    if (editingId) {
-      await adminBlogPostsService.update(editingId, form);
-    } else {
-      await adminBlogPostsService.create(form);
+  async function handleDelete(post: BlogPost) {
+    if (!confirm(`Delete "${post.title}"?`)) return;
+    try {
+      await adminBlogPostsService.delete(post.id);
+      setPosts((prev) => prev.filter((p) => p.id !== post.id));
+    } catch (err) {
+      alert(getErrorMessage(err, "Failed to delete blog post."));
     }
-    setModalOpen(false);
-    loadPosts();
   }
 
-  async function handleDelete(id: number) {
-    if (!confirm("Delete this post?")) return;
-    await adminBlogPostsService.remove(id);
-    loadPosts();
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setIsSaving(true);
+    setFormError(null);
+
+    const payload: BlogPostPayload = {
+      ...form,
+      tags: tagsInput.split(",").map((t) => t.trim()).filter(Boolean),
+    };
+
+    try {
+      if (editingId) {
+        const updated = await adminBlogPostsService.update(editingId, payload);
+        setPosts((prev) => prev.map((p) => (p.id === editingId ? updated : p)));
+      } else {
+        const created = await adminBlogPostsService.create(payload);
+        setPosts((prev) => [created, ...prev]);
+      }
+      setIsModalOpen(false);
+    } catch (err) {
+      setFormError(getErrorMessage(err, "Failed to save blog post."));
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Blog Posts</h1>
-          <p className="mt-1 text-slate-500 dark:text-slate-400">
-            Manage your blog content.
-          </p>
+          <h1 className="text-2xl font-bold text-foreground">Blog Posts</h1>
+          <p className="text-muted-foreground mt-1">Manage posts shown on your blog.</p>
         </div>
-        <Button onClick={openAddModal}>
-          <Plus className="h-4 w-4" />
-          Add Post
-        </Button>
+        <Button variant="primary" onClick={openCreateModal}>Add post</Button>
       </div>
 
-      <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
-        Note: only published posts appear below -- there's currently no
-        endpoint to list drafts. Newly created drafts won't show here until
-        the backend adds an admin list endpoint.
-      </p>
+      {error && <p className="text-sm text-red-500 mb-4">{error}</p>}
 
-      <div className="mt-6">
-        {loading ? (
-          <p className="text-slate-500">Loading…</p>
-        ) : (
-          <AdminTable
-            data={posts}
-            keyExtractor={(p) => String(p.id)}
-            emptyMessage="No published posts yet."
-            columns={[
-              { header: "Title", render: (p) => p.title },
-              {
-                header: "Status",
-                render: (p) => (
-                  <Badge tone={p.status === "published" ? "green" : "amber"}>
-                    {p.status}
-                  </Badge>
-                ),
-              },
-              {
-                header: "Actions",
-                render: (p) => (
-                  <div className="flex gap-3">
-                    <button onClick={() => openEditModal(p)} aria-label="Edit">
-                      <Pencil className="h-4 w-4 text-slate-500 hover:text-indigo-600" />
-                    </button>
-                    <button onClick={() => handleDelete(p.id)} aria-label="Delete">
-                      <Trash2 className="h-4 w-4 text-slate-500 hover:text-red-600" />
-                    </button>
-                  </div>
-                ),
-              },
-            ]}
-          />
-        )}
-      </div>
+      <AdminTable
+        columns={[
+          { header: "Title", accessor: (p) => p.title },
+          { header: "Status", accessor: (p) => p.status },
+          { header: "Category", accessor: (p) => p.category ?? "—" },
+        ]}
+        rows={posts}
+        keyExtractor={(p) => p.id}
+        onEdit={openEditModal}
+        onDelete={handleDelete}
+        isLoading={isLoading}
+        emptyMessage="No blog posts yet — add your first one."
+      />
 
-      <AdminModal
-        open={modalOpen}
-        title={editingId ? "Edit Post" : "Add Post"}
-        onClose={() => setModalOpen(false)}
-      >
-        <div className="space-y-4">
-          <input
-            placeholder="Title"
-            value={form.title ?? ""}
+      <AdminModal title={editingId ? "Edit post" : "Add post"} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <input type="text" placeholder="Title" value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
-            className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-          />
-          <input
-            placeholder="Slug (optional -- auto-generated if blank)"
-            value={form.slug ?? ""}
+            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" required />
+          <input type="text" placeholder="Slug" value={form.slug}
             onChange={(e) => setForm({ ...form, slug: e.target.value })}
-            className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-          />
-          <textarea
-            placeholder="Excerpt"
-            value={form.excerpt ?? ""}
+            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" required />
+          <textarea placeholder="Excerpt (optional)" value={form.excerpt ?? ""}
             onChange={(e) => setForm({ ...form, excerpt: e.target.value })}
-            className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-          />
-          <textarea
-            placeholder="Content"
-            rows={6}
-            value={form.content ?? ""}
+            rows={2}
+            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" />
+          <textarea placeholder="Content" value={form.content}
             onChange={(e) => setForm({ ...form, content: e.target.value })}
-            className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-          />
-          <select
-            value={form.status ?? "draft"}
-            onChange={(e) =>
-              setForm({ ...form, status: e.target.value as BlogPost["status"] })
-            }
-            className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-          >
+            rows={6}
+            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" required />
+          <input type="text" placeholder="Featured image URL (optional)" value={form.featured_image ?? ""}
+            onChange={(e) => setForm({ ...form, featured_image: e.target.value })}
+            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" />
+          <input type="text" placeholder="Category (optional)" value={form.category ?? ""}
+            onChange={(e) => setForm({ ...form, category: e.target.value })}
+            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" />
+          <input type="text" placeholder="Tags, comma-separated (optional)" value={tagsInput}
+            onChange={(e) => setTagsInput(e.target.value)}
+            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" />
+          <select value={form.status ?? "draft"}
+            onChange={(e) => setForm({ ...form, status: e.target.value as "draft" | "published" | "archived" })}
+            className="rounded-md border border-border bg-background px-3 py-2 text-foreground">
             <option value="draft">Draft</option>
             <option value="published">Published</option>
             <option value="archived">Archived</option>
           </select>
+          <input type="datetime-local" value={form.published_at ?? ""}
+            onChange={(e) => setForm({ ...form, published_at: e.target.value || undefined })}
+            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" />
+          <label className="flex items-center gap-2 text-sm text-foreground">
+            <input type="checkbox" checked={form.allow_comments ?? true}
+              onChange={(e) => setForm({ ...form, allow_comments: e.target.checked })} />
+            Allow comments
+          </label>
 
-          <Button onClick={handleSave} className="w-full">
-            {editingId ? "Save Changes" : "Add Post"}
+          {formError && <p className="text-sm text-red-500">{formError}</p>}
+
+          <Button type="submit" variant="primary" disabled={isSaving}>
+            {isSaving ? "Saving..." : editingId ? "Save changes" : "Create post"}
           </Button>
-        </div>
+        </form>
       </AdminModal>
     </div>
   );

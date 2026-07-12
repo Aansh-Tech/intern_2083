@@ -1,6 +1,7 @@
+export type ProjectStatus = "draft" | "published" | "archived";
+
 export interface Project {
   id: number;
-  profile_id: number;
   title: string;
   slug: string;
   subtitle?: string;
@@ -8,9 +9,8 @@ export interface Project {
   content?: string;
   github_link?: string;
   live_link?: string;
-  technologies?: string;
+  technologies?: string[];
   is_featured: boolean;
-  status: "draft" | "published" | "archived";
+  status: ProjectStatus;
   completed_at?: string;
-  created_at: string;
 }
