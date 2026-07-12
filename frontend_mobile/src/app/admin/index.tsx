@@ -9,20 +9,23 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import AdminHeader from "../components/admin/AdminHeader";
-import LoginCard from "../components/admin/LoginCard";
-import InputField from "../components/admin/InputField";
-import PasswordField from "../components/admin/PasswordField";
-import Checkbox from "../components/admin/Checkbox";
-import { useTheme } from "../context/useTheme";
+import { useRouter } from "expo-router";
+import AdminHeader from "../../components/admin/AdminHeader";
+import LoginCard from "../../components/admin/LoginCard";
+import InputField from "../../components/admin/InputField";
+import PasswordField from "../../components/admin/PasswordField";
+import Checkbox from "../../components/admin/Checkbox";
+import { login } from "../../utils/adminAuth";
+import { useTheme } from "../../context/useTheme";
 
-export default function AdminScreen() {
+export default function AdminLoginScreen() {
   const { colors } = useTheme();
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; auth?: string }>({});
 
   const validate = useCallback(() => {
     const newErrors: { email?: string; password?: string } = {};
@@ -41,15 +44,19 @@ export default function AdminScreen() {
     return Object.keys(newErrors).length === 0;
   }, [email, password]);
 
-  const handleLogin = useCallback(() => {
+  const handleLogin = useCallback(async () => {
     if (!validate()) return;
 
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      console.log("Email:", email, "Password:", password, "Remember:", remember);
-    }, 1000);
-  }, [validate, email, password, remember]);
+    const success = await login(email, password);
+    setLoading(false);
+
+    if (success) {
+      router.replace("/admin/adminoverview" as any);
+    } else {
+      setErrors((prev) => ({ ...prev, auth: "Invalid email or password" }));
+    }
+  }, [validate, email, password, router]);
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
@@ -89,6 +96,12 @@ export default function AdminScreen() {
                 checked={remember}
                 onToggle={() => setRemember(!remember)}
               />
+
+              {errors.auth && (
+                <Text className="text-center text-[14px] font-medium" style={{ color: "#EF4444" }}>
+                  {errors.auth}
+                </Text>
+              )}
 
               <TouchableOpacity
                 className="w-full h-14 rounded-[28] items-center justify-center"
