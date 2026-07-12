@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Animated } from "react-native
 import { Tabs, useRouter, usePathname } from "expo-router";
 import { Home, Briefcase, BookOpen, User, Mail } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
+import "../../../global.css";
 
 const iconMap = {
   home: Home,

@@ -1,6 +1,8 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ThemeProvider } from "../context/ThemeProvider";
+import { ProjectProvider } from "../context/ProjectContext";
+import { InboxProvider } from "../context/InboxContext";
 import { useTheme } from "../context/useTheme";
 import "../../global.css";
 
@@ -21,7 +23,11 @@ function RootLayoutInner() {
 export default function RootLayout() {
   return (
     <ThemeProvider>
-      <RootLayoutInner />
+      <ProjectProvider>
+        <InboxProvider>
+          <RootLayoutInner />
+        </InboxProvider>
+      </ProjectProvider>
     </ThemeProvider>
   );
 }

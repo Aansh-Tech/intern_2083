@@ -1,0 +1,89 @@
+import { View, Text, TouchableOpacity, Linking } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { ArrowUpRight } from "lucide-react-native";
+import { useTheme } from "../../context/useTheme";
+import StatusBadge from "./StatusBadge";
+import type { Project } from "../../types/project";
+
+interface ProjectCardProps {
+  project: Project;
+}
+
+export default function ProjectCard({ project }: ProjectCardProps) {
+  const { colors } = useTheme();
+
+  const openLink = (url?: string) => {
+    if (url) Linking.openURL(url);
+  };
+
+  return (
+    <View
+      className="rounded-[20px] border overflow-hidden"
+      style={{ backgroundColor: colors.card, borderColor: colors.border }}
+    >
+      <LinearGradient
+        colors={project.gradient as [string, string]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        className="w-full aspect-[6.4] justify-start"
+      >
+        <View className="flex-row gap-2 p-4">
+          <StatusBadge variant={project.status} />
+          {project.featured && <StatusBadge variant="featured" />}
+        </View>
+      </LinearGradient>
+
+      <View className="p-5 gap-1.5">
+        <Text
+          className="text-xs font-semibold tracking-[1px] uppercase"
+          style={{ color: colors.secondaryText }}
+        >
+          {project.category}
+        </Text>
+        <Text
+          className="text-[22px] font-bold mt-0.5"
+          style={{ color: colors.text }}
+        >
+          {project.title}
+        </Text>
+        <Text
+          className="text-[15px] leading-[21px] mt-0.5"
+          style={{ color: colors.secondaryText }}
+        >
+          {project.description}
+        </Text>
+
+        <View className="flex-row gap-2.5 mt-3.5">
+          <TouchableOpacity
+            className="flex-row items-center justify-center gap-1.5 px-[18px] h-11 rounded-[30px]"
+            style={{ backgroundColor: colors.primary }}
+            activeOpacity={0.8}
+            onPress={() => openLink(project.viewDetailsUrl)}
+          >
+            <Text
+              className="text-sm font-semibold"
+              style={{ color: colors.text }}
+            >
+              View details
+            </Text>
+            <ArrowUpRight size={16} color={colors.text} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className="flex-row items-center justify-center gap-1.5 px-[18px] h-11 rounded-[30px] border"
+            style={{ backgroundColor: colors.card, borderColor: colors.border }}
+            activeOpacity={0.8}
+            onPress={() => openLink(project.githubUrl)}
+          >
+            <Text
+              className="text-sm font-semibold"
+              style={{ color: colors.text }}
+            >
+              GitHub
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+}
