@@ -102,6 +102,7 @@ class CertificateController extends Controller
         $rule = $isUpdate ? 'sometimes|required' : 'required';
 
         return $request->validate([
+            'skill_id' => 'nullable|exists:skills,id',
             'title' => "$rule|string|max:255",
             'issuer' => "$rule|string|max:255",
             'issue_date' => 'nullable|date',

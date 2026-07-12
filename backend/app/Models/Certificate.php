@@ -12,6 +12,7 @@ class Certificate extends Model
 
     protected $fillable = [
         'profile_id',
+        'skill_id',
         'title',
         'issuer',
         'issue_date',
@@ -23,6 +24,7 @@ class Certificate extends Model
     ];
 
     protected $casts = [
+        'skill_id' => 'integer',
         'issue_date' => 'date',
         'expiry_date' => 'date',
         'display_order' => 'integer',
@@ -31,5 +33,10 @@ class Certificate extends Model
     public function profile(): BelongsTo
     {
         return $this->belongsTo(Profile::class);
+    }
+
+    public function skill(): BelongsTo
+    {
+        return $this->belongsTo(Skill::class);
     }
 }
