@@ -12,7 +12,7 @@ const iconMap = {
   user: User,
   mail: Mail,
 } as const;
-
+ 
 const tabConfig = [
   { name: "index" as const, icon: "home" as keyof typeof iconMap, title: "Home" },
   { name: "project" as const, icon: "briefcase" as keyof typeof iconMap, title: "Projects" },
