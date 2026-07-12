@@ -60,7 +60,7 @@ export function AppRoutes() {
       <Route path={ROUTES.adminProjects} element={<ProtectedAdminPage><ManageProjectsPage /></ProtectedAdminPage>} />
       <Route path={ROUTES.adminSkills} element={<ProtectedAdminPage><ManageSkillsPage /></ProtectedAdminPage>} />
       <Route path={ROUTES.adminSocialLinks} element={<ProtectedAdminPage><ManageSocialLinksPage /></ProtectedAdminPage>} />
-      <Route path="/admin/contact-messages" element={<ProtectedAdminPage><ManageContactMessagesPage /></ProtectedAdminPage>} />
+      <Route path="/admin/messages" element={<ProtectedAdminPage><ManageContactMessagesPage /></ProtectedAdminPage>} />
       <Route path="/admin/blog-posts" element={<ProtectedAdminPage><ManageBlogPostsPage /></ProtectedAdminPage>} />
       <Route path="/admin/comments" element={<ProtectedAdminPage><ManageCommentsPage /></ProtectedAdminPage>} />
       <Route path="/admin/about" element={<ProtectedAdminPage><ManageAboutPage /></ProtectedAdminPage>} />
