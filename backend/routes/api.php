@@ -40,6 +40,7 @@ Route::prefix('v1')->group(function () {
 });
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
+    Route::put('/profile', [ProfileController::class, 'update']);
     Route::apiResource('projects', ProjectController::class)->except(['index', 'show']);
     Route::apiResource('skills', SkillController::class)->except(['index', 'show']);
     Route::apiResource('social-links', SocialLinkController::class)->except(['index', 'show']);
@@ -54,4 +55,6 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
     Route::post('/images', [ImageController::class, 'store']);
     Route::delete('/images/{id}', [ImageController::class, 'destroy']);
+
+    Route::post('/profile/resume', [ProfileController::class, 'uploadResume']);
 });
