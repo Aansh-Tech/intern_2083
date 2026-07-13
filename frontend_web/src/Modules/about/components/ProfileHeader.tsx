@@ -3,6 +3,7 @@ import { EmptyState } from "@/common/components/EmptyState";
 import { Button } from "@/common/components/Button";
 import { Link2 } from "lucide-react";
 import { SITE_CONFIG } from "@/common/constants/siteConfig";
+import { getPrimaryAvatar } from "@/common/utils/uploadImage";
 import type { Profile } from "@/types/profile.types";
 import type { SocialLink } from "@/types/socialLink.types";
 
@@ -41,13 +42,17 @@ export function ProfileHeader({
     );
   }
 
+  const avatar = getPrimaryAvatar(profile.images);
+
   return (
     <section className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:text-left">
-      <img
-        src={profile.profile_photo}
-        alt={SITE_CONFIG.ownerName}
-        className="h-32 w-32 rounded-full object-cover border border-border"
-      />
+      {avatar && (
+        <img
+          src={avatar.image.url}
+          alt={SITE_CONFIG.ownerName}
+          className="h-32 w-32 rounded-full object-cover border border-border"
+        />
+      )}
 
       <div className="flex flex-col gap-3">
         <div>
@@ -89,9 +94,9 @@ export function ProfileHeader({
           </div>
         )}
 
-        {profile.resume_path && (
+        {profile.resume_url && (
           <Button variant="primary">
-            <a href={profile.resume_path} download>
+            <a href={profile.resume_url} target="_blank" rel="noopener noreferrer" download>
               Download résumé
             </a>
           </Button>
