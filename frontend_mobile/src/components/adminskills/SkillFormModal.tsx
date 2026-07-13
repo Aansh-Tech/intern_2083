@@ -69,6 +69,8 @@ function SkillFormModal({
                     placeholder="e.g. React Native"
                     placeholderTextColor={colors.secondaryText}
                     autoCapitalize="words"
+                    cursorColor={colors.primary}
+                    selectionColor={colors.primary}
                   />
                 </View>
               </View>

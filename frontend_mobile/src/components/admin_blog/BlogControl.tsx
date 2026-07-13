@@ -152,6 +152,8 @@ export default function BlogControl() {
             placeholderTextColor={colors.secondaryText}
             className="flex-1 text-[15px]"
             style={{ color: colors.text }}
+            cursorColor={colors.primary}
+            selectionColor={colors.primary}
           />
         </View>
 

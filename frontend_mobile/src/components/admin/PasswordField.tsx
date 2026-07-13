@@ -40,6 +40,8 @@ export default function PasswordField({ value, onChangeText, error }: PasswordFi
           placeholderTextColor={colors.secondaryText}
           secureTextEntry={!visible}
           autoCapitalize="none"
+          cursorColor={colors.primary}
+          selectionColor={colors.primary}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
         />

@@ -59,6 +59,8 @@ export default function ContactInput({
           numberOfLines={numberOfLines}
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
+          cursorColor={colors.primary}
+          selectionColor={colors.primary}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
         />

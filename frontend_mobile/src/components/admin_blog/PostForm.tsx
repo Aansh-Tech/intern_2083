@@ -107,6 +107,8 @@ export default function PostFormModal({
               placeholderTextColor={colors.secondaryText}
               className="h-12 rounded-2xl border px-4 text-[15px]"
               style={fieldStyle}
+              cursorColor={colors.primary}
+              selectionColor={colors.primary}
             />
           </View>
 
@@ -122,6 +124,8 @@ export default function PostFormModal({
               autoCapitalize="none"
               className="h-12 rounded-2xl border px-4 text-[15px]"
               style={fieldStyle}
+              cursorColor={colors.primary}
+              selectionColor={colors.primary}
             />
           </View>
 
@@ -136,6 +140,8 @@ export default function PostFormModal({
               placeholderTextColor={colors.secondaryText}
               className="h-12 rounded-2xl border px-4 text-[15px]"
               style={fieldStyle}
+              cursorColor={colors.primary}
+              selectionColor={colors.primary}
             />
           </View>
 

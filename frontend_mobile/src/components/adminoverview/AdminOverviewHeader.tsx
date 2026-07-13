@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { LogOut } from "lucide-react-native";
+import { LogOut, Sun, Moon } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
 
 interface AdminOverviewHeaderProps {
@@ -8,7 +8,7 @@ interface AdminOverviewHeaderProps {
 }
 
 function AdminOverviewHeader({ onSignOut }: AdminOverviewHeaderProps) {
-  const { colors } = useTheme();
+  const { colors, isDark, toggleTheme } = useTheme();
 
   return (
     <View className="flex-row items-center justify-between px-5 pt-2">
@@ -27,15 +27,30 @@ function AdminOverviewHeader({ onSignOut }: AdminOverviewHeaderProps) {
         </View>
       </View>
 
-      <TouchableOpacity
-        className="flex-row items-center h-[42px] rounded-full border px-5 gap-2"
-        style={{ borderColor: colors.border }}
-        onPress={onSignOut}
-        activeOpacity={0.7}
-      >
-        <LogOut size={16} color={colors.secondaryText} />
-        <Text className="text-[14px] font-medium" style={{ color: colors.secondaryText }}>Sign out</Text>
-      </TouchableOpacity>
+      <View className="flex-row items-center gap-2">
+        <TouchableOpacity
+          className="w-[36px] h-[36px] rounded-full items-center justify-center border"
+          style={{ backgroundColor: colors.card, borderColor: colors.border }}
+          onPress={toggleTheme}
+          activeOpacity={0.7}
+        >
+          {isDark ? (
+            <Sun size={18} color={colors.secondaryText} />
+          ) : (
+            <Moon size={18} color={colors.secondaryText} />
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          className="flex-row items-center h-[42px] rounded-full border px-5 gap-2"
+          style={{ borderColor: colors.border }}
+          onPress={onSignOut}
+          activeOpacity={0.7}
+        >
+          <LogOut size={16} color={colors.secondaryText} />
+          <Text className="text-[14px] font-medium" style={{ color: colors.secondaryText }}>Sign out</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }

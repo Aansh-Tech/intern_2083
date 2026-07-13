@@ -26,6 +26,8 @@ function SearchBar({ value, onChangeText }: SearchBarProps) {
         placeholderTextColor={colors.secondaryText}
         autoCapitalize="none"
         autoCorrect={false}
+        cursorColor={colors.primary}
+        selectionColor={colors.primary}
       />
     </View>
   );
