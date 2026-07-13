@@ -39,7 +39,7 @@ function AdminOverviewTabs({ activeTab, onTabChange }: AdminOverviewTabsProps) {
               borderWidth: isActive ? 0 : 1,
               borderColor: colors.border,
             }}
-            onPress={() => onTabChange(tab.route)}
+            onPress={() => { if (!isActive) onTabChange(tab.route); }}
             activeOpacity={0.7}
           >
             <Text

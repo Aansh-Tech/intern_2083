@@ -82,6 +82,8 @@ export default function CertificatesManager({
           returnKeyType="done"
           className="h-14 flex-1 rounded-2xl border px-4 text-[15px]"
           style={[fieldStyle, { color: colors.text }]}
+          cursorColor={colors.primary}
+          selectionColor={colors.primary}
         />
         <TouchableOpacity
           className="h-14 w-14 items-center justify-center rounded-full"

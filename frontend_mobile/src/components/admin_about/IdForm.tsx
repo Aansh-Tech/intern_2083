@@ -48,6 +48,8 @@ export default function IdentityForm({
           placeholderTextColor={colors.secondaryText}
           className="h-12 rounded-2xl border px-4 text-[15px]"
           style={inputStyle}
+          cursorColor={colors.primary}
+          selectionColor={colors.primary}
         />
       </View>
 
@@ -62,6 +64,8 @@ export default function IdentityForm({
           placeholderTextColor={colors.secondaryText}
           className="h-12 rounded-2xl border px-4 text-[15px]"
           style={inputStyle}
+          cursorColor={colors.primary}
+          selectionColor={colors.primary}
         />
       </View>
 
@@ -79,6 +83,8 @@ export default function IdentityForm({
           textAlignVertical="top"
           className="min-h-[110px] rounded-2xl border px-4 py-3 text-[15px]"
           style={inputStyle}
+          cursorColor={colors.primary}
+          selectionColor={colors.primary}
         />
       </View>
     </View>

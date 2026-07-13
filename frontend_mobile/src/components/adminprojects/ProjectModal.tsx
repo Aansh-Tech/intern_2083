@@ -244,6 +244,8 @@ function Input({
       multiline={multiline}
       numberOfLines={multiline ? 4 : undefined}
       autoCapitalize="none"
+      cursorColor={colors.primary}
+      selectionColor={colors.primary}
     />
   );
 }
