@@ -26,7 +26,7 @@ export default function ProjectScreen() {
         <View className="pb-10">
           <PageHeader />
           <FilterTabs active={activeFilter} onChange={setActiveFilter} />
-          <ProjectList projects={filteredProjects} />
+          <ProjectList projects={filteredProjects as any} />
         </View>
       </ScrollView>
     </View>

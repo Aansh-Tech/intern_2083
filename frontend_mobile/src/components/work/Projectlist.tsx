@@ -1,6 +1,6 @@
 import { View, Text } from "react-native";
 import ProjectCard from "./ProjectCard";
-import type { Project } from "../../types/project";
+import { Project } from "./ProjectsData";
 import { useTheme } from "../../context/useTheme";
 
 interface ProjectListProps {

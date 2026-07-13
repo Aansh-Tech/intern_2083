@@ -1,34 +1,60 @@
 import { View, Text } from "react-native";
 import SectionHeading from "./Heading";
 import { useTheme } from "../../context/useTheme";
-import { useSkills } from "../../context/SkillsContext";
+
+const skillCategories = [
+  {
+    title: "FRONTEND",
+    skills: [
+      { name: "React & Next.js", value: 96 },
+      { name: "TypeScript", value: 92 },
+      { name: "Tailwind CSS", value: 96 },
+    ],
+  },
+  {
+    title: "BACKEND",
+    skills: [
+      { name: "Node.js", value: 76 },
+      { name: "PostgreSQL", value: 78 },
+      { name: "Laravel", value: 86 },
+    ],
+  },
+  {
+    title: "DESIGN",
+    skills: [
+      { name: "Figma", value: 94 },
+      { name: "Motion Design", value: 82 },
+      { name: "Design Systems", value: 90 },
+    ],
+  },
+];
 
 export default function SkillsSection() {
   const { colors } = useTheme();
-  const { getSkillsByCategory } = useSkills();
-  const categories = getSkillsByCategory();
 
   return (
     <View>
       <SectionHeading eyebrow="TOOLKIT" title="Skills & Craft" />
 
       <View className="px-5 pt-5 gap-4">
-        {categories.map(({ category, skills }) => (
+        {skillCategories.map((category) => (
           <View
-            key={category}
+            key={category.title}
+            style={[
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
             className="rounded-2xl border p-5 gap-4"
-            style={{ backgroundColor: colors.card, borderColor: colors.border }}
           >
             <Text
               className="text-xs font-bold tracking-[1.5px]"
               style={{ color: colors.secondaryText }}
             >
-              {category.toUpperCase()}
+              {category.title}
             </Text>
 
             <View className="gap-3.5">
-              {skills.map((skill) => (
-                <View key={skill.id} className="gap-2">
+              {category.skills.map((skill) => (
+                <View key={skill.name} className="gap-2">
                   <View className="flex-row justify-between items-center">
                     <Text
                       className="text-[15px] font-semibold"
@@ -40,19 +66,19 @@ export default function SkillsSection() {
                       className="text-[13px] font-semibold"
                       style={{ color: colors.secondaryText }}
                     >
-                      {skill.percentage}%
+                      {skill.value}%
                     </Text>
                   </View>
                   <View
-                    className="h-1.5 rounded-full overflow-hidden"
                     style={{ backgroundColor: colors.border }}
+                    className="h-1.5 rounded-full overflow-hidden"
                   >
                     <View
-                      className="h-full rounded-full"
                       style={{
-                        width: `${skill.percentage}%`,
+                        width: `${skill.value}%`,
                         backgroundColor: colors.primary,
                       }}
+                      className="h-full rounded-full"
                     />
                   </View>
                 </View>

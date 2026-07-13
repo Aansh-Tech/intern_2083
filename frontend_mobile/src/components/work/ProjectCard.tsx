@@ -3,7 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { ArrowUpRight } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
 import StatusBadge from "./StatusBadge";
-import type { Project } from "../../types/project";
+import { Project } from "./ProjectsData";
 
 interface ProjectCardProps {
   project: Project;
