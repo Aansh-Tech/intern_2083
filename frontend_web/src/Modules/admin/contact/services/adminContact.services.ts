@@ -17,4 +17,12 @@ export const adminContactMessagesService = {
     );
     if (!data.success) throw new Error(data.message ?? "Failed to delete message");
   },
+
+  async markAsRead(id: number): Promise<ContactMessage> {
+    const { data } = await apiClient.patch<ApiResponse<ContactMessage>>(
+      `/v1/contact/${id}/read`
+    );
+    if (!data.success) throw new Error(data.message ?? "Failed to mark as read");
+    return data.data;
+  },
 };

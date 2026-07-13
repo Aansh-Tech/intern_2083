@@ -18,7 +18,7 @@ import { DashboardOverviewPage } from "../Modules/admin/dashboard/pages/Dashboar
 import { ManageProjectsPage } from "../Modules/admin/projects/pages/ManageProjectsPage";
 import { ManageSkillsPage } from "../Modules/admin/skills/pages/ManageSkillsPage";
 import { ManageSocialLinksPage } from "../Modules/admin/scoialLinks/pages/ManageSocialLinkPage";
-import { ManageContactMessagesPage } from "../Modules/admin/contact/pages/ManageContactMessagePage";
+import ManageContactMessagePage from "../Modules/admin/contact/pages/ManageContactMessagePage";
 import { ManageBlogPostsPage } from "../Modules/admin/blog/pages/ManageBlogPostPage";
 import { ManageCommentsPage } from "../Modules/admin/comments/pages/ManageCommentPage";
 import { ManageAboutPage } from "../Modules/admin/about/pages/ManageAboutPage";
@@ -60,7 +60,7 @@ export function AppRoutes() {
       <Route path={ROUTES.adminProjects} element={<ProtectedAdminPage><ManageProjectsPage /></ProtectedAdminPage>} />
       <Route path={ROUTES.adminSkills} element={<ProtectedAdminPage><ManageSkillsPage /></ProtectedAdminPage>} />
       <Route path={ROUTES.adminSocialLinks} element={<ProtectedAdminPage><ManageSocialLinksPage /></ProtectedAdminPage>} />
-      <Route path="/admin/messages" element={<ProtectedAdminPage><ManageContactMessagesPage /></ProtectedAdminPage>} />
+      <Route path="/admin/messages" element={<ProtectedAdminPage><ManageContactMessagePage /></ProtectedAdminPage>} />
       <Route path="/admin/blog-posts" element={<ProtectedAdminPage><ManageBlogPostsPage /></ProtectedAdminPage>} />
       <Route path="/admin/comments" element={<ProtectedAdminPage><ManageCommentsPage /></ProtectedAdminPage>} />
       <Route path="/admin/about" element={<ProtectedAdminPage><ManageAboutPage /></ProtectedAdminPage>} />
