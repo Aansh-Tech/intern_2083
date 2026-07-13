@@ -4,6 +4,6 @@ export interface Comment {
   name: string;
   email: string;
   content: string;
-  status: "pending" | "approved";
+  status: "pending" | "approved" | "rejected";
   created_at?: string;
 }

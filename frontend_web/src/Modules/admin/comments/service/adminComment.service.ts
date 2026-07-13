@@ -2,18 +2,30 @@ import { apiClient } from "../../../../services/apiClient";
 import type { ApiResponse } from "../../../../types/apiResponse.types";
 import type { Comment } from "../../../../types/comment.types";
 
-/**
- * KNOWN GAP: comments are fetched per-post by SLUG (not a global "all
- * comments" list), and there is no approve/update endpoint -- only
- * delete. A comment can only ever be removed, never marked approved,
- * unless the backend adds a PATCH/PUT route for that.
- */
 export const adminCommentsService = {
+  async getAll(status?: Comment["status"]): Promise<Comment[]> {
+    const { data } = await apiClient.get<ApiResponse<Comment[]>>(
+      "/v1/comments",
+      { params: status ? { status } : undefined }
+    );
+    if (!data.success) throw new Error(data.message ?? "Failed to load comments");
+    return data.data;
+  },
+
   async getByPostSlug(slug: string): Promise<Comment[]> {
     const { data } = await apiClient.get<ApiResponse<Comment[]>>(
       `/v1/blog-posts/${slug}/comments`
     );
     if (!data.success) throw new Error(data.message ?? "Failed to load comments");
+    return data.data;
+  },
+
+  async updateStatus(id: number, status: Comment["status"]): Promise<Comment> {
+    const { data } = await apiClient.patch<ApiResponse<Comment>>(
+      `/v1/comments/${id}`,
+      { status }
+    );
+    if (!data.success) throw new Error(data.message ?? "Failed to update comment");
     return data.data;
   },
 
