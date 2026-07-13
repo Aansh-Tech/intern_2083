@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\BlogPostController;
 use App\Http\Controllers\Api\CertificateController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\ContactController;
+use App\Http\Controllers\Api\ImageController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\SkillController;
@@ -50,4 +51,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
     Route::get('/blog-posts/{slug}/comments', [CommentController::class, 'index']);
     Route::delete('/comments/{id}', [CommentController::class, 'destroy']);
+
+    Route::post('/images', [ImageController::class, 'store']);
+    Route::delete('/images/{id}', [ImageController::class, 'destroy']);
 });

@@ -10,7 +10,7 @@ class ProfileController extends Controller
     public function show()
     {
         // Get the first profile (there's only one - yours)
-        $profile = Profile::with(['skills', 'socialLinks'])->first();
+        $profile = Profile::with(['skills', 'socialLinks', 'images'])->first();
 
         if (!$profile) {
             return response()->json([
@@ -31,6 +31,7 @@ class ProfileController extends Controller
                 'resume_path' => $profile->resume_path,
                 'skills' => $profile->skills,
                 'social_links' => $profile->socialLinks,
+                'images' => $profile->images,
             ]
         ]);
     }
