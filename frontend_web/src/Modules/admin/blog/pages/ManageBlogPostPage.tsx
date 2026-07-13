@@ -1,21 +1,25 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AdminTable } from "@/common/components/admin/AdminTable";
 import { AdminModal } from "../../components/AdminModal";
 import { Button } from "@/common/components/Button";
 import { getErrorMessage } from "@/common/utils/getErrorMessage";
-import { adminBlogPostsService, type BlogPostPayload } from "../services/adminBlogPost.service";
+import { adminBlogPostsService } from "../services/adminBlogPost.service";
 import type { BlogPost } from "@/types/blogPost.types";
 
-const EMPTY_FORM: BlogPostPayload = { title: "", slug: "", content: "", status: "draft", allow_comments: true };
+const EMPTY_FORM: Partial<BlogPost> = { title: "", slug: "", content: "", status: "draft", allow_comments: true };
 
 export function ManageBlogPostsPage() {
+  const [searchParams] = useSearchParams();
+  const query = (searchParams.get("q") ?? "").toLowerCase();
+
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [form, setForm] = useState<BlogPostPayload>(EMPTY_FORM);
+  const [form, setForm] = useState<Partial<BlogPost>>(EMPTY_FORM);
   const [tagsInput, setTagsInput] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -57,7 +61,7 @@ export function ManageBlogPostsPage() {
       published_at: post.published_at,
       allow_comments: post.allow_comments,
     });
-    setTagsInput(post.tags?.join(", ") ?? "");
+    setTagsInput(Array.isArray(post.tags) ? post.tags.join(", ") : "");
     setFormError(null);
     setIsModalOpen(true);
   }
@@ -65,7 +69,7 @@ export function ManageBlogPostsPage() {
   async function handleDelete(post: BlogPost) {
     if (!confirm(`Delete "${post.title}"?`)) return;
     try {
-      await adminBlogPostsService.delete(post.id);
+      await adminBlogPostsService.remove(post.id);
       setPosts((prev) => prev.filter((p) => p.id !== post.id));
     } catch (err) {
       alert(getErrorMessage(err, "Failed to delete blog post."));
@@ -77,7 +81,7 @@ export function ManageBlogPostsPage() {
     setIsSaving(true);
     setFormError(null);
 
-    const payload: BlogPostPayload = {
+    const payload: Partial<BlogPost> = {
       ...form,
       tags: tagsInput.split(",").map((t) => t.trim()).filter(Boolean),
     };
@@ -98,6 +102,15 @@ export function ManageBlogPostsPage() {
     }
   }
 
+  const filteredPosts = posts.filter((p) => {
+    const tagsArray = Array.isArray(p.tags) ? p.tags : [];
+    return (
+      p.title.toLowerCase().includes(query) ||
+      (p.category ?? "").toLowerCase().includes(query) ||
+      tagsArray.some((t) => t.toLowerCase().includes(query))
+    );
+  });
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -116,7 +129,7 @@ export function ManageBlogPostsPage() {
           { header: "Status", accessor: (p) => p.status },
           { header: "Category", accessor: (p) => p.category ?? "—" },
         ]}
-        rows={posts}
+        rows={filteredPosts}
         keyExtractor={(p) => p.id}
         onEdit={openEditModal}
         onDelete={handleDelete}
@@ -124,7 +137,7 @@ export function ManageBlogPostsPage() {
         emptyMessage="No blog posts yet — add your first one."
       />
 
-      <AdminModal title={editingId ? "Edit post" : "Add post"} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+      <AdminModal title={editingId ? "Edit post" : "Add post"} open={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <input type="text" placeholder="Title" value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}

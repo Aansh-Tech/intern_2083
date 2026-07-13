@@ -10,11 +10,15 @@ export const adminAboutService = {
   },
 
   async updateProfile(payload: Partial<Profile>): Promise<Profile> {
+    // Only send plain text fields — PUT /v1/profile is JSON-only, no files.
     const { title, bio, phone, address } = payload;
     const { data } = await apiClient.put<ApiResponse<Profile>>("/v1/profile", {
-      title, bio, phone, address,
+      title,
+      bio,
+      phone,
+      address,
     });
-    if (!data.success) throw new Error(data.message ?? "Failed to save profile.");
+    if (!data.success) throw new Error(data.message ?? "Failed to update profile");
     return data.data;
   },
 };

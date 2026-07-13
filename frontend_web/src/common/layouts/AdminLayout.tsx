@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, User, Sparkles, FolderKanban, Link2, FileText, MessageSquare, Mail, Award, LogOut } from "lucide-react";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { LayoutDashboard, User, Sparkles, FolderKanban, Link2, FileText, MessageSquare, Mail, Award, LogOut, Search } from "lucide-react";
 import { useAuth } from "@/common/hooks/useAuth";
 import { ThemeToggle } from "@/common/components/Themetoggle";
 import { NotificationDropdown } from "@/Modules/admin/components/NotificationDropdown";
@@ -26,6 +26,31 @@ const NAV_ITEMS = [
 function getInitials(name?: string): string {
   if (!name) return "A";
   return name.split(" ").map((p) => p.charAt(0)).slice(0, 2).join("").toUpperCase();
+}
+
+function SearchBox() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const query = searchParams.get("q") ?? "";
+
+  function handleChange(value: string) {
+    const next = new URLSearchParams(searchParams);
+    if (value) next.set("q", value);
+    else next.delete("q");
+    setSearchParams(next, { replace: true });
+  }
+
+  return (
+    <div className="relative hidden md:block">
+      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => handleChange(e.target.value)}
+        placeholder="Search..."
+        className="w-80 rounded-full border border-slate-200 bg-slate-50 py-2 pl-10 pr-4 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+      />
+    </div>
+  );
 }
 
 export function AdminLayout({ children }: AdminLayoutProps) {
@@ -71,9 +96,14 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <header className="flex items-center justify-between border-b border-slate-200 bg-white px-8 py-4 dark:border-slate-800 dark:bg-slate-900">
           <h1 className="text-lg font-semibold">{currentLabel}</h1>
           <div className="flex items-center gap-4">
+            <SearchBox />
+
             <NotificationDropdown />
             <ThemeToggle />
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 text-sm font-semibold text-white dark:bg-indigo-500">{getInitials(user?.name)}</div>
+
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 text-sm font-semibold text-white dark:bg-indigo-500">
+              {getInitials(user?.name)}
+            </div>
           </div>
         </header>
         <main className="flex-1 p-8">{children}</main>

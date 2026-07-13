@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AdminTable } from "../../components/AdminTable";
 import { AdminModal } from "../../components/AdminModal";
 import { Button } from "@/common/components/Button";
@@ -10,6 +11,9 @@ import type { Skill } from "@/types/skill.types";
 const EMPTY_FORM: CertificatePayload = { title: "", issuer: "" };
 
 export function ManageCertificatesPage() {
+  const [searchParams] = useSearchParams();
+  const query = (searchParams.get("q") ?? "").toLowerCase();
+
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -101,6 +105,12 @@ export function ManageCertificatesPage() {
     return skills.find((s) => Number(s.id) === skillId)?.name ?? "—";
   }
 
+  const filteredCertificates = certificates.filter((c) =>
+    String(c.title ?? "").toLowerCase().includes(query) ||
+    String(c.issuer ?? "").toLowerCase().includes(query) ||
+    skillName(c.skill_id).toLowerCase().includes(query)
+  );
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -120,7 +130,7 @@ export function ManageCertificatesPage() {
           { header: "Linked skill", accessor: (c) => skillName(c.skill_id) },
           { header: "Issued", accessor: (c) => c.issue_date ?? "—" },
         ]}
-        rows={certificates}
+        rows={filteredCertificates}
         keyExtractor={(c) => c.id}
         onEdit={openEditModal}
         onDelete={handleDelete}
@@ -128,7 +138,7 @@ export function ManageCertificatesPage() {
         emptyMessage="No certificates yet — add your first one."
       />
 
-      <AdminModal title={editingId ? "Edit certificate" : "Add certificate"} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+      <AdminModal title={editingId ? "Edit certificate" : "Add certificate"} open={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <input type="text" placeholder="Title" value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
