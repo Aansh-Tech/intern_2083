@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/common/components/Button";
 import { AdminTable } from "@/common/components/admin/AdminTable";
@@ -11,6 +12,9 @@ const FIELD_CLASS = "w-full rounded-xl border border-slate-300 px-4 py-2.5 text-
 const LABEL_CLASS = "mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300";
 
 export function ManageSocialLinksPage() {
+  const [searchParams] = useSearchParams();
+  const query = (searchParams.get("q") ?? "").toLowerCase();
+
   const [links, setLinks] = useState<SocialLink[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -41,6 +45,11 @@ export function ManageSocialLinksPage() {
     loadLinks();
   }
 
+  const filteredLinks = links.filter((l) =>
+    String(l.platform ?? "").toLowerCase().includes(query) ||
+    String(l.url ?? "").toLowerCase().includes(query)
+  );
+
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -52,7 +61,7 @@ export function ManageSocialLinksPage() {
       </div>
       <div className="mt-6">
         {loading ? <p className="text-slate-500">Loading…</p> : (
-          <AdminTable rows={links} keyExtractor={(l) => l.id} emptyMessage="No social links yet."
+          <AdminTable rows={filteredLinks} keyExtractor={(l) => l.id} emptyMessage="No social links yet."
   columns={[
     { header: "Platform", accessor: (l) => l.platform },
     { header: "URL", accessor: (l) => l.url },

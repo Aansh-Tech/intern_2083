@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/common/components/Button";
 import { AdminTable } from "@/common/components/admin/AdminTable";
@@ -11,6 +12,9 @@ const FIELD_CLASS = "w-full rounded-xl border border-slate-300 px-4 py-2.5 text-
 const LABEL_CLASS = "mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300";
 
 export function ManageSkillsPage() {
+  const [searchParams] = useSearchParams();
+  const query = (searchParams.get("q") ?? "").toLowerCase();
+
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -41,6 +45,11 @@ export function ManageSkillsPage() {
     loadSkills();
   }
 
+  const filteredSkills = skills.filter((s) =>
+    s.name.toLowerCase().includes(query) ||
+    (s.category ?? "").toLowerCase().includes(query)
+  );
+
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -52,7 +61,7 @@ export function ManageSkillsPage() {
       </div>
       <div className="mt-6">
         {loading ? <p className="text-slate-500">Loading…</p> : (
-          <AdminTable rows={skills} keyExtractor={(s) => s.id} emptyMessage="No skills added yet."
+          <AdminTable rows={filteredSkills} keyExtractor={(s) => s.id} emptyMessage="No skills added yet."
   columns={[
     { header: "Name", accessor: (s) => s.name },
     { header: "Category", accessor: (s) => s.category ?? "—" },

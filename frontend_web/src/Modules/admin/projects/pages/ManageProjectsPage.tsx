@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/common/components/Button";
 import { Badge } from "@/common/components/Badge";
@@ -16,6 +17,9 @@ const FIELD_CLASS = "w-full rounded-xl border border-slate-300 px-4 py-2.5 text-
 const LABEL_CLASS = "mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300";
 
 export function ManageProjectsPage() {
+  const [searchParams] = useSearchParams();
+  const query = (searchParams.get("q") ?? "").toLowerCase();
+
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -41,7 +45,7 @@ export function ManageProjectsPage() {
   function openEditModal(project: Project) {
     setEditingId(project.id);
     setForm(project);
-    setTechInput((project.technologies ?? []).join(", "));
+    setTechInput((Array.isArray(project.technologies) ? project.technologies : []).join(", "));
     setModalOpen(true);
   }
 
@@ -62,6 +66,15 @@ export function ManageProjectsPage() {
     loadProjects();
   }
 
+  const filteredProjects = projects.filter((p) => {
+    const techArray = Array.isArray(p.technologies) ? p.technologies : [];
+    return (
+      String(p.title ?? "").toLowerCase().includes(query) ||
+      techArray.some((t) => String(t).toLowerCase().includes(query)) ||
+      String(p.status ?? "").toLowerCase().includes(query)
+    );
+  });
+
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -74,7 +87,7 @@ export function ManageProjectsPage() {
 
       <div className="mt-6">
         {loading ? <p className="text-slate-500">Loading…</p> : (
-          <AdminTable rows={projects} keyExtractor={(p) => p.id} emptyMessage="No projects yet."
+          <AdminTable rows={filteredProjects} keyExtractor={(p) => p.id} emptyMessage="No projects yet."
   columns={[
     { header: "Title", accessor: (p) => p.title },
     { header: "Status", accessor: (p) => (

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AdminTable } from "../../components/AdminTable";
 import { getErrorMessage } from "@/common/utils/getErrorMessage";
 import { adminCommentsService } from "../service/adminComment.service";
@@ -7,6 +8,9 @@ import type { Comment } from "@/types/comment.types";
 import type { BlogPost } from "@/types/blogPost.types";
 
 export function ManageCommentsPage() {
+  const [searchParams] = useSearchParams();
+  const query = (searchParams.get("q") ?? "").toLowerCase();
+
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [selectedSlug, setSelectedSlug] = useState<string>("");
   const [comments, setComments] = useState<Comment[]>([]);
@@ -37,12 +41,18 @@ export function ManageCommentsPage() {
   async function handleDelete(comment: Comment) {
     if (!confirm(`Delete comment from "${comment.name}"?`)) return;
     try {
-      await adminCommentsService.delete(comment.id);
+      await adminCommentsService.remove(comment.id);
       setComments((prev) => prev.filter((c) => c.id !== comment.id));
     } catch (err) {
       alert(getErrorMessage(err, "Failed to delete comment."));
     }
   }
+
+  const filteredComments = comments.filter((c) =>
+    String(c.name ?? "").toLowerCase().includes(query) ||
+    String(c.email ?? "").toLowerCase().includes(query) ||
+    String(c.content ?? "").toLowerCase().includes(query)
+  );
 
   return (
     <div>
@@ -73,7 +83,7 @@ export function ManageCommentsPage() {
             { header: "Comment", accessor: (c) => c.content },
             { header: "Status", accessor: (c) => c.status },
           ]}
-          rows={comments}
+          rows={filteredComments}
           keyExtractor={(c) => c.id}
           onDelete={handleDelete}
           isLoading={isLoadingComments}

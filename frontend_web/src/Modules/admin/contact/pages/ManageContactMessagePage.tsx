@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Eye, Trash2 } from "lucide-react";
 import { AdminTable } from "@/common/components/admin/AdminTable";
 import { AdminModal } from "@/Modules/admin/components/AdminModal";
@@ -8,6 +9,9 @@ import { adminContactMessagesService } from "@/Modules/admin/contact/services/ad
 import type { ContactMessage } from "@/types/contactMessage.types";
 
 export function ManageContactMessagesPage() {
+  const [searchParams] = useSearchParams();
+  const query = (searchParams.get("q") ?? "").toLowerCase();
+
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +44,12 @@ export function ManageContactMessagesPage() {
     }
   }
 
+  const filteredMessages = messages.filter((m) =>
+    String(m.name ?? "").toLowerCase().includes(query) ||
+    String(m.email ?? "").toLowerCase().includes(query) ||
+    String(m.subject ?? "").toLowerCase().includes(query)
+  );
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-foreground">Contact Messages</h1>
@@ -66,7 +76,7 @@ export function ManageContactMessagesPage() {
             ),
           },
         ]}
-        rows={messages}
+        rows={filteredMessages}
         keyExtractor={(m) => m.id}
         onDelete={handleDelete}
         isLoading={isLoading}
