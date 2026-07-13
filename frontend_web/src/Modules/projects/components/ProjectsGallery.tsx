@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { resolveMediaUrl } from "@/common/utils/resolveMediaUrl";
 
 interface ProjectsGalleryProps {
   images: string[];
@@ -21,7 +22,7 @@ export function ProjectsGallery({ images }: ProjectsGalleryProps) {
   return (
     <div className="relative rounded-lg overflow-hidden border border-border">
       <img
-        src={images[activeIndex]}
+        src={resolveMediaUrl(images[activeIndex])}
         alt={`Project screenshot ${activeIndex + 1}`}
         className="w-full aspect-video object-cover"
       />

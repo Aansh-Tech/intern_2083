@@ -3,6 +3,7 @@ import { Loader } from "@/common/components/Loader";
 import { EmptyState } from "@/common/components/EmptyState";
 import { SITE_CONFIG } from "@/common/constants/siteConfig";
 import { getPrimaryAvatar } from "@/common/utils/uploadImage";
+import { resolveMediaUrl } from "@/common/utils/resolveMediaUrl";
 import type { Profile } from "@/types/profile.types";
 import type { SocialLink } from "@/types/socialLink.types";
 
@@ -19,13 +20,15 @@ export function ProfileHeader({ profile, socialLinks, isLoading, error }: Profil
   if (!profile) return <EmptyState title="No profile data" description="Nothing to show yet." />;
 
   const avatar = getPrimaryAvatar(profile.images);
+  const avatarSrc = resolveMediaUrl(avatar?.image.url);
+  const resumeHref = resolveMediaUrl(profile.resume_url);
 
   return (
     <section className="grid gap-8 sm:grid-cols-[280px_1fr]">
       <div className="mx-auto h-[320px] w-[280px] shrink-0 overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 sm:mx-0">
-        {avatar && (
+        {avatarSrc && (
           <img
-            src={avatar.image.url}
+            src={avatarSrc}
             alt={SITE_CONFIG.ownerName}
             className="h-full w-full object-cover"
           />
@@ -59,9 +62,9 @@ export function ProfileHeader({ profile, socialLinks, isLoading, error }: Profil
           </span>
         </div>
 
-        {profile.resume_url && (
+        {resumeHref && (
           <a
-            href={profile.resume_url}
+            href={resumeHref}
             target="_blank"
             rel="noopener noreferrer"
             download

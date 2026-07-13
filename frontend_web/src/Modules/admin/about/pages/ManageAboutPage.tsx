@@ -2,6 +2,7 @@ import { useEffect, useState, type ChangeEvent } from "react";
 import { Button } from "@/common/components/Button";
 import { adminAboutService } from "../services/adminAbout.service";
 import { uploadImage, uploadResume, getPrimaryAvatar } from "@/common/utils/uploadImage";
+import { resolveMediaUrl } from "@/common/utils/resolveMediaUrl";
 import type { Profile } from "@/types/profile.types";
 
 const FIELD_CLASS =
@@ -106,6 +107,8 @@ export function ManageAboutPage() {
   if (loading) return <p className="text-slate-500">Loading…</p>;
 
   const avatar = getPrimaryAvatar(profile?.images);
+  const avatarSrc = resolveMediaUrl(avatar?.image.url);
+  const resumeHref = resolveMediaUrl(form.resume_url ?? profile?.resume_url);
 
   return (
     <div>
@@ -128,12 +131,17 @@ export function ManageAboutPage() {
       <div className="mt-6 grid max-w-3xl gap-8 sm:grid-cols-[220px_1fr]">
         <div className="flex flex-col items-center gap-3 sm:items-start">
           <div className="h-56 w-full overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500">
-            {avatar && (
-              <img src={avatar.image.url} alt="Profile" className="h-full w-full object-cover" />
+            {avatarSrc && (
+              <img
+                src={avatarSrc}
+                alt="Profile"
+                className="h-full w-full object-cover"
+                onError={() => console.error("Image failed to load:", avatarSrc)}
+              />
             )}
           </div>
           <label className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
-            {uploadingPhoto ? "Uploading…" : avatar ? "Replace" : "Upload photo"}
+            {uploadingPhoto ? "Uploading…" : avatarSrc ? "Replace" : "Upload photo"}
             <input
               type="file"
               accept="image/jpeg,image/jpg,image/png,image/webp"
@@ -202,9 +210,9 @@ export function ManageAboutPage() {
               />
             </label>
             {resumeError && <p className="mt-1 text-xs text-red-500">{resumeError}</p>}
-            {(form.resume_url || profile?.resume_url) && (
+            {resumeHref && (
               <a
-                href={form.resume_url ?? profile?.resume_url ?? "#"}
+                href={resumeHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-1.5 inline-block text-xs text-indigo-600 hover:underline dark:text-indigo-400"
