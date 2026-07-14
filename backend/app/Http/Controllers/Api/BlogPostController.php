@@ -22,6 +22,27 @@ class BlogPostController extends Controller
         ]);
     }
 
+    /**
+     * GET /v1/admin/blog-posts (protected)
+     * Same as index(), but returns posts of every status (draft/published/archived)
+     * for the admin panel. Optional ?status=draft|published|archived to filter.
+     */
+    public function adminIndex(Request $request)
+    {
+        $query = BlogPost::orderBy('created_at', 'desc');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->query('status'));
+        }
+
+        $posts = $query->paginate(10);
+
+        return response()->json([
+            'success' => true,
+            'data' => $posts
+        ]);
+    }
+
     public function show($slug)
     {
         $post = BlogPost::where('slug', $slug)

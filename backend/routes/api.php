@@ -40,6 +40,7 @@ Route::prefix('v1')->group(function () {
 });
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
+    Route::put('/profile', [ProfileController::class, 'update']);
     Route::apiResource('projects', ProjectController::class)->except(['index', 'show']);
     Route::apiResource('skills', SkillController::class)->except(['index', 'show']);
     Route::apiResource('social-links', SocialLinkController::class)->except(['index', 'show']);
@@ -47,11 +48,22 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('certificates', CertificateController::class)->except(['index', 'show']);
 
     Route::get('/contact', [ContactController::class, 'index']);
+    Route::patch('/contact/{id}/read', [ContactController::class, 'markAsRead']);
     Route::delete('/contact/{id}', [ContactController::class, 'destroy']);
 
     Route::get('/blog-posts/{slug}/comments', [CommentController::class, 'index']);
+    Route::get('/comments', [CommentController::class, 'indexAll']);
+    Route::patch('/comments/{id}', [CommentController::class, 'updateStatus']);
     Route::delete('/comments/{id}', [CommentController::class, 'destroy']);
+
+    // Separate path (not "/blog-posts/all" or "/projects/all") so it can never
+    // collide with the public "/v1/{slug}" routes registered above, since
+    // Laravel matches routes strictly in registration order regardless of grouping.
+    Route::get('/admin/blog-posts', [BlogPostController::class, 'adminIndex']);
+    Route::get('/admin/projects', [ProjectController::class, 'adminIndex']);
 
     Route::post('/images', [ImageController::class, 'store']);
     Route::delete('/images/{id}', [ImageController::class, 'destroy']);
+
+    Route::post('/profile/resume', [ProfileController::class, 'uploadResume']);
 });
