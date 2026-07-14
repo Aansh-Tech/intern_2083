@@ -7,7 +7,10 @@ export interface Certificate {
   issue_date?: string;
   expiry_date?: string;
   credential_url?: string;
-  image?: string;
+    images?: Array<{
+    is_primary: boolean;
+    image: { url: string };
+  }>;
   description?: string;
   display_order?: number;
 }

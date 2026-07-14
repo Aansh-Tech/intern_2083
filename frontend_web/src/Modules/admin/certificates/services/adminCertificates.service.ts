@@ -9,8 +9,6 @@ export interface CertificatePayload {
   skill_id?: number;
   issue_date?: string;
   expiry_date?: string;
-  credential_url?: string;
-  image?: string;
   description?: string;
   display_order?: number;
 }
@@ -30,5 +28,9 @@ export const adminCertificatesService = {
   },
   async delete(id: number): Promise<void> {
     await apiClient.delete(`${ENDPOINTS.certificates}/${id}`);
+  },
+    async getOne(id: number): Promise<Certificate> {
+    const { data } = await apiClient.get<ApiResponse<Certificate>>(`${ENDPOINTS.certificates}/${id}`);
+    return data.data;
   },
 };

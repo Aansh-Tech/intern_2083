@@ -1,12 +1,7 @@
-// common/utils/formatDate.ts
+export function formatDate(isoDate?: string | null): string {
+  if (!isoDate) return "";
 
-export function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-
-  if (isNaN(date.getTime())) {
-    return "";
-  }
-
+  const date = new Date(isoDate);
   return date.toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",

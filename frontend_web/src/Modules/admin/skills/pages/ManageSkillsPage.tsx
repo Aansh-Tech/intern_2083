@@ -87,14 +87,19 @@ export function ManageSkillsPage() {
             <input placeholder="e.g. Framework" value={form.category ?? ""} onChange={(e) => setForm({ ...form, category: e.target.value })} className={FIELD_CLASS} />
           </div>
           <div>
-            <label className={LABEL_CLASS}>Proficiency (0-100)</label>
-            <input type="number" min={0} max={100} value={form.proficiency ?? ""} onChange={(e) => setForm({ ...form, proficiency: Number(e.target.value) })} className={FIELD_CLASS} />
-          </div>
-          <div>
-            <label className={LABEL_CLASS}>Icon</label>
-            <input type="file" accept="image/*" className={FIELD_CLASS} />
-            <p className="mt-1 text-xs text-slate-400">File upload isn't wired to the backend yet.</p>
-          </div>
+          <label className={LABEL_CLASS}>Proficiency (0-100)</label>
+          <input
+            type="number"
+            min={0}
+            max={100}
+            step={1}
+            value={form.proficiency ?? 0}
+            onChange={(e) => setForm({ ...form, proficiency: Number(e.target.value) })}
+            onKeyDown={(e) => e.preventDefault()}
+            onPaste={(e) => e.preventDefault()}
+            className={FIELD_CLASS}
+            />
+           </div>
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
             <Button onClick={handleSave}>Save</Button>

@@ -3,6 +3,7 @@ import { Card } from "@/common/components/Card";
 import { formatDate } from "@/common/utils/formatDate";
 import { ROUTES } from "@/common/constants/routes";
 import type { BlogPost } from "@/types/blogPost.types";
+import { resolveMediaUrl } from "@/common/utils/resolveMediaUrl";
 
 interface BlogCardProps {
   post: BlogPost;
@@ -14,7 +15,7 @@ export function BlogCard({ post }: BlogCardProps) {
       <Link to={`${ROUTES.blog}/${post.slug}`} className="block">
         {post.featured_image && (
           <img
-            src={post.featured_image}
+            src={resolveMediaUrl(post.featured_image)}
             alt={post.title}
             className="w-full aspect-video object-cover rounded-md mb-3"
           />

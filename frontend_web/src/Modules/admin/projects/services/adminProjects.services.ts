@@ -4,7 +4,7 @@ import type { Project } from "@/types/project.types";
 
 export const adminProjectsService = {
   async getAll(): Promise<Project[]> {
-    const { data } = await apiClient.get<ApiResponse<Project[]>>("/v1/projects");
+    const { data } = await apiClient.get<ApiResponse<Project[]>>("/v1/admin/projects");
     if (!data.success) throw new Error(data.message ?? "Failed to load projects");
     return data.data;
   },

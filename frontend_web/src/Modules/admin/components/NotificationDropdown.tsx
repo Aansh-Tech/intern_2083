@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Bell, MessageSquare, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
-//
 import { adminContactMessagesService } from "../contact/services/adminContact.services";
+import { adminCommentsService } from "../comments/service/adminComment.service";
+import { onNotificationsChanged } from "@/common/utils/notificationEvents";
 
 export function NotificationDropdown() {
   const [open, setOpen] = useState(false);
@@ -10,11 +11,21 @@ export function NotificationDropdown() {
   const [unreadMessages, setUnreadMessages] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
 
+  function loadCounts() {
+    adminContactMessagesService.getAll().then((msgs) => {
+      const unread = msgs.filter((m) => !m.is_read).length;
+      setUnreadMessages(unread);
+    });
+
+    adminCommentsService.getAll("pending").then((comments) => {
+      setPendingComments(comments.length);
+    });
+  }
+
   useEffect(() => {
-    adminContactMessagesService.getAll().then((msgs) => setUnreadMessages(msgs.length));
-    // Comments are per-post; a true global pending count needs a backend
-    // endpoint that lists all comments across posts. Left at 0 until that
-    // exists -- ask your backend friend for a global /v1/comments list.
+    loadCounts();
+    const unsubscribe = onNotificationsChanged(loadCounts);
+    return unsubscribe;
   }, []);
 
   useEffect(() => {
@@ -61,7 +72,7 @@ export function NotificationDropdown() {
             className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-800"
           >
             <MessageSquare className="h-4 w-4 text-slate-400" />
-            <span>Pending comments</span>
+            <span>{pendingComments} pending comment{pendingComments === 1 ? "" : "s"}</span>
           </Link>
           {totalCount === 0 && (
             <p className="px-3 py-2 text-sm text-slate-400">You're all caught up.</p>

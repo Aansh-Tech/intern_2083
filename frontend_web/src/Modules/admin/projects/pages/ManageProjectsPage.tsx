@@ -9,12 +9,20 @@ import { adminProjectsService } from "../services/adminProjects.services";
 import type { Project, ProjectStatus } from "@/types/project.types";
 
 const emptyForm: Partial<Project> = {
-  title: "", slug: "", subtitle: "", description: "", content: "",
-  github_link: "", live_link: "", technologies: [], is_featured: false, status: "draft",
+  title: "", slug: "", description: "", content: "",
+  github_link: "", live_link: "", technologies: "", is_featured: false, status: "draft",
 };
 
 const FIELD_CLASS = "w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white";
 const LABEL_CLASS = "mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300";
+
+function generateSlug(title: string) {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
 
 export function ManageProjectsPage() {
   const [searchParams] = useSearchParams();
@@ -45,19 +53,26 @@ export function ManageProjectsPage() {
   function openEditModal(project: Project) {
     setEditingId(project.id);
     setForm(project);
-    setTechInput((Array.isArray(project.technologies) ? project.technologies : []).join(", "));
+    setTechInput(project.technologies ?? "");
     setModalOpen(true);
   }
 
   async function handleSave() {
-    const payload: Partial<Project> = {
-      ...form,
-      technologies: techInput.split(",").map((t) => t.trim()).filter(Boolean),
-    };
-    if (editingId) await adminProjectsService.update(editingId, payload);
-    else await adminProjectsService.create(payload);
-    setModalOpen(false);
-    loadProjects();
+    try {
+      const slug = form.slug?.trim() ? form.slug : generateSlug(form.title ?? "");
+      const payload: Partial<Project> = {
+        ...form,
+        slug,
+        technologies: techInput,
+      };
+      if (editingId) await adminProjectsService.update(editingId, payload);
+      else await adminProjectsService.create(payload);
+      setModalOpen(false);
+      loadProjects();
+    } catch (err) {
+      console.error("Failed to save project:", err);
+      alert(err instanceof Error ? err.message : "Failed to save project.");
+    }
   }
 
   async function handleDelete(id: number) {
@@ -67,10 +82,9 @@ export function ManageProjectsPage() {
   }
 
   const filteredProjects = projects.filter((p) => {
-    const techArray = Array.isArray(p.technologies) ? p.technologies : [];
     return (
       String(p.title ?? "").toLowerCase().includes(query) ||
-      techArray.some((t) => String(t).toLowerCase().includes(query)) ||
+      String(p.technologies ?? "").toLowerCase().includes(query) ||
       String(p.status ?? "").toLowerCase().includes(query)
     );
   });
@@ -88,13 +102,13 @@ export function ManageProjectsPage() {
       <div className="mt-6">
         {loading ? <p className="text-slate-500">Loading…</p> : (
           <AdminTable rows={filteredProjects} keyExtractor={(p) => p.id} emptyMessage="No projects yet."
-  columns={[
-    { header: "Title", accessor: (p) => p.title },
-    { header: "Status", accessor: (p) => (
-    <Badge tone={p.status === "published" ? "green" : p.status === "archived" ? "slate" : "amber"}>{p.status}</Badge>
-  )},
-    { header: "Featured", accessor: (p) => (p.is_featured ? "Yes" : "No") },
-    { header: "Actions", accessor: (p) => (
+            columns={[
+              { header: "Title", accessor: (p) => p.title },
+              { header: "Status", accessor: (p) => (
+                <Badge tone={p.status === "published" ? "green" : p.status === "archived" ? "slate" : "amber"}>{p.status}</Badge>
+              )},
+              { header: "Featured", accessor: (p) => (p.is_featured ? "Yes" : "No") },
+              { header: "Actions", accessor: (p) => (
                 <div className="flex gap-3">
                   <button onClick={() => openEditModal(p)} aria-label="Edit"><Pencil className="h-4 w-4 text-slate-500 hover:text-indigo-600" /></button>
                   <button onClick={() => handleDelete(p.id)} aria-label="Delete"><Trash2 className="h-4 w-4 text-slate-500 hover:text-red-600" /></button>
@@ -110,14 +124,6 @@ export function ManageProjectsPage() {
           <div>
             <label className={LABEL_CLASS}>Title</label>
             <input value={form.title ?? ""} onChange={(e) => setForm({ ...form, title: e.target.value })} className={FIELD_CLASS} />
-          </div>
-          <div>
-            <label className={LABEL_CLASS}>Slug</label>
-            <input value={form.slug ?? ""} onChange={(e) => setForm({ ...form, slug: e.target.value })} className={FIELD_CLASS} />
-          </div>
-          <div>
-            <label className={LABEL_CLASS}>Subtitle</label>
-            <input value={form.subtitle ?? ""} onChange={(e) => setForm({ ...form, subtitle: e.target.value })} className={FIELD_CLASS} />
           </div>
           <div>
             <label className={LABEL_CLASS}>Short description</label>
@@ -146,10 +152,6 @@ export function ManageProjectsPage() {
           <div>
             <label className={LABEL_CLASS}>Live demo link</label>
             <input value={form.live_link ?? ""} onChange={(e) => setForm({ ...form, live_link: e.target.value })} className={FIELD_CLASS} />
-          </div>
-          <div>
-            <label className={LABEL_CLASS}>Completed date</label>
-            <input type="date" value={form.completed_at ?? ""} onChange={(e) => setForm({ ...form, completed_at: e.target.value })} className={FIELD_CLASS} />
           </div>
           <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
             <input type="checkbox" checked={form.is_featured ?? false} onChange={(e) => setForm({ ...form, is_featured: e.target.checked })} />

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Eye, Mail, Trash2, X } from "lucide-react";
 import { adminContactMessagesService } from "../services/adminContact.services";
 import type { ContactMessage } from "@/types/contactMessage.types";
+import { emitNotificationsChanged } from "@/common/utils/notificationEvents";
 
 export default function AdminContactMessages() {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
@@ -25,13 +26,14 @@ export default function AdminContactMessages() {
   };
 
   const handleMarkAsRead = async (id: number) => {
-    try {
-      const updated = await adminContactMessagesService.markAsRead(id);
-      setMessages((prev) => prev.map((m) => (m.id === id ? updated : m)));
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  try {
+    const updated = await adminContactMessagesService.markAsRead(id);
+    setMessages((prev) => prev.map((m) => (m.id === id ? updated : m)));
+    emitNotificationsChanged();
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const handleDelete = async (id: number) => {
     try {

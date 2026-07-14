@@ -7,7 +7,7 @@ import { formatDate } from "@/common/utils/formatDate";
 import { getErrorMessage } from "@/common/utils/getErrorMessage";
 import { adminCommentsService } from "../service/adminComment.service";
 import type { Comment } from "@/types/comment.types";
-
+import { emitNotificationsChanged } from "@/common/utils/notificationEvents";
 // The /v1/comments response may nest the related post under different
 // keys depending on how the backend resource is shaped. This helper
 // checks the common possibilities so the column doesn't break if the
@@ -63,6 +63,7 @@ export function ManageCommentsPage() {
     } finally {
       setUpdatingId(null);
     }
+    emitNotificationsChanged();
   }
 
   async function handleDelete(comment: Comment) {

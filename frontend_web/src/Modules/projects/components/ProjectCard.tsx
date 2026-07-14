@@ -13,14 +13,9 @@ export function ProjectCard({ project }: ProjectCardProps) {
   return (
     <Card>
       <Link to={`${ROUTES.projects}/${project.slug}`} className="block">
-        <div className="flex justify-between items-start mb-3">
-          <div className="flex gap-2">
-            {project.is_featured && <Badge>Featured</Badge>}
-            <Badge>{project.status}</Badge>
-          </div>
-          {project.category && (
-            <span className="text-xs text-muted-foreground">{project.category}</span>
-          )}
+        <div className="flex gap-2 mb-3">
+          {project.is_featured && <Badge>Featured</Badge>}
+          <Badge>{project.status}</Badge>
         </div>
 
         <h3 className="text-lg font-semibold text-foreground mb-2">{project.title}</h3>
@@ -28,8 +23,8 @@ export function ProjectCard({ project }: ProjectCardProps) {
       </Link>
 
       {project.github_link && (
-        
-          <a href={project.github_link}
+        <a
+          href={project.github_link}
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
