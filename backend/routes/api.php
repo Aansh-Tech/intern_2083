@@ -56,10 +56,11 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::patch('/comments/{id}', [CommentController::class, 'updateStatus']);
     Route::delete('/comments/{id}', [CommentController::class, 'destroy']);
 
-    // Separate path (not "/blog-posts/all") so it can never collide with the
-    // public "/v1/blog-posts/{slug}" route registered above, since Laravel
-    // matches routes strictly in registration order regardless of grouping.
+    // Separate path (not "/blog-posts/all" or "/projects/all") so it can never
+    // collide with the public "/v1/{slug}" routes registered above, since
+    // Laravel matches routes strictly in registration order regardless of grouping.
     Route::get('/admin/blog-posts', [BlogPostController::class, 'adminIndex']);
+    Route::get('/admin/projects', [ProjectController::class, 'adminIndex']);
 
     Route::post('/images', [ImageController::class, 'store']);
     Route::delete('/images/{id}', [ImageController::class, 'destroy']);
