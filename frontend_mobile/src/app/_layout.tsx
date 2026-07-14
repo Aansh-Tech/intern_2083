@@ -1,7 +1,7 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ThemeProvider } from "../context/ThemeProvider";
-import { ProjectProvider } from "../context/ProjectContext";
+import { ProjectProvider } from "../context/ProjectContextOld";
 import { InboxProvider } from "../context/InboxContext";
 import { CommentProvider } from "../context/CommentContext";
 import { SkillsProvider } from "../context/SkillsContext";

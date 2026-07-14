@@ -4,7 +4,7 @@ import AdminLayout from "../../components/adminoverview/AdminLayout";
 import ProjectSearch from "../../components/adminprojects/ProjectSearch";
 import ProjectCard from "../../components/adminprojects/ProjectCard";
 import ProjectModal from "../../components/adminprojects/ProjectModal";
-import { useProject } from "../../context/ProjectContext";
+import { useProject } from "../../context/ProjectContextOld";
 import { useTheme } from "../../context/useTheme";
 import type { Project } from "../../types/project";
 
