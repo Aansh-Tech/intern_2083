@@ -4,7 +4,7 @@ import Header from "../../components/homepage/Header";
 import PageHeader from "../../components/work/PageHeader";
 import FilterTabs, { FilterValue } from "../../components/work/FilterTabs";
 import ProjectList from "../../components/work/Projectlist";
-import { useProject } from "../../context/ProjectContext";
+import { useProject } from "../../context/ProjectContextOld";
 import { useTheme } from "../../context/useTheme";
 
 export default function ProjectScreen() {

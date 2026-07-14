@@ -1,6 +1,6 @@
 import { View } from "react-native";
 import ProjectCard from "./ProjectCard";
-import { useProject } from "../../context/ProjectContext";
+import { useProject } from "../../context/ProjectContextOld";
 
 export default function FeaturedProjects() {
   const { projects } = useProject();
