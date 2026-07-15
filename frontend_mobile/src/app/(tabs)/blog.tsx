@@ -106,7 +106,10 @@ export default function JournalScreen() {
   return (
     <View className="flex-1" style={{ backgroundColor: colors.background }}>
       <Header />
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
         <View className="pb-10">
           <JournalHeader />
           <FeaturedPost post={posts[0]} onPress={() => openPost(posts[0])} />

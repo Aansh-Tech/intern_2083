@@ -4,13 +4,14 @@ import AdminLayout from "../../components/adminoverview/AdminLayout";
 import ProjectSearch from "../../components/adminprojects/ProjectSearch";
 import ProjectCard from "../../components/adminprojects/ProjectCard";
 import ProjectModal from "../../components/adminprojects/ProjectModal";
-import { useProject } from "../../context/ProjectContextOld";
+import { useProject } from "../../context/ProjectContext";
 import { useTheme } from "../../context/useTheme";
 import type { Project } from "../../types/project";
 
 export default function AdminProjectsScreen() {
   const { colors } = useTheme();
-  const { projects, loading, addProject, editProject, deleteProject, toggleFeatured, toggleCompleted } = useProject();
+  const { projects, loading, refreshing, refreshProjects, addProject, editProject, deleteProject, toggleFeatured, toggleCompleted } = useProject();
+  console.log(useProject());
 
   const [searchQuery, setSearchQuery] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
@@ -80,7 +81,7 @@ export default function AdminProjectsScreen() {
   );
 
   return (
-    <AdminLayout>
+    <AdminLayout refreshing={refreshing} onRefresh={refreshProjects}>
       <View className="px-5 pt-4">
         <View className="flex-row justify-between items-start">
           <View className="flex-1">

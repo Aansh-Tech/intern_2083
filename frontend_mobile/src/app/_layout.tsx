@@ -1,10 +1,11 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ThemeProvider } from "../context/ThemeProvider";
-import { ProjectProvider } from "../context/ProjectContextOld";
+import { ProjectProvider } from "../context/ProjectContext";
 import { InboxProvider } from "../context/InboxContext";
 import { CommentProvider } from "../context/CommentContext";
 import { SkillsProvider } from "../context/SkillsContext";
+import { DashboardProvider } from "../context/DashboardContext";
 import { useTheme } from "../context/useTheme";
 import "../../global.css";
 
@@ -37,7 +38,9 @@ export default function RootLayout() {
         <InboxProvider>
           <CommentProvider>
             <SkillsProvider>
-              <RootLayoutInner />
+              <DashboardProvider>
+                <RootLayoutInner />
+              </DashboardProvider>
             </SkillsProvider>
           </CommentProvider>
         </InboxProvider>

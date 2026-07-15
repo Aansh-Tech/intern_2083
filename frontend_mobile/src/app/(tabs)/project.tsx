@@ -1,15 +1,15 @@
-import { useState, useMemo } from "react";
-import { View, ScrollView } from "react-native";
+import { useState, useMemo, useCallback } from "react";
+import { View, ScrollView, RefreshControl } from "react-native";
 import Header from "../../components/homepage/Header";
 import PageHeader from "../../components/work/PageHeader";
 import FilterTabs, { FilterValue } from "../../components/work/FilterTabs";
 import ProjectList from "../../components/work/Projectlist";
-import { useProject } from "../../context/ProjectContextOld";
+import { useProject } from "../../context/ProjectContext";
 import { useTheme } from "../../context/useTheme";
 
 export default function ProjectScreen() {
   const { colors } = useTheme();
-  const { projects, loading } = useProject();
+  const { projects, loading, refreshing, refreshProjects } = useProject();
   const [activeFilter, setActiveFilter] = useState<FilterValue>("all");
 
   const filteredProjects = useMemo(() => {
@@ -22,7 +22,10 @@ export default function ProjectScreen() {
   return (
     <View className="flex-1" style={{ backgroundColor: colors.background }}>
       <Header />
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshProjects} />}
+      >
         <View className="pb-10">
           <PageHeader />
           <FilterTabs active={activeFilter} onChange={setActiveFilter} />

@@ -1,7 +1,7 @@
 import api from "./api";
 import { saveToken, removeToken } from "../utils/token";
 
-export async function login(email: string, password: string) {
+export async function login(email: string, password: string, remember = false) {
   const response = await api.post("/login", {
     email,
     password,
@@ -9,7 +9,7 @@ export async function login(email: string, password: string) {
 
   const token = response.data.token;
 
-  await saveToken(token);
+  await saveToken(token, remember);
 
   return response.data.user;
 }

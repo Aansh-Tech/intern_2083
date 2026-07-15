@@ -13,7 +13,9 @@ function generateId(): string {
 interface CommentContextType {
   comments: Comment[];
   loading: boolean;
+  refreshing: boolean;
   pendingCount: number;
+  refreshComments: () => Promise<void>;
   addComment: (data: {
     blogId: string;
     blogTitle: string;
@@ -31,6 +33,7 @@ const CommentContext = createContext<CommentContextType | null>(null);
 export function CommentProvider({ children }: { children: ReactNode }) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const commentsRef = useRef(comments);
   commentsRef.current = comments;
 
@@ -54,6 +57,12 @@ export function CommentProvider({ children }: { children: ReactNode }) {
     }
     setLoading(false);
   }, []);
+
+  const refreshComments = useCallback(async () => {
+    setRefreshing(true);
+    await loadComments();
+    setRefreshing(false);
+  }, [loadComments]);
 
   useEffect(() => {
     loadComments();
@@ -134,7 +143,9 @@ export function CommentProvider({ children }: { children: ReactNode }) {
       value={{
         comments,
         loading,
+        refreshing,
         pendingCount,
+        refreshComments,
         addComment,
         approveComment,
         rejectComment,

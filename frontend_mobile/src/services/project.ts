@@ -1,23 +1,96 @@
 import api from "./api";
 
-export async function getProjects() {
-  const response = await api.get("/v1/projects");
-  return response.data.data;
-}
+export async function getProjects(admin = false) {
+  const endpoint = admin ? "/v1/admin/projects" : "/v1/projects";
 
-export async function getFeaturedProjects() {
-  const response = await api.get("/v1/projects/featured");
-  return response.data.data;
-}
+  const response = await api.get(endpoint);
 
-export async function getProject(slug: string) {
-  const response = await api.get(`/v1/projects/${slug}`);
-  return response.data.data;
+  return response.data.data.map((project: any) => ({
+    id: String(project.id),
+
+    title: project.title,
+    slug: project.slug,
+
+    category: project.subtitle ?? "",
+
+    description: project.description,
+
+    status:
+      project.status === "published"
+        ? "completed"
+        : "in-progress",
+
+    featured: project.is_featured,
+
+    githubUrl: project.github_link,
+
+    viewDetailsUrl: project.live_link,
+
+    technologies:
+      typeof project.technologies === "string"
+        ? project.technologies
+            .split(",")
+            .map((t: string) => t.trim())
+            .filter(Boolean)
+        : [],
+
+    gradient: ["#5B5FEF", "#2F8AFE"],
+
+    completed: project.status === "published",
+
+    displayOrder: project.id,
+
+    dateAdded: project.created_at,
+  }));
 }
 
 export async function createProject(data: any) {
-  const response = await api.post("/v1/projects", data);
-  return response.data.data;
+  const payload = {
+    title: data.title,
+
+    slug: data.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, ""),
+
+    subtitle: data.category,
+
+    description: data.description,
+
+    content: data.description,
+
+    github_link: data.githubUrl ?? null,
+
+    live_link: data.viewDetailsUrl ?? null,
+
+    technologies: Array.isArray(data.technologies)
+      ? data.technologies.join(",")
+      : "",
+
+    is_featured: data.featured,
+
+    status: data.completed ? "published" : "draft",
+
+    completed_at: data.completed
+      ? new Date().toISOString().split("T")[0]
+      : null,
+  };
+
+  console.log("Sending:", payload);
+
+  try {
+    const response = await api.post("/v1/projects", payload);
+
+    console.log("SUCCESS:", response.status);
+    console.log("DATA:", response.data);
+
+    return response.data.data;
+  } catch (error: any) {
+    console.log("STATUS:", error.response?.status);
+    console.log("ERROR:", error.response?.data);
+
+    throw error;
+  }
 }
 
 export async function updateProject(id: string, data: any) {

@@ -1,12 +1,17 @@
 import { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Alert, RefreshControl } from "react-native";
 import { Save } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
 import AvatarUploader from "./PhotoUpload";
 import IdentityForm from "./IdForm";
 import CertificatesManager from "./Certificates";
 
-export default function AboutControl() {
+interface AboutControlProps {
+  refreshing?: boolean;
+  onRefresh?: () => void;
+}
+
+export default function AboutControl({ refreshing, onRefresh }: AboutControlProps) {
   const { colors } = useTheme();
 
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
@@ -40,6 +45,9 @@ export default function AboutControl() {
     <ScrollView
       showsVerticalScrollIndicator={false}
       contentContainerClassName="gap-5 px-5 pb-10"
+      refreshControl={
+        onRefresh ? <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} /> : undefined
+      }
     >
       <View className="flex-row items-start justify-between pt-2">
         <View className="gap-1">

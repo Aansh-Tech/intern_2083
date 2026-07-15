@@ -2,14 +2,14 @@ import { memo } from "react";
 import { View, Text } from "react-native";
 import ActivityItem from "./ActivityItem";
 import { useTheme } from "../../context/useTheme";
+import type { ActivityItem as ActivityItemType } from "../../types/dashboard";
 
-const activityData = [
-  { title: "New message from Sarah Jenkins", subtitle: "2 hours ago" },
-  { title: "Vortex Engine marked as Completed", subtitle: "Yesterday" },
-  { title: "Aura Mobile screenshots updated", subtitle: "3 days ago" },
-] as const;
+interface ActivitySectionProps {
+  activities: ActivityItemType[];
+  onActivityPress: (index: number) => void;
+}
 
-function ActivitySection() {
+function ActivitySection({ activities, onActivityPress }: ActivitySectionProps) {
   const { colors } = useTheme();
 
   return (
@@ -31,14 +31,21 @@ function ActivitySection() {
           elevation: 4,
         }}
       >
-        {activityData.map((item, index) => (
-          <ActivityItem
-            key={item.title}
-            title={item.title}
-            subtitle={item.subtitle}
-            isLast={index === activityData.length - 1}
-          />
-        ))}
+        {activities.length === 0 ? (
+          <View className="py-6">
+            <Text className="text-[13px] text-center" style={{ color: colors.secondaryText }}>No recent activity</Text>
+          </View>
+        ) : (
+          activities.map((item, index) => (
+            <ActivityItem
+              key={item.title}
+              title={item.title}
+              subtitle={item.subtitle}
+              isLast={index === activities.length - 1}
+              onPress={() => onActivityPress(index)}
+            />
+          ))
+        )}
       </View>
     </>
   );
