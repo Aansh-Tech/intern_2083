@@ -33,8 +33,8 @@ Route::prefix('v1')->group(function () {
     Route::get('/projects/{slug}', [ProjectController::class, 'show']);
     Route::get('/blog-posts', [BlogPostController::class, 'index']);
     Route::get('/blog-posts/{slug}', [BlogPostController::class, 'show']);
-    Route::post('/comments', [CommentController::class, 'store']);
-    Route::post('/contact', [ContactController::class, 'store']);
+    Route::post('/comments', [CommentController::class, 'store'])->middleware('throttle:5,1');
+    Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:5,1');
     Route::get('/certificates', [CertificateController::class, 'index']);
     Route::get('/certificates/{id}', [CertificateController::class, 'show']);
 });
