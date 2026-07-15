@@ -9,6 +9,9 @@ import { uploadImage } from "@/common/utils/uploadImage";
 import { resolveMediaUrl } from "@/common/utils/resolveMediaUrl";
 import type { Certificate } from "@/types/certificate.types";
 import type { Skill } from "@/types/skill.types";
+function toDateInputValue(value?: string): string {
+  return value ? value.split("T")[0] : "";
+}
 
 const EMPTY_FORM: CertificatePayload = { title: "", issuer: "" };
 const FIELD_CLASS = "w-full rounded-md border border-border bg-background px-3 py-2 text-foreground";
@@ -69,22 +72,20 @@ export function ManageCertificatesPage() {
 
   function openEditModal(cert: Certificate) {
     setEditingId(cert.id);
-    setEditingCert(cert);
     setForm({
       title: cert.title,
       issuer: cert.issuer,
       skill_id: cert.skill_id,
-      issue_date: cert.issue_date,
-      expiry_date: cert.expiry_date,
+      issue_date: toDateInputValue(cert.issue_date),
+      expiry_date: toDateInputValue(cert.expiry_date),
+      credential_url: cert.credential_url,
       description: cert.description,
       display_order: cert.display_order,
     });
     setFormError(null);
-    setImageError(null);
-    setSelectedFile(null);
-    setPreviewUrl(null);
     setIsModalOpen(true);
   }
+    
 
   function handleFileSelect(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];

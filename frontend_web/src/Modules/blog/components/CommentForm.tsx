@@ -4,12 +4,13 @@ import { commentsService } from "../services/comments.service";
 import type { Comment, CommentPayload } from "@/types/comment.types";
 
 interface CommentFormProps {
-  postSlug: string;
+  postId: number;
   onCommentAdded: (comment: Comment) => void;
 }
 
-export function CommentForm({ postSlug, onCommentAdded }: CommentFormProps) {
-  const [authorName, setAuthorName] = useState("");
+export function CommentForm({ postId, onCommentAdded }: CommentFormProps) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [content, setContent] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -17,17 +18,23 @@ export function CommentForm({ postSlug, onCommentAdded }: CommentFormProps) {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
 
-    if (!authorName.trim() || !content.trim()) return;
+    if (!name.trim() || !email.trim() || !content.trim()) return;
 
     setStatus("submitting");
     setErrorMessage(null);
 
-    const payload: CommentPayload = { author_name: authorName, content };
+    const payload: CommentPayload = {
+      blog_post_id: postId,
+      name,
+      email,
+      content,
+    };
 
     try {
-      const newComment = await commentsService.submit(postSlug, payload);
+      const newComment = await commentsService.submit(payload);
       onCommentAdded(newComment);
-      setAuthorName("");
+      setName("");
+      setEmail("");
       setContent("");
       setStatus("idle");
     } catch (err) {
@@ -43,8 +50,15 @@ export function CommentForm({ postSlug, onCommentAdded }: CommentFormProps) {
       <input
         type="text"
         placeholder="Your name"
-        value={authorName}
-        onChange={(e) => setAuthorName(e.target.value)}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        className="w-full rounded-md border border-border bg-background px-3 py-2 text-foreground"
+      />
+      <input
+        type="email"
+        placeholder="Your email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
         className="w-full rounded-md border border-border bg-background px-3 py-2 text-foreground"
       />
       <textarea
