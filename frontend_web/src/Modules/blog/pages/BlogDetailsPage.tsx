@@ -26,11 +26,11 @@ export function BlogDetailsPage() {
     let isMounted = true;
 
     Promise.all([blogService.getBySlug(slug), commentsService.getByPostSlug(slug)])
-      .then(([postData, commentsData]) => {
-        if (!isMounted) return;
-        setPost(postData);
-        setComments(commentsData);
-      })
+          .then(([postData, commentsData]) => {
+      if (!isMounted) return;
+      setPost(postData);
+      setComments(commentsData.filter((c) => c.status === "approved"));
+    })
       .catch((err) => {
         if (isMounted) {
           setError(err instanceof Error ? err.message : "Post not found.");

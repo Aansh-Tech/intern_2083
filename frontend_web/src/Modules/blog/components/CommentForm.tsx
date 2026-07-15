@@ -12,7 +12,7 @@ export function CommentForm({ postId, onCommentAdded }: CommentFormProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [content, setContent] = useState("");
-  const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "submitting" | "error" | "success">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   async function handleSubmit(e: FormEvent) {
@@ -36,12 +36,16 @@ export function CommentForm({ postId, onCommentAdded }: CommentFormProps) {
       setName("");
       setEmail("");
       setContent("");
-      setStatus("idle");
-    } catch (err) {
+      setStatus("success");
+    } catch (err: any) {
       setStatus("error");
-      setErrorMessage(
-        err instanceof Error ? err.message : "Couldn't post your comment right now."
-      );
+      if (err?.response?.status === 429) {
+        setErrorMessage("You're commenting too quickly. Please wait a minute and try again.");
+      } else {
+        setErrorMessage(
+          err instanceof Error ? err.message : "Couldn't post your comment right now."
+        );
+      }
     }
   }
 
@@ -70,6 +74,11 @@ export function CommentForm({ postId, onCommentAdded }: CommentFormProps) {
       />
       {status === "error" && errorMessage && (
         <p className="text-sm text-red-500">{errorMessage}</p>
+      )}
+      {status === "success" && (
+        <p className="text-sm text-emerald-600">
+          Thanks! Your comment is awaiting approval and will appear once reviewed.
+        </p>
       )}
       <Button type="submit" variant="primary" disabled={status === "submitting"}>
         {status === "submitting" ? "Posting..." : "Post comment"}
