@@ -1,4 +1,4 @@
-export type ProjectFilter = "all" | "featured" | "completed" | "in-progress";
+export type ProjectFilter = "all" | "featured" | "completed" ;
 
 interface ProjectFilterTabsProps {
   active: ProjectFilter;
@@ -9,7 +9,6 @@ const FILTERS: { label: string; value: ProjectFilter }[] = [
   { label: "All", value: "all" },
   { label: "Featured", value: "featured" },
   { label: "Completed", value: "completed" },
-  { label: "In Progress", value: "in-progress" },
 ];
 
 export function ProjectFilterTabs({ active, onChange }: ProjectFilterTabsProps) {
