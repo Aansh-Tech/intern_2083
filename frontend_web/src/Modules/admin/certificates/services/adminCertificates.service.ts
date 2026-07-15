@@ -9,6 +9,8 @@ export interface CertificatePayload {
   skill_id?: number;
   issue_date?: string;
   expiry_date?: string;
+  credential_url?: string;
+  image?: string;
   description?: string;
   display_order?: number;
 }

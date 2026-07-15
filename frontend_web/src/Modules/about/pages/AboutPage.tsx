@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { ProfileHeader } from "../components/ProfileHeader";
+import { SkillsSection } from "../components/SkillsSection";
+import { CertificatesSection } from "../components/CertificatesSection";
 import { aboutService } from "../services/about.service";
 import type { Profile } from "@/types/profile.types";
 
@@ -24,6 +26,8 @@ export function AboutPage() {
   return (
     <div className="mx-auto max-w-4xl px-6 py-20">
       <ProfileHeader profile={profile} socialLinks={[]} isLoading={isLoading} error={error} />
+      <SkillsSection />
+      <CertificatesSection />
     </div>
   );
 }
