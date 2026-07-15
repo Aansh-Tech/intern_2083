@@ -1,12 +1,15 @@
 export interface Comment {
   id: number;
   blog_post_id: number;
-  author_name: string;
+  name: string;
+  email: string;
   content: string;
-  created_at: string;
+  status: "pending" | "approved" | "rejected";
+  created_at?: string;
 }
-
 export interface CommentPayload {
-  author_name: string;
+  blog_post_id: number;
+  name: string;
+  email: string;
   content: string;
 }

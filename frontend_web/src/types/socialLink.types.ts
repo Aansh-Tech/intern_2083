@@ -1,8 +1,7 @@
 export interface SocialLink {
-  id: string;
-  profile_id: string;
+  id: number;
   platform: string;
-  icon?: string;
   url: string;
+  icon?: string;
   display_order?: number;
 }

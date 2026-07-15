@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Project extends Model
 {
@@ -33,5 +34,12 @@ class Project extends Model
     public function profile(): BelongsTo
     {
         return $this->belongsTo(Profile::class);
+    }
+
+    public function images(): MorphMany
+    {
+        return $this->morphMany(Imageable::class, 'imageable')
+            ->with('image')
+            ->orderBy('display_order');
     }
 }

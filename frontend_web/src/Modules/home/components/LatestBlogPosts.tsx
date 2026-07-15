@@ -12,8 +12,6 @@ interface LatestBlogPostsProps {
 export function LatestBlogPosts({ posts, isLoading, error }: LatestBlogPostsProps) {
   if (isLoading) return <Loader />;
 
-  // Backend BlogPostController is empty — this error is expected right now,
-  // not a bug. Shown honestly instead of faked with mock posts.
   if (error) {
     return (
       <EmptyState
