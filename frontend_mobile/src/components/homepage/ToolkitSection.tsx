@@ -37,7 +37,7 @@ export default function ToolkitSection() {
         <TouchableOpacity
           className="h-14 rounded-[28] border items-center justify-center mt-6"
           style={{ borderColor: colors.border }}
-          onPress={() => router.push("/(tabs)/project")}
+          onPress={() => router.push("/(tabs)/about")}
           activeOpacity={0.8}
         >
           <Text className="text-base font-semibold" style={{ color: colors.text }}>

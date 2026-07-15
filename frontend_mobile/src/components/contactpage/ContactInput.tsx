@@ -57,7 +57,9 @@ export default function ContactInput({
           placeholderTextColor={colors.secondaryText}
           multiline={multiline}
           numberOfLines={numberOfLines}
-          keyboardType={keyboardType}
+          keyboardType="default"
+          //keyboardType={keyboardType}
+          // inputMode={keyboardType === "email-address" ? "email" : undefined}
           autoCapitalize={autoCapitalize}
           cursorColor={colors.primary}
           selectionColor={colors.primary}

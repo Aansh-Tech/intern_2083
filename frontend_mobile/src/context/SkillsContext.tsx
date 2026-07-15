@@ -21,6 +21,8 @@ function generateId(): string {
 interface SkillsContextType {
   skills: Skill[];
   loading: boolean;
+  refreshing: boolean;
+  refreshSkills: () => Promise<void>;
   addSkill: (data: {
     category: SkillCategory;
     name: string;
@@ -36,6 +38,7 @@ const SkillsContext = createContext<SkillsContextType | null>(null);
 export function SkillsProvider({ children }: { children: ReactNode }) {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const skillsRef = useRef(skills);
   skillsRef.current = skills;
 
@@ -53,6 +56,12 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
     }
     setLoading(false);
   }, []);
+
+  const refreshSkills = useCallback(async () => {
+    setRefreshing(true);
+    await loadSkills();
+    setRefreshing(false);
+  }, [loadSkills]);
 
   useEffect(() => {
     loadSkills();
@@ -135,7 +144,7 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
 
   return (
     <SkillsContext.Provider
-      value={{ skills, loading, addSkill, updateSkill, deleteSkill, getSkillsByCategory }}
+      value={{ skills, loading, refreshing, refreshSkills, addSkill, updateSkill, deleteSkill, getSkillsByCategory }}
     >
       {children}
     </SkillsContext.Provider>

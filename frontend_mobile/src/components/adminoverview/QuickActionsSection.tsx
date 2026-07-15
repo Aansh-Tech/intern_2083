@@ -7,9 +7,10 @@ import { useTheme } from "../../context/useTheme";
 interface QuickActionsSectionProps {
   onManageProjects: () => void;
   onReviewInbox: () => void;
+  unreadCount: number;
 }
 
-function QuickActionsSection({ onManageProjects, onReviewInbox }: QuickActionsSectionProps) {
+function QuickActionsSection({ onManageProjects, onReviewInbox, unreadCount }: QuickActionsSectionProps) {
   const { colors } = useTheme();
 
   return (
@@ -29,8 +30,8 @@ function QuickActionsSection({ onManageProjects, onReviewInbox }: QuickActionsSe
         <QuickActionCard
           icon={Inbox}
           title="Review inbox"
-          subtitle="2 unread contact submissions."
-          badge="2"
+          subtitle={`${unreadCount} unread contact submission${unreadCount === 1 ? "" : "s"}.`}
+          badge={unreadCount > 0 ? String(unreadCount) : undefined}
           onPress={onReviewInbox}
         />
       </View>

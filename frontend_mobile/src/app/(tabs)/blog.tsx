@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { View, ScrollView } from "react-native";
+import { useState, useCallback } from "react";
+import { View, ScrollView, RefreshControl } from "react-native";
 import Header from "../../components/homepage/Header";
 import JournalHeader from "../../components/blog/BlogHeader";
 import FeaturedPost from "../../components/blog/FeaturedPost";
@@ -88,6 +88,13 @@ export default function JournalScreen() {
   const { colors } = useTheme();
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.resolve();
+    setRefreshing(false);
+  }, []);
 
   const openPost = (post: any) => {
     setSelectedPost(post as Post);
@@ -101,7 +108,10 @@ export default function JournalScreen() {
   return (
     <View className="flex-1" style={{ backgroundColor: colors.background }}>
       <Header />
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
         <View className="pb-10">
           <JournalHeader />
           <FeaturedPost post={posts[0]} onPress={() => openPost(posts[0])} />

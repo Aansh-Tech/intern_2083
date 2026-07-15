@@ -1,17 +1,18 @@
 import { memo } from "react";
-import { View, Text } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { useTheme } from "../../context/useTheme";
 
 interface ActivityItemProps {
   title: string;
   subtitle: string;
   isLast?: boolean;
+  onPress?: () => void;
 }
 
-function ActivityItem({ title, subtitle, isLast }: ActivityItemProps) {
+function ActivityItem({ title, subtitle, isLast, onPress }: ActivityItemProps) {
   const { colors } = useTheme();
 
-  return (
+  const content = (
     <>
       <View className="flex-row items-start gap-3 py-4">
         <View
@@ -28,6 +29,16 @@ function ActivityItem({ title, subtitle, isLast }: ActivityItemProps) {
       )}
     </>
   );
+
+  if (onPress) {
+    return (
+      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+        {content}
+      </TouchableOpacity>
+    );
+  }
+
+  return <>{content}</>;
 }
 
 export default memo(ActivityItem);

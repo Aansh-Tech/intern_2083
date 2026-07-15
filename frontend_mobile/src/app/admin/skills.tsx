@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, RefreshControl } from "react-native";
 import AdminLayout from "../../components/adminoverview/AdminLayout";
 import SkillForm from "../../components/adminskills/SkillForm";
 import SkillSection from "../../components/adminskills/SkillSection";
@@ -11,7 +11,7 @@ import type { Skill, SkillCategory } from "../../types/skill";
 
 export default function AdminSkillsScreen() {
   const { colors } = useTheme();
-  const { getSkillsByCategory, addSkill, updateSkill, deleteSkill, loading } = useSkills();
+  const { getSkillsByCategory, addSkill, updateSkill, deleteSkill, loading, refreshing, refreshSkills } = useSkills();
   const categories = getSkillsByCategory();
 
   const [deleteTarget, setDeleteTarget] = useState<Skill | null>(null);
@@ -63,7 +63,10 @@ export default function AdminSkillsScreen() {
 
   return (
     <AdminLayout>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshSkills} />}
+      >
         <View className="px-5 pt-4">
           <Text className="text-[11px] font-semibold tracking-[1.5px]" style={{ color: colors.primary }}>
             SKILLS

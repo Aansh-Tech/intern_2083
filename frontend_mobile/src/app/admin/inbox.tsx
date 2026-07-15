@@ -12,7 +12,7 @@ import { useInbox } from "../../context/InboxContext";
 import type { InboxMessage } from "../../types/inbox";
 
 export default function AdminInboxScreen() {
-  const { messages, loading, unreadCount, markAsRead, deleteMessage } = useInbox();
+  const { messages, loading, refreshing, refreshMessages, unreadCount, markAsRead, deleteMessage } = useInbox();
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<FilterValue>("all");
   const [selectedMessage, setSelectedMessage] = useState<InboxMessage | null>(null);
@@ -64,7 +64,7 @@ export default function AdminInboxScreen() {
   );
 
   return (
-    <AdminLayout>
+    <AdminLayout refreshing={refreshing} onRefresh={refreshMessages}>
       <InboxHeader unreadCount={unreadCount} />
       <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
       <View className="pt-4">

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, RefreshControl } from "react-native";
 import { Plus, Search } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
 import BlogPostCard, { BlogPostItem } from "./BlogCard";
@@ -47,7 +47,12 @@ const formatToday = () =>
     year: "numeric",
   });
 
-export default function BlogControl() {
+interface BlogControlProps {
+  refreshing?: boolean;
+  onRefresh?: () => void;
+}
+
+export default function BlogControl({ refreshing, onRefresh }: BlogControlProps) {
   const { colors } = useTheme();
   const [posts, setPosts] = useState<BlogPostItem[]>(initialPosts);
   const [query, setQuery] = useState("");
@@ -116,6 +121,9 @@ export default function BlogControl() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerClassName="gap-5 px-5 pb-10"
+        refreshControl={
+          onRefresh ? <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} /> : undefined
+        }
       >
         <View className="flex-row items-start justify-between pt-2">
           <View className="gap-1">

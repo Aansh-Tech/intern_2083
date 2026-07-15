@@ -29,7 +29,7 @@
 // });
 
 import { useCallback, useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, SafeAreaView, StyleSheet } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, SafeAreaView, StyleSheet, RefreshControl } from "react-native";
 import { Mail, Phone, MapPin, Send } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import Header from "../../components/homepage/Header";
@@ -75,9 +75,21 @@ export default function ContactScreen() {
     setTimeout(() => setSuccess(false), 3000);
   }, [validate, name, email, subject, message, addMessage]);
 
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.resolve();
+    setRefreshing(false);
+  }, []);
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
         <Header />
 
         <View className="px-5 pt-8 gap-2">

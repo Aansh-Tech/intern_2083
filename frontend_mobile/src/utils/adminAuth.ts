@@ -28,10 +28,11 @@ import * as authService from "../services/auth";
 
 export async function login(
   email: string,
-  password: string):
+  password: string,
+  remember = false):
   Promise<boolean> {
   try {
-    await authService.login(email, password);
+    await authService.login(email, password, remember);
     return true;
   } catch (error) {
     console.log(error);

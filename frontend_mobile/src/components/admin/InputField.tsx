@@ -53,6 +53,7 @@ export default function InputField({
           placeholderTextColor={colors.secondaryText}
           secureTextEntry={secureTextEntry}
           keyboardType={keyboardType}
+          inputMode={keyboardType === "email-address" ? "email" : undefined}
           autoCapitalize={autoCapitalize}
           cursorColor={colors.primary}
           selectionColor={colors.primary}

@@ -10,7 +10,7 @@ import EmptyComments from "../../components/admincomments/EmptyComments";
 import { useComment } from "../../context/CommentContext";
 
 export default function AdminCommentsScreen() {
-  const { comments, loading, pendingCount, approveComment, rejectComment, deleteComment } =
+  const { comments, loading, refreshing, refreshComments, pendingCount, approveComment, rejectComment, deleteComment } =
     useComment();
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<FilterValue>("all");
@@ -54,7 +54,7 @@ export default function AdminCommentsScreen() {
   );
 
   return (
-    <AdminLayout>
+    <AdminLayout refreshing={refreshing} onRefresh={refreshComments}>
       <AdminCommentsHeader pendingCount={pendingCount} />
       <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
       <View className="pt-4">
