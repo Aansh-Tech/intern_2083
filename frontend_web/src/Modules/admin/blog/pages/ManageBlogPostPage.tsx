@@ -1,13 +1,25 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent, type ChangeEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AdminTable } from "@/common/components/admin/AdminTable";
 import { AdminModal } from "../../components/AdminModal";
 import { Button } from "@/common/components/Button";
 import { getErrorMessage } from "@/common/utils/getErrorMessage";
 import { adminBlogPostsService } from "../services/adminBlogPost.service";
+import { uploadImage } from "@/common/utils/uploadImage";
+import { resolveMediaUrl } from "@/common/utils/resolveMediaUrl";
 import type { BlogPost } from "@/types/blogPost.types";
 
 const EMPTY_FORM: Partial<BlogPost> = { title: "", slug: "", content: "", status: "draft", allow_comments: true };
+const FIELD_CLASS = "rounded-md border border-border bg-background px-3 py-2 text-foreground";
+const LABEL_CLASS = "mb-1 block text-sm font-medium text-foreground";
+
+function generateSlug(title: string) {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
 
 export function ManageBlogPostsPage() {
   const [searchParams] = useSearchParams();
@@ -19,10 +31,16 @@ export function ManageBlogPostsPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [form, setForm] = useState<Partial<BlogPost>>(EMPTY_FORM);
   const [tagsInput, setTagsInput] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
 
   async function loadPosts() {
     setIsLoading(true);
@@ -42,20 +60,24 @@ export function ManageBlogPostsPage() {
 
   function openCreateModal() {
     setEditingId(null);
+    setEditingPost(null);
     setForm(EMPTY_FORM);
     setTagsInput("");
     setFormError(null);
+    setImageError(null);
+    setSelectedFile(null);
+    setPreviewUrl(null);
     setIsModalOpen(true);
   }
 
   function openEditModal(post: BlogPost) {
     setEditingId(post.id);
+    setEditingPost(post);
     setForm({
       title: post.title,
       slug: post.slug,
       excerpt: post.excerpt,
       content: post.content,
-      featured_image: post.featured_image,
       category: post.category,
       status: post.status,
       published_at: post.published_at,
@@ -63,6 +85,9 @@ export function ManageBlogPostsPage() {
     });
     setTagsInput(Array.isArray(post.tags) ? post.tags.join(", ") : "");
     setFormError(null);
+    setImageError(null);
+    setSelectedFile(null);
+    setPreviewUrl(null);
     setIsModalOpen(true);
   }
 
@@ -76,25 +101,65 @@ export function ManageBlogPostsPage() {
     }
   }
 
+  function handleFileSelect(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+    setImageError(null);
+  }
+
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsSaving(true);
     setFormError(null);
 
+    const slug = form.slug?.trim() ? form.slug : generateSlug(form.title ?? "");
     const payload: Partial<BlogPost> = {
       ...form,
+      slug,
       tags: tagsInput.split(",").map((t) => t.trim()).filter(Boolean),
     };
 
     try {
+      let postId = editingId;
+
       if (editingId) {
         const updated = await adminBlogPostsService.update(editingId, payload);
         setPosts((prev) => prev.map((p) => (p.id === editingId ? updated : p)));
+        setEditingPost(updated);
       } else {
         const created = await adminBlogPostsService.create(payload);
         setPosts((prev) => [created, ...prev]);
+        setEditingId(created.id);
+        setEditingPost(created);
+        postId = created.id;
       }
-      setIsModalOpen(false);
+
+      if (selectedFile && postId) {
+        setUploadingImage(true);
+        try {
+          await uploadImage({
+            file: selectedFile,
+            imageableType: "blog_post",
+            imageableId: postId,
+            type: "featured",
+            isPrimary: true,
+          });
+          const refreshed = await adminBlogPostsService.getOne(postId);
+          setEditingPost(refreshed);
+          setPosts((prev) => prev.map((p) => (p.id === postId ? refreshed : p)));
+          setSelectedFile(null);
+          setPreviewUrl(null);
+          setIsModalOpen(false);
+        } catch (err) {
+          setImageError(getErrorMessage(err, "Image upload failed."));
+        } finally {
+          setUploadingImage(false);
+        }
+      } else {
+        setIsModalOpen(false);
+      }
     } catch (err) {
       setFormError(getErrorMessage(err, "Failed to save blog post."));
     } finally {
@@ -110,6 +175,10 @@ export function ManageBlogPostsPage() {
       tagsArray.some((t) => t.toLowerCase().includes(query))
     );
   });
+
+  const currentImage = editingPost?.images?.find((img) => img.is_primary) ?? editingPost?.images?.[0];
+  const currentImageSrc = resolveMediaUrl(currentImage?.image?.url);
+  const displayImageSrc = previewUrl ?? currentImageSrc ?? null;
 
   return (
     <div>
@@ -138,40 +207,62 @@ export function ManageBlogPostsPage() {
       />
 
       <AdminModal title={editingId ? "Edit post" : "Add post"} open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <input type="text" placeholder="Title" value={form.title}
-            onChange={(e) => setForm({ ...form, title: e.target.value })}
-            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" required />
-          <input type="text" placeholder="Slug" value={form.slug}
-            onChange={(e) => setForm({ ...form, slug: e.target.value })}
-            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" required />
-          <textarea placeholder="Excerpt (optional)" value={form.excerpt ?? ""}
-            onChange={(e) => setForm({ ...form, excerpt: e.target.value })}
-            rows={2}
-            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" />
-          <textarea placeholder="Content" value={form.content}
-            onChange={(e) => setForm({ ...form, content: e.target.value })}
-            rows={6}
-            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" required />
-          <input type="text" placeholder="Featured image URL (optional)" value={form.featured_image ?? ""}
-            onChange={(e) => setForm({ ...form, featured_image: e.target.value })}
-            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" />
-          <input type="text" placeholder="Category (optional)" value={form.category ?? ""}
-            onChange={(e) => setForm({ ...form, category: e.target.value })}
-            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" />
-          <input type="text" placeholder="Tags, comma-separated (optional)" value={tagsInput}
-            onChange={(e) => setTagsInput(e.target.value)}
-            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" />
-          <select value={form.status ?? "draft"}
-            onChange={(e) => setForm({ ...form, status: e.target.value as "draft" | "published" | "archived" })}
-            className="rounded-md border border-border bg-background px-3 py-2 text-foreground">
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
-            <option value="archived">Archived</option>
-          </select>
-          <input type="datetime-local" value={form.published_at ?? ""}
-            onChange={(e) => setForm({ ...form, published_at: e.target.value || undefined })}
-            className="rounded-md border border-border bg-background px-3 py-2 text-foreground" />
+        <form id="blog-post-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div>
+            <label className={LABEL_CLASS}>Title</label>
+            <input type="text" placeholder="Post title" value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              className={`w-full ${FIELD_CLASS}`} required />
+          </div>
+
+          <div>
+            <label className={LABEL_CLASS}>Excerpt</label>
+            <textarea placeholder="Short summary (optional)" value={form.excerpt ?? ""}
+              onChange={(e) => setForm({ ...form, excerpt: e.target.value })}
+              rows={2}
+              className={`w-full ${FIELD_CLASS}`} />
+          </div>
+
+          <div>
+            <label className={LABEL_CLASS}>Content</label>
+            <textarea placeholder="Write your post..." value={form.content}
+              onChange={(e) => setForm({ ...form, content: e.target.value })}
+              rows={6}
+              className={`w-full ${FIELD_CLASS}`} required />
+          </div>
+
+          <div>
+            <label className={LABEL_CLASS}>Category</label>
+            <input type="text" placeholder="e.g. Engineering (optional)" value={form.category ?? ""}
+              onChange={(e) => setForm({ ...form, category: e.target.value })}
+              className={`w-full ${FIELD_CLASS}`} />
+          </div>
+
+          <div>
+            <label className={LABEL_CLASS}>Tags</label>
+            <input type="text" placeholder="Comma-separated (optional)" value={tagsInput}
+              onChange={(e) => setTagsInput(e.target.value)}
+              className={`w-full ${FIELD_CLASS}`} />
+          </div>
+
+          <div>
+            <label className={LABEL_CLASS}>Status</label>
+            <select value={form.status ?? "draft"}
+              onChange={(e) => setForm({ ...form, status: e.target.value as "draft" | "published" | "archived" })}
+              className={`w-full ${FIELD_CLASS}`}>
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+              <option value="archived">Archived</option>
+            </select>
+          </div>
+
+          <div>
+            <label className={LABEL_CLASS}>Published at</label>
+            <input type="datetime-local" value={form.published_at ?? ""}
+              onChange={(e) => setForm({ ...form, published_at: e.target.value || undefined })}
+              className={`w-full ${FIELD_CLASS}`} />
+          </div>
+
           <label className="flex items-center gap-2 text-sm text-foreground">
             <input type="checkbox" checked={form.allow_comments ?? true}
               onChange={(e) => setForm({ ...form, allow_comments: e.target.checked })} />
@@ -179,11 +270,39 @@ export function ManageBlogPostsPage() {
           </label>
 
           {formError && <p className="text-sm text-red-500">{formError}</p>}
-
-          <Button type="submit" variant="primary" disabled={isSaving}>
-            {isSaving ? "Saving..." : editingId ? "Save changes" : "Create post"}
-          </Button>
         </form>
+
+        <div className="mt-5 border-t border-border pt-4">
+          <label className={LABEL_CLASS}>Featured image</label>
+
+          {displayImageSrc && (
+            <img src={displayImageSrc} alt="Featured" className="mb-2 h-40 w-full rounded-md object-cover" />
+          )}
+
+          <label className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-border px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-background/50">
+            {uploadingImage ? "Uploading…" : displayImageSrc ? "Replace image" : "Choose image"}
+            <input
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/webp"
+              onChange={handleFileSelect}
+              disabled={uploadingImage}
+              className="hidden"
+            />
+          </label>
+          {imageError && <p className="mt-1 text-xs text-red-500">{imageError}</p>}
+          {selectedFile && (
+            <p className="mt-1 text-xs text-muted-foreground">Image will be uploaded when you save.</p>
+          )}
+        </div>
+
+        <div className="mt-5 flex justify-end gap-3">
+          <Button variant="outline" type="button" onClick={() => setIsModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button type="submit" form="blog-post-form" variant="primary" disabled={isSaving || uploadingImage}>
+            {isSaving || uploadingImage ? "Saving..." : editingId ? "Save changes" : "Create post"}
+          </Button>
+        </div>
       </AdminModal>
     </div>
   );

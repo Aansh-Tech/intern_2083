@@ -11,6 +11,12 @@ export const adminBlogPostsService = {
     return data.data.data;
   },
 
+    async getOne(id: number): Promise<BlogPost> {
+    const posts = await this.getAll();
+    const post = posts.find((p) => p.id === id);
+    if (!post) throw new Error("Post not found after refresh.");
+    return post;
+  },
   async create(payload: Partial<BlogPost>): Promise<BlogPost> {
     const { data } = await apiClient.post<ApiResponse<BlogPost>>(
       "/v1/admin/blog-posts",

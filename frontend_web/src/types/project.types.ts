@@ -1,4 +1,19 @@
 export type ProjectStatus = "draft" | "published" | "archived";
+
+export interface ProjectImage {
+  id: number;
+  type: string;
+  display_order: number;
+  is_primary: boolean;
+  image: {
+    id: number;
+    filename: string;
+    alt_text?: string | null;
+    caption?: string | null;
+    url: string;
+  } | null;
+}
+
 export interface Project {
   id: number;
   title: string;
@@ -12,4 +27,5 @@ export interface Project {
   is_featured: boolean;
   status: ProjectStatus;
   completed_at?: string;
+  images?: ProjectImage[];
 }
