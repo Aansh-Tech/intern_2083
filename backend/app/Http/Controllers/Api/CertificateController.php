@@ -6,12 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Models\Certificate;
 use App\Models\Profile;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CertificateController extends Controller
 {
     public function index()
     {
-        $certificates = Certificate::orderBy('display_order')->get();
+        $certificates = Certificate::with('images.image')
+            ->orderBy('display_order')
+            ->get()
+            ->map(fn ($certificate) => $this->withImages($certificate));
 
         return response()->json([
             'success' => true,
@@ -21,7 +25,7 @@ class CertificateController extends Controller
 
     public function show($id)
     {
-        $certificate = Certificate::find($id);
+        $certificate = Certificate::with('images.image')->find($id);
 
         if (!$certificate) {
             return response()->json([
@@ -32,7 +36,7 @@ class CertificateController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $certificate
+            'data' => $this->withImages($certificate)
         ]);
     }
 
@@ -95,6 +99,33 @@ class CertificateController extends Controller
             'success' => true,
             'message' => 'Certificate deleted successfully.'
         ]);
+    }
+
+    /**
+     * Adds a ready-to-use 'images' array (with 'url' per image) onto the
+     * certificate, same shape/pattern as ProfileController::transformImages.
+     */
+    private function withImages(Certificate $certificate)
+    {
+        $data = $certificate->toArray();
+
+        $data['images'] = $certificate->images->map(function ($attachment) {
+            return [
+                'id' => $attachment->id,
+                'type' => $attachment->type,
+                'display_order' => $attachment->display_order,
+                'is_primary' => $attachment->is_primary,
+                'image' => $attachment->image ? [
+                    'id' => $attachment->image->id,
+                    'filename' => $attachment->image->filename,
+                    'alt_text' => $attachment->image->alt_text,
+                    'caption' => $attachment->image->caption,
+                    'url' => Storage::disk('public')->url($attachment->image->image_path),
+                ] : null,
+            ];
+        });
+
+        return $data;
     }
 
     private function validateCertificate(Request $request, bool $isUpdate = false): array
