@@ -1,6 +1,7 @@
 import { useState, useEffect, type MouseEvent } from "react";
 import { ExternalLink, X } from "lucide-react";
 import { EmptyState } from "@/common/components/EmptyState";
+import { resolveMediaUrl } from "@/common/utils/resolveMediaUrl";
 import { certificatesService } from "../services/certificates.service";
 import type { Certificate } from "@/types/certificate.types";
 
@@ -20,7 +21,7 @@ function getCardGradient(certificate: Certificate): string {
 
 function getPrimaryImageUrl(certificate: Certificate): string | null {
   const primary = certificate.images?.find((img) => img.is_primary) ?? certificate.images?.[0];
-  return primary?.image?.url ?? null;
+  return resolveMediaUrl(primary?.image?.url) ?? null;
 }
 
 export function CertificatesSection() {

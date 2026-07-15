@@ -8,6 +8,12 @@ export const adminProjectsService = {
     if (!data.success) throw new Error(data.message ?? "Failed to load projects");
     return data.data;
   },
+  async getOne(id: number): Promise<Project> {
+    const projects = await this.getAll();
+    const project = projects.find((p) => p.id === id);
+    if (!project) throw new Error("Project not found after refresh.");
+    return project;
+  },
   async create(payload: Partial<Project>): Promise<Project> {
     const { data } = await apiClient.post<ApiResponse<Project>>("/v1/projects", payload);
     if (!data.success) throw new Error(data.message ?? "Failed to create project");

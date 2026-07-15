@@ -12,7 +12,7 @@ import { blogService } from "../services/blog.service";
 import { commentsService } from "../services/comments.service";
 import type { BlogPost } from "@/types/blogPost.types";
 import type { Comment } from "@/types/comment.types";
-
+import { resolveMediaUrl } from "@/common/utils/resolveMediaUrl";
 export function BlogDetailsPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
@@ -21,6 +21,8 @@ export function BlogDetailsPage() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const featuredImage = post?.images?.find((img) => img.is_primary) ?? post?.images?.[0];
+  const featuredImageSrc = resolveMediaUrl(featuredImage?.image?.url);
 
   useEffect(() => {
     if (!slug) return;
@@ -64,14 +66,14 @@ export function BlogDetailsPage() {
       {error && <EmptyState title="Couldn't load this post" description={error} />}
 
       {!isLoading && !error && post && (
-        <div className="flex flex-col gap-6">
-          {post.featured_image && (
-            <img
-              src={post.featured_image}
-              alt={post.title}
-              className="w-full aspect-video object-cover rounded-md"
-            />
-          )}
+          <div className="flex flex-col gap-6">
+                  {featuredImageSrc && (
+          <img
+            src={featuredImageSrc}
+            alt={post.title}
+            className="w-full aspect-video object-cover rounded-md"
+          />
+        )}
 
           <div>
             <p className="text-sm text-muted-foreground mb-2">
