@@ -28,4 +28,5 @@ export interface Project {
   status: ProjectStatus;
   completed_at?: string;
   images?: ProjectImage[];
+  category?: string;
 }
