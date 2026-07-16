@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { View, Text, ScrollView, RefreshControl } from "react-native";
+import { View, Text } from "react-native";
 import AdminLayout from "../../components/adminoverview/AdminLayout";
 import SkillForm from "../../components/adminskills/SkillForm";
 import SkillSection from "../../components/adminskills/SkillSection";
@@ -11,8 +11,12 @@ import type { Skill, SkillCategory } from "../../types/skill";
 
 export default function AdminSkillsScreen() {
   const { colors } = useTheme();
-  const { getSkillsByCategory, addSkill, updateSkill, deleteSkill, loading, refreshing, refreshSkills } = useSkills();
+  const { skills, getSkillsByCategory, addSkill, updateSkill, deleteSkill, loading, refreshing, refreshSkills } = useSkills();
   const categories = getSkillsByCategory();
+  console.log("[AdminSkills] Render - loading:", loading, "skills:", skills.length, "categories:", categories.length);
+  if (categories.length > 0) {
+    console.log("[AdminSkills] categories:", JSON.stringify(categories.map(c => ({ cat: c.category, count: c.skills.length, names: c.skills.map(s => s.name) }))));
+  }
 
   const [deleteTarget, setDeleteTarget] = useState<Skill | null>(null);
   const [editTarget, setEditTarget] = useState<Skill | null>(null);
@@ -62,50 +66,45 @@ export default function AdminSkillsScreen() {
   }, [editTarget, editCategory, editName, editPercentage, updateSkill]);
 
   return (
-    <AdminLayout>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshSkills} />}
-      >
-        <View className="px-5 pt-4">
-          <Text className="text-[11px] font-semibold tracking-[1.5px]" style={{ color: colors.primary }}>
-            SKILLS
+    <AdminLayout refreshing={refreshing} onRefresh={refreshSkills}>
+      <View className="px-5 pt-4">
+        <Text className="text-[11px] font-semibold tracking-[1.5px]" style={{ color: colors.primary }}>
+          SKILLS
+        </Text>
+        <Text className="text-[22px] font-bold mt-1" style={{ color: colors.text }}>
+          Skills & Proficiencies
+        </Text>
+        <Text className="text-[13px] mt-0.5" style={{ color: colors.secondaryText }}>
+          Manage your skill set and proficiency levels.
+        </Text>
+      </View>
+
+      <View className="pt-6">
+        <SkillForm onAdd={handleAdd} />
+      </View>
+
+      {loading ? null : categories.length === 0 ? (
+        <View className="items-center justify-center px-10 pt-16 pb-20">
+          <Text className="text-[20px] font-bold" style={{ color: colors.text }}>
+            No skills yet
           </Text>
-          <Text className="text-[22px] font-bold mt-1" style={{ color: colors.text }}>
-            Skills & Proficiencies
-          </Text>
-          <Text className="text-[13px] mt-0.5" style={{ color: colors.secondaryText }}>
-            Manage your skill set and proficiency levels.
+          <Text className="text-[14px] text-center mt-2" style={{ color: colors.secondaryText }}>
+            Add your first skill using the form above.
           </Text>
         </View>
-
-        <View className="pt-6">
-          <SkillForm onAdd={handleAdd} />
+      ) : (
+        <View className="px-5 pt-6 pb-8 gap-4">
+          {categories.map(({ category, skills }) => (
+            <SkillSection
+              key={category}
+              category={category}
+              skills={skills}
+              onDelete={handleDeleteRequest}
+              onEdit={handleEdit}
+            />
+          ))}
         </View>
-
-        {loading ? null : categories.length === 0 ? (
-          <View className="items-center justify-center px-10 pt-16 pb-20">
-            <Text className="text-[20px] font-bold" style={{ color: colors.text }}>
-              No skills yet
-            </Text>
-            <Text className="text-[14px] text-center mt-2" style={{ color: colors.secondaryText }}>
-              Add your first skill using the form above.
-            </Text>
-          </View>
-        ) : (
-          <View className="px-5 pt-6 pb-8 gap-4">
-            {categories.map(({ category, skills }) => (
-              <SkillSection
-                key={category}
-                category={category}
-                skills={skills}
-                onDelete={handleDeleteRequest}
-                onEdit={handleEdit}
-              />
-            ))}
-          </View>
-        )}
-      </ScrollView>
+      )}
 
       <DeleteSkillModal
         visible={!!deleteTarget}

@@ -4,19 +4,12 @@ import {
   useState,
   useEffect,
   useCallback,
-  useMemo,
   useRef,
   type ReactNode,
 } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { Skill, SkillCategory } from "../types/skill";
-import { defaultSkills } from "../data/defaultSkills";
+import * as skillService from "../services/skill";
 
-const STORAGE_KEY = "portfolio_skills";
-
-function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-}
 
 interface SkillsContextType {
   skills: Skill[];
@@ -35,6 +28,10 @@ interface SkillsContextType {
 
 const SkillsContext = createContext<SkillsContextType | null>(null);
 
+function mapCategoryToBackend(category: SkillCategory): string {
+  return category.toLowerCase();
+}
+
 export function SkillsProvider({ children }: { children: ReactNode }) {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,93 +40,106 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
   skillsRef.current = skills;
 
   const loadSkills = useCallback(async () => {
+    console.log("[SkillsContext] loadSkills() called. Current skills count:", skillsRef.current.length);
     try {
-      const raw = await AsyncStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        setSkills(JSON.parse(raw) as Skill[]);
-      } else {
-        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(defaultSkills));
-        setSkills(defaultSkills);
-      }
-    } catch {
-      setSkills(defaultSkills);
+      const data = await skillService.getSkills();
+      console.log("[SkillsContext] getSkills returned", data.length, "skills");
+      setSkills(data);
+      console.log("[SkillsContext] setSkills() called with", data.length, "items");
+    } catch (error: any) {
+      console.log("[SkillsContext] loadSkills() CAUGHT ERROR");
+      console.log("[SkillsContext] error.message:", error.message);
+      console.log("[SkillsContext] error.stack:", error.stack);
     }
     setLoading(false);
+    console.log("[SkillsContext] loadSkills() complete, loading=false");
   }, []);
 
   const refreshSkills = useCallback(async () => {
+    console.log("[SkillsContext] refreshSkills() called. Current skills:", skillsRef.current.length);
     setRefreshing(true);
-    await loadSkills();
-    setRefreshing(false);
+    try {
+      await loadSkills();
+    } finally {
+      setRefreshing(false);
+      console.log("[SkillsContext] refreshSkills() complete, skills count:", skillsRef.current.length);
+    }
   }, [loadSkills]);
 
   useEffect(() => {
+    console.log("[SkillsContext] useEffect() firing, calling loadSkills()");
     loadSkills();
   }, [loadSkills]);
 
-  const persist = useCallback(async (updated: Skill[]) => {
-    setSkills(updated);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-  }, []);
-
   const addSkill = useCallback(
     async (data: { category: SkillCategory; name: string; percentage: number }): Promise<string | null> => {
-      const raw = await AsyncStorage.getItem(STORAGE_KEY);
-      const current: Skill[] = raw ? JSON.parse(raw) : skillsRef.current;
-
+      console.log("[SkillsContext] addSkill() called with:", JSON.stringify(data));
       const nameTrimmed = data.name.trim();
       if (!nameTrimmed) return "Skill name cannot be empty";
       if (data.percentage < 0 || data.percentage > 100) return "Percentage must be between 0 and 100";
-      if (current.some((s) => s.name.toLowerCase() === nameTrimmed.toLowerCase())) {
-        return "A skill with this name already exists";
-      }
 
-      const newSkill: Skill = {
-        id: generateId(),
-        category: data.category,
-        name: nameTrimmed,
-        percentage: data.percentage,
-        createdAt: new Date().toISOString(),
-      };
-      current.push(newSkill);
-      await persist(current);
-      return null;
+      try {
+        console.log("[SkillsContext] Calling skillService.createSkill()...");
+        await skillService.createSkill({
+          name: nameTrimmed,
+          category: mapCategoryToBackend(data.category),
+          proficiency: data.percentage,
+        });
+        console.log("[SkillsContext] skillService.createSkill() succeeded, calling refreshSkills()...");
+        await refreshSkills();
+        console.log("[SkillsContext] refreshSkills() completed after add");
+        return null;
+      } catch (error: any) {
+        console.log("[SkillsContext] addSkill CAUGHT ERROR");
+        console.log("[SkillsContext] error.message:", error.message);
+        console.log("[SkillsContext] error.response?.status:", error.response?.status);
+        console.log("[SkillsContext] error.response?.data:", JSON.stringify(error.response?.data));
+        if (error?.response?.status === 422) {
+          const msgs = error.response.data?.message ?? "Validation error";
+          return typeof msgs === "string" ? msgs : "Validation error";
+        }
+        return "Failed to add skill";
+      }
     },
-    [persist]
+    [refreshSkills]
   );
 
   const updateSkill = useCallback(
     async (id: string, data: { category: SkillCategory; name: string; percentage: number }): Promise<string | null> => {
-      const raw = await AsyncStorage.getItem(STORAGE_KEY);
-      const current: Skill[] = raw ? JSON.parse(raw) : skillsRef.current;
-
       const nameTrimmed = data.name.trim();
       if (!nameTrimmed) return "Skill name cannot be empty";
       if (data.percentage < 0 || data.percentage > 100) return "Percentage must be between 0 and 100";
 
-      const duplicate = current.find(
-        (s) => s.name.toLowerCase() === nameTrimmed.toLowerCase() && s.id !== id
-      );
-      if (duplicate) return "A skill with this name already exists";
-
-      const index = current.findIndex((s) => s.id === id);
-      if (index === -1) return "Skill not found";
-
-      current[index] = { ...current[index], ...data, name: nameTrimmed };
-      await persist(current);
-      return null;
+      try {
+        await skillService.updateSkill(id, {
+          name: nameTrimmed,
+          category: mapCategoryToBackend(data.category),
+          proficiency: data.percentage,
+        });
+        await refreshSkills();
+        return null;
+      } catch (error: any) {
+        if (error?.response?.status === 422) {
+          const msgs = error.response.data?.message ?? "Validation error";
+          return typeof msgs === "string" ? msgs : "Validation error";
+        }
+        if (error?.response?.status === 404) return "Skill not found";
+        return "Failed to update skill";
+      }
     },
-    [persist]
+    [refreshSkills]
   );
 
   const deleteSkill = useCallback(
     async (id: string) => {
-      const raw = await AsyncStorage.getItem(STORAGE_KEY);
-      const current: Skill[] = raw ? JSON.parse(raw) : skillsRef.current;
-      const filtered = current.filter((s) => s.id !== id);
-      await persist(filtered);
+      try {
+        await skillService.deleteSkill(id);
+        await refreshSkills();
+      } catch {
+        console.log("Failed to delete skill");
+      }
     },
-    [persist]
+    [refreshSkills]
   );
 
   const getSkillsByCategory = useCallback((): { category: SkillCategory; skills: Skill[] }[] => {
@@ -150,6 +160,7 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
     </SkillsContext.Provider>
   );
 }
+
 
 export function useSkills(): SkillsContextType {
   const context = useContext(SkillsContext);

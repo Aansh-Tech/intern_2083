@@ -2,9 +2,9 @@ import {
   createContext,
   useContext,
   useState,
-  useEffect,
   useCallback,
   useMemo,
+  useRef,
   type ReactNode,
 } from "react";
 import type { DashboardData, ActivityItem } from "../types/dashboard";
@@ -51,25 +51,16 @@ function generateActivity(
   }
 
   for (const project of projects) {
-    if (project.completed) {
-      entries.push({
-        date: project.dateAdded,
-        item: {
-          title: `${project.title} marked as Completed`,
-          subtitle: project.dateAdded ? formatTimeAgo(project.dateAdded) : "Recently",
-          route: "/admin/projects",
-        },
-      });
-    } else {
-      entries.push({
-        date: project.dateAdded,
-        item: {
-          title: `New project: ${project.title}`,
-          subtitle: project.dateAdded ? formatTimeAgo(project.dateAdded) : "Recently",
-          route: "/admin/projects",
-        },
-      });
-    }
+    entries.push({
+      date: project.dateAdded,
+      item: {
+        title: project.completed
+          ? `${project.title} marked as Completed`
+          : `New project: ${project.title}`,
+        subtitle: formatTimeAgo(project.dateAdded),
+        route: "/admin/projects",
+      },
+    });
   }
 
   for (const comment of comments) {
@@ -107,7 +98,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
 
   const [blogPosts, setBlogPosts] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
+  const busyRef = useRef(false);
 
   const fetchBlogCount = useCallback(async () => {
     try {
@@ -118,12 +109,15 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  useEffect(() => {
-    fetchBlogCount().finally(() => setInitialLoading(false));
-  }, [fetchBlogCount]);
-
   const refreshDashboard = useCallback(async () => {
+    console.log("[DashboardContext] refreshDashboard() called. busyRef.current:", busyRef.current);
+    if (busyRef.current) {
+      console.log("[DashboardContext] refreshDashboard() — already busy, returning early");
+      return;
+    }
+    busyRef.current = true;
     setRefreshing(true);
+    console.log("[DashboardContext] refreshDashboard() — starting parallel refresh...");
     try {
       await Promise.all([
         refreshProjects(),
@@ -132,23 +126,25 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
         refreshComments(),
         fetchBlogCount(),
       ]);
+      console.log("[DashboardContext] refreshDashboard() — all parallel refreshes completed");
+    } catch (error: any) {
+      console.log("[DashboardContext] refreshDashboard() FAILED");
+      console.log("[DashboardContext] error.message:", error.message);
+      console.log("[DashboardContext] error.stack:", error.stack);
     } finally {
       setRefreshing(false);
+      busyRef.current = false;
+      console.log("[DashboardContext] refreshDashboard() — finally: refreshing=false, busy=false");
     }
   }, [refreshProjects, refreshMessages, refreshSkills, refreshComments, fetchBlogCount]);
 
-  const dashboard = useMemo<DashboardData>(() => {
+  const dashboard = useMemo(() => {
     const recentProjects = [...projects]
-      .sort(
-        (a, b) =>
-          new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime(),
-      )
+      .sort((a, b) => new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime())
       .slice(0, 5);
 
     const recentMessages = [...messages]
-      .sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-      )
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 5);
 
     return {
@@ -164,11 +160,14 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     };
   }, [projects, messages, skills, blogPosts, comments]);
 
-  const loading = initialLoading || projectsLoading || messagesLoading;
-
   return (
     <DashboardContext.Provider
-      value={{ dashboard, loading, refreshing, refreshDashboard }}
+      value={{
+        dashboard,
+        loading: projectsLoading || messagesLoading,
+        refreshing,
+        refreshDashboard,
+      }}
     >
       {children}
     </DashboardContext.Provider>

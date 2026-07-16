@@ -1,19 +1,18 @@
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import AdminLayout from "../../components/adminoverview/AdminLayout";
 import AboutControl from "../../components/admin_about/AboutControl";
+import { useProfile } from "../../context/ProfileContext";
 
 export default function AdminAboutScreen() {
-  const [refreshing, setRefreshing] = useState(false);
+  const { refreshing, refreshProfile } = useProfile();
 
   const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await Promise.resolve();
-    setRefreshing(false);
-  }, []);
+    await refreshProfile();
+  }, [refreshProfile]);
 
   return (
-    <AdminLayout>
-      <AboutControl refreshing={refreshing} onRefresh={onRefresh} />
+    <AdminLayout refreshing={refreshing} onRefresh={onRefresh}>
+      <AboutControl />
     </AdminLayout>
   );
 }

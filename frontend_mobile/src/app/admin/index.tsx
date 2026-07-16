@@ -15,24 +15,14 @@ import AdminHeader from "../../components/admin/AdminHeader";
 import LoginCard from "../../components/admin/LoginCard";
 import InputField from "../../components/admin/InputField";
 import PasswordField from "../../components/admin/PasswordField";
-import Checkbox from "../../components/admin/Checkbox";
 import { login } from "../../utils/adminAuth";
 import { useTheme } from "../../context/useTheme";
-import { useProject } from "../../context/ProjectContext";
-import { useInbox } from "../../context/InboxContext";
-import { useSkills } from "../../context/SkillsContext";
-import { useComment } from "../../context/CommentContext";
 
 export default function AdminLoginScreen() {
   const { colors } = useTheme();
   const router = useRouter();
-  const { refreshProjects } = useProject();
-  const { refreshMessages } = useInbox();
-  const { refreshSkills } = useSkills();
-  const { refreshComments } = useComment();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; auth?: string }>({});
 
@@ -54,29 +44,47 @@ export default function AdminLoginScreen() {
   }, [email, password]);
 
   const handleLogin = useCallback(async () => {
-    if (!validate()) return;
+    //console.log("[LoginScreen] === SIGN IN BUTTON PRESSED ===");
+    //console.log("[LoginScreen] Email:", email);
+
+    //console.log("[LoginScreen] Validation started.");
+    if (!validate()) {
+      //console.log("[LoginScreen] Validation failed.");
+      return;
+    }
+    //console.log("[LoginScreen] Validation passed.");
 
     setLoading(true);
-    const success = await login(email, password, remember);
+    //console.log("[LoginScreen] Login request started.");
+    let success = false;
+    try {
+      success = await login(email, password);
+    } catch (error: any) {
+      //console.log("[LoginScreen] UNEXPECTED ERROR in login() call");
+      //console.log("[LoginScreen] error.message:", error.message);
+      //console.log("[LoginScreen] error.response?.status:", error.response?.status);
+      //console.log("[LoginScreen] error.response?.data:", JSON.stringify(error.response?.data));
+      //console.log("[LoginScreen] error.stack:", error.stack);
+    }
+    //console.log("[LoginScreen] Login request completed. success =", success);
 
     if (success) {
+      //console.log("[LoginScreen] Router navigation STARTED to /admin/adminoverview");
       Keyboard.dismiss();
       try {
-        await Promise.all([
-          refreshProjects(),
-          refreshMessages(),
-          refreshSkills(),
-          refreshComments(),
-        ]);
-      } catch {
-        console.log("Failed to refresh admin data after login");
+        router.replace("/admin/adminoverview" as any);
+        //console.log("[LoginScreen] Router navigation completed (called).");
+      } catch (navError: any) {
+        //console.log("[LoginScreen] Router navigation THREW");
+        //console.log("[LoginScreen] navError.message:", navError.message);
+       // console.log("[LoginScreen] navError.stack:", navError.stack);
       }
-      router.replace("/admin/adminoverview" as any);
     } else {
+      //console.log("[LoginScreen] Login failed. Setting auth error message.");
       setErrors((prev) => ({ ...prev, auth: "Invalid email or password" }));
       setLoading(false);
     }
-  }, [validate, email, password, remember, router, refreshProjects, refreshMessages, refreshSkills, refreshComments]);
+  }, [validate, email, password, router]);
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
@@ -111,12 +119,6 @@ export default function AdminLoginScreen() {
                 error={errors.password}
               />
 
-              <Checkbox
-                label="Remember me"
-                checked={remember}
-                onToggle={() => setRemember(!remember)}
-              />
-
               {errors.auth && (
                 <Text className="text-center text-[14px] font-medium" style={{ color: "#EF4444" }}>
                   {errors.auth}
@@ -139,7 +141,7 @@ export default function AdminLoginScreen() {
             </LoginCard>
           </View>
 
-          <View style={{ width: "90%", maxWidth: 420, alignSelf: "center", paddingHorizontal: 12, marginTop: -60 }}>
+          <View style={{ width: "100%", maxWidth: 420, alignSelf: "center", paddingHorizontal: 12, marginTop: -60 }}>
             <Text
               className="text-center text-[13px] leading-[18]"
               style={{ color: colors.secondaryText }}

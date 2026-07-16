@@ -17,15 +17,25 @@ export default function AdminLayout() {
   const currentTab = pathname.split("/").pop() || "adminoverview";
 
   useEffect(() => {
+    console.log("[AdminLayout] checkAuth running...");
     checkAuth();
   }, []);
 
   async function checkAuth() {
-    const loggedIn = await isLoggedIn();
+    console.log("[AdminLayout] isLoggedIn() called...");
+    let loggedIn = false;
+    try {
+      loggedIn = await isLoggedIn();
+    } catch (error: any) {
+      console.log("[AdminLayout] isLoggedIn() threw:", error.message, error.stack);
+    }
+    console.log("[AdminLayout] isLoggedIn result:", loggedIn, "isLoginPage:", isLoginPage);
     if (!loggedIn && !isLoginPage) {
+      console.log("[AdminLayout] Redirecting to /admin (login page)");
       router.replace("/admin" as any);
     }
     setChecking(false);
+    console.log("[AdminLayout] checkAuth complete");
   }
 
   const handleSignOut = useCallback(async () => {
@@ -66,6 +76,7 @@ export default function AdminLayout() {
       <Stack.Screen name="comments" />
       <Stack.Screen name="skills" />
       <Stack.Screen name="about" />
+      <Stack.Screen name="certificates" />
     </Stack>
   );
 

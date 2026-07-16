@@ -1,7 +1,9 @@
 import { memo } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, Image, TouchableOpacity } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { LogOut, Sun, Moon } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
+import { useProfile } from "../../context/ProfileContext";
 
 interface AdminOverviewHeaderProps {
   onSignOut: () => void;
@@ -9,21 +11,49 @@ interface AdminOverviewHeaderProps {
 
 function AdminOverviewHeader({ onSignOut }: AdminOverviewHeaderProps) {
   const { colors, isDark, toggleTheme } = useTheme();
+  const { profile } = useProfile();
+
+  const name = profile.name ?? "";
+  const avatarUrl = profile.avatar ?? profile.profile_image ?? null;
+  const initials = name
+    .split(" ")
+    .map((n: string) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
     <View className="flex-row items-center justify-between px-5 pt-2">
       <View className="flex-row items-center gap-4">
-        <View
-          className="w-[52px] h-[52px] rounded-full items-center justify-center"
-          style={{ backgroundColor: colors.primary }}
-        >
-          <Text className="text-[22px] font-bold" style={{ color: colors.text }}>A</Text>
-        </View>
+        {avatarUrl ? (
+          <Image
+            source={{ uri: avatarUrl }}
+            className="w-[52px] h-[52px] rounded-full"
+          />
+        ) : initials ? (
+          <LinearGradient
+            colors={["#A855F7", "#EC4899"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            className="w-[52px] h-[52px] rounded-full items-center justify-center"
+          >
+            <Text className="text-[22px] font-bold text-white">{initials}</Text>
+          </LinearGradient>
+        ) : (
+          <View
+            className="w-[52px] h-[52px] rounded-full items-center justify-center"
+            style={{ backgroundColor: colors.primary }}
+          >
+            <Text className="text-[22px] font-bold" style={{ color: colors.text }}>A</Text>
+          </View>
+        )}
         <View className="gap-0.5">
           <Text className="text-[11px] font-semibold tracking-[1.5px]" style={{ color: colors.primary }}>
             ADMIN
           </Text>
-          <Text className="text-[26px] font-bold" style={{ color: colors.text }}>Console</Text>
+          <Text className="text-[26px] font-bold" style={{ color: colors.text }}>
+            {name || "Console"}
+          </Text>
         </View>
       </View>
 

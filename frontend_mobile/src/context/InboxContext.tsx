@@ -70,8 +70,14 @@ export function InboxProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     (async () => {
-      await loadMessages();
+      console.log("[InboxContext] init effect running...");
+      try {
+        await loadMessages();
+      } catch (error) {
+        console.log("[InboxContext] loadMessages on init threw:", error);
+      }
       setLoading(false);
+      console.log("[InboxContext] init complete, loading=false");
     })();
   }, [loadMessages]);
 

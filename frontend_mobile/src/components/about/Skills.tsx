@@ -1,45 +1,27 @@
 import { View, Text } from "react-native";
 import SectionHeading from "./Heading";
 import { useTheme } from "../../context/useTheme";
-
-const skillCategories = [
-  {
-    title: "FRONTEND",
-    skills: [
-      { name: "React & Next.js", value: 96 },
-      { name: "TypeScript", value: 92 },
-      { name: "Tailwind CSS", value: 96 },
-    ],
-  },
-  {
-    title: "BACKEND",
-    skills: [
-      { name: "Node.js", value: 76 },
-      { name: "PostgreSQL", value: 78 },
-      { name: "Laravel", value: 86 },
-    ],
-  },
-  {
-    title: "DESIGN",
-    skills: [
-      { name: "Figma", value: 94 },
-      { name: "Motion Design", value: 82 },
-      { name: "Design Systems", value: 90 },
-    ],
-  },
-];
+import { useSkills } from "../../context/SkillsContext";
 
 export default function SkillsSection() {
   const { colors } = useTheme();
+  const { skills, loading, getSkillsByCategory } = useSkills();
+  const skillCategories = getSkillsByCategory();
+  //console.log("[SkillsSection] skills count:", skills.length);
+  //console.log("[SkillsSection] skillCategories count:", skillCategories.length);
+  //console.log("[SkillsSection] loading:", loading);
+  if (skillCategories.length > 0) {
+    skillCategories.forEach((c) => console.log("[SkillsSection] category:", c.category, "skills:", c.skills.length));
+  }
 
   return (
     <View>
       <SectionHeading eyebrow="TOOLKIT" title="Skills & Craft" />
 
       <View className="px-5 pt-5 gap-4">
-        {skillCategories.map((category) => (
+        {skillCategories.map(({ category, skills }) => (
           <View
-            key={category.title}
+            key={category}
             style={[
               { backgroundColor: colors.card, borderColor: colors.border },
             ]}
@@ -49,12 +31,12 @@ export default function SkillsSection() {
               className="text-xs font-bold tracking-[1.5px]"
               style={{ color: colors.secondaryText }}
             >
-              {category.title}
+              {category.toUpperCase()}
             </Text>
 
             <View className="gap-3.5">
-              {category.skills.map((skill) => (
-                <View key={skill.name} className="gap-2">
+              {skills.map((skill) => (
+                <View key={skill.id} className="gap-2">
                   <View className="flex-row justify-between items-center">
                     <Text
                       className="text-[15px] font-semibold"
@@ -66,7 +48,7 @@ export default function SkillsSection() {
                       className="text-[13px] font-semibold"
                       style={{ color: colors.secondaryText }}
                     >
-                      {skill.value}%
+                      {skill.percentage}%
                     </Text>
                   </View>
                   <View
@@ -75,7 +57,7 @@ export default function SkillsSection() {
                   >
                     <View
                       style={{
-                        width: `${skill.value}%`,
+                        width: `${skill.percentage}%`,
                         backgroundColor: colors.primary,
                       }}
                       className="h-full rounded-full"

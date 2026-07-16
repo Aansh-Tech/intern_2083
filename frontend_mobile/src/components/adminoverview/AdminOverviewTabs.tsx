@@ -8,6 +8,7 @@ const tabs = [
   { label: "Blog", route: "blog" },
   { label: "Inbox", route: "inbox" },
   { label: "Comments", route: "comments" },
+  { label: "Certificates", route: "certificates" },
   { label: "Skills", route: "skills" },
   { label: "About", route: "about" },
 ];

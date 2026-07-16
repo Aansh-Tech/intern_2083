@@ -1,16 +1,24 @@
+import { useEffect } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ThemeProvider } from "../context/ThemeProvider";
+import { ProfileProvider } from "../context/ProfileContext";
 import { ProjectProvider } from "../context/ProjectContext";
 import { InboxProvider } from "../context/InboxContext";
 import { CommentProvider } from "../context/CommentContext";
 import { SkillsProvider } from "../context/SkillsContext";
 import { DashboardProvider } from "../context/DashboardContext";
+import { CertificateProvider } from "../context/CertificateContext";
 import { useTheme } from "../context/useTheme";
 import "../../global.css";
 
 function RootLayoutInner() {
   const { isDark, colors } = useTheme();
+
+  useEffect(() => {
+    console.log("[RootLayout] Inner mounted. All context providers active.");
+    return () => console.log("[RootLayout] Inner unmounted.");
+  }, []);
 
   return (
     <>
@@ -34,17 +42,21 @@ function RootLayoutInner() {
 export default function RootLayout() {
   return (
     <ThemeProvider>
-      <ProjectProvider>
-        <InboxProvider>
-          <CommentProvider>
-            <SkillsProvider>
-              <DashboardProvider>
-                <RootLayoutInner />
-              </DashboardProvider>
-            </SkillsProvider>
-          </CommentProvider>
-        </InboxProvider>
-      </ProjectProvider>
+      <ProfileProvider>
+        <CertificateProvider>
+        <ProjectProvider>
+          <InboxProvider>
+            <CommentProvider>
+              <SkillsProvider>
+                <DashboardProvider>
+                  <RootLayoutInner />
+                </DashboardProvider>
+              </SkillsProvider>
+            </CommentProvider>
+          </InboxProvider>
+        </ProjectProvider>
+        </CertificateProvider>
+      </ProfileProvider>
     </ThemeProvider>
   );
 }

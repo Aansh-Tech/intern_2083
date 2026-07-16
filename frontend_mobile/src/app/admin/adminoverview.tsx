@@ -1,7 +1,5 @@
-import { useCallback } from "react";
-import { View, ActivityIndicator } from "react-native";
+import { useCallback, useEffect, useRef } from "react";
 import { useRouter } from "expo-router";
-import { useTheme } from "../../context/useTheme";
 import AdminLayout from "../../components/adminoverview/AdminLayout";
 import WelcomeSection from "../../components/adminoverview/WelcomeSection";
 import StatsGrid from "../../components/adminoverview/StatsGrid";
@@ -10,9 +8,26 @@ import ActivitySection from "../../components/adminoverview/ActivitySection";
 import { useDashboard } from "../../context/DashboardContext";
 
 export default function AdminOverviewScreen() {
-  const { colors } = useTheme();
   const router = useRouter();
-  const { dashboard, loading, refreshing, refreshDashboard } = useDashboard();
+  const { dashboard, refreshing, refreshDashboard } = useDashboard();
+  const didRefresh = useRef(false);
+
+  useEffect(() => {
+    //console.log("[AdminOverview] useEffect fired. didRefresh.current:", didRefresh.current);
+    if (didRefresh.current) {
+     // console.log("[AdminOverview] Already refreshed, skipping.");
+      return;
+    }
+    didRefresh.current = true;
+    //console.log("[AdminOverview] Calling refreshDashboard() for first time...");
+    refreshDashboard().then(() => {
+      //console.log("[AdminOverview] refreshDashboard() resolved.");
+    }).catch((error: any) => {
+      //console.log("[AdminOverview] refreshDashboard() REJECTED");
+      //console.log("[AdminOverview] error.message:", error.message);
+      //console.log("[AdminOverview] error.stack:", error.stack);
+    });
+  }, [refreshDashboard]);
 
   const onRefresh = useCallback(async () => {
     await refreshDashboard();
@@ -27,14 +42,6 @@ export default function AdminOverviewScreen() {
     },
     [dashboard.recentActivity, router],
   );
-
-  if (loading) {
-    return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background }}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
-  }
 
   return (
     <AdminLayout refreshing={refreshing} onRefresh={onRefresh}>

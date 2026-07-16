@@ -9,7 +9,7 @@ import {
 
 import type { Project } from "../types/project";
 import * as projectService from "../services/project";
-
+import { getToken } from "../utils/token";
 
 // interface ProjectContextType {
 //   projects: Project[];
@@ -56,18 +56,51 @@ export function ProjectProvider({
     }
   }, []);
 
+
   const refreshProjects = useCallback(async () => {
-    setRefreshing(true);
+  setRefreshing(true);
+
+  try {
     await loadProjects();
+  } finally {
     setRefreshing(false);
-  }, [loadProjects]);
+  }
+}, [loadProjects]);
+
+  // const refreshProjects = useCallback(async () => {
+  //   setRefreshing(true);
+  //   await loadProjects();
+  //   setRefreshing(false);
+  // }, [loadProjects]);
+
+  // useEffect(() => {
+  //   (async () => {
+  //     await loadProjects();
+  //     setLoading(false);
+  //   })();
+  // }, [loadProjects]);
 
   useEffect(() => {
-    (async () => {
-      await loadProjects();
-      setLoading(false);
-    })();
-  }, [loadProjects]);
+  const init = async () => {
+    console.log("[ProjectContext] init effect running, checking token...");
+    const token = await getToken();
+    console.log("[ProjectContext] token present:", !!token);
+
+    if (token) {
+      console.log("[ProjectContext] loading projects on init...");
+      try {
+        await loadProjects();
+      } catch (error) {
+        console.log("[ProjectContext] loadProjects on init threw:", error);
+      }
+    }
+
+    setLoading(false);
+    console.log("[ProjectContext] init complete, loading=false");
+  };
+
+  init();
+}, [loadProjects]);
 
 
   const addProject = async (data: any) => {

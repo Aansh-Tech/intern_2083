@@ -12,22 +12,24 @@ import LatestWriting from "../../components/homepage/LatestWriting";
 import { useTheme } from "../../context/useTheme";
 import { useProject } from "../../context/ProjectContext";
 import { useSkills } from "../../context/SkillsContext";
+import { useProfile } from "../../context/ProfileContext";
 
 export default function HomeScreen() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { refreshProjects } = useProject();
   const { refreshSkills } = useSkills();
+  const { refreshProfile } = useProfile();
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await Promise.all([refreshProjects(), refreshSkills()]);
+      await Promise.all([refreshProjects(), refreshSkills(), refreshProfile()]);
     } finally {
       setRefreshing(false);
     }
-  }, [refreshProjects, refreshSkills]);
+  }, [refreshProjects, refreshSkills, refreshProfile]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
