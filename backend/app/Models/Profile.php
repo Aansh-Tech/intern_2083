@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Profile extends Model
 {
@@ -44,5 +45,16 @@ class Profile extends Model
     public function blogPosts(): HasMany
     {
         return $this->hasMany(BlogPost::class);
+    }
+    public function certificates(): HasMany
+{
+    return $this->hasMany(Certificate::class);
+}
+
+    public function images(): MorphMany
+    {
+        return $this->morphMany(Imageable::class, 'imageable')
+            ->with('image')
+            ->orderBy('display_order');
     }
 }

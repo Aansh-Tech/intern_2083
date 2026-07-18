@@ -6,6 +6,7 @@ import { isLoggedIn, logout } from "../../utils/adminAuth";
 import { useTheme } from "../../context/useTheme";
 import AdminOverviewHeader from "../../components/adminoverview/AdminOverviewHeader";
 import AdminOverviewTabs from "../../components/adminoverview/AdminOverviewTabs";
+import { CommentProvider } from "../../context/CommentContext"; 
 
 export default function AdminLayout() {
   const { colors, theme } = useTheme();
@@ -81,16 +82,18 @@ export default function AdminLayout() {
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
-      {!isLoginPage && (
-        <SafeAreaView edges={["top"]} style={{ backgroundColor: colors.background }}>
-          <AdminOverviewHeader onSignOut={handleSignOut} />
-          <AdminOverviewTabs activeTab={currentTab} onTabChange={handleTabChange} />
-        </SafeAreaView>
-      )}
-      <View style={{ flex: 1 }}>
-        {stackNav}
+    <CommentProvider>  {/* <-- Wrap everything with CommentProvider */}
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        {!isLoginPage && (
+          <SafeAreaView edges={["top"]} style={{ backgroundColor: colors.background }}>
+            <AdminOverviewHeader onSignOut={handleSignOut} />
+            <AdminOverviewTabs activeTab={currentTab} onTabChange={handleTabChange} />
+          </SafeAreaView>
+        )}
+        <View style={{ flex: 1 }}>
+          {stackNav}
+        </View>
       </View>
-    </View>
+    </CommentProvider>
   );
 }

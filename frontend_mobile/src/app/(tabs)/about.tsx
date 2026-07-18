@@ -1,5 +1,6 @@
 import { useCallback } from "react";
-import { View, ScrollView, RefreshControl } from "react-native";
+import { View, ScrollView, RefreshControl, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../../components/homepage/Header";
 import AboutHero from "../../components/about/AboutHero";
 import SkillsSection from "../../components/about/Skills";
@@ -22,19 +23,24 @@ export default function AboutScreen() {
   }, [refreshProfile, refreshSkills, refreshCertificates]);
 
   return (
-    <View className="flex-1" style={{ backgroundColor: colors.background }}>
-      <Header />
-
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
+        <Header />
         <View className="pb-10">
           <AboutHero />
           <SkillsSection />
           <CertificatesSection />
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});

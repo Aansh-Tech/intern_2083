@@ -35,16 +35,7 @@ class SocialLinkSeeder extends Seeder
                 'url' => 'https://linkedin.com/in/yourusername',
                 'display_order' => 2,
             ],
-            [
-                'platform' => 'Twitter',
-                'url' => 'https://twitter.com/yourusername',
-                'display_order' => 3,
-            ],
-            [
-                'platform' => 'YouTube',
-                'url' => 'https://youtube.com/@yourusername',
-                'display_order' => 4,
-            ],
+
         ];
 
         foreach ($links as $link) {

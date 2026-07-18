@@ -1,10 +1,15 @@
-import { View, Text, ScrollView, TouchableOpacity, Modal } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, Alert, ActivityIndicator, Image } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { X, Clock } from "lucide-react-native";
+import { X, Clock, Send } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
+import { useState, useEffect, useCallback } from "react";
+import { useComments } from "../../hooks/useComments";
+import api from "../../services/api";
 
 interface Post {
   id: string;
+  slug: string;
+  blogId?: string;
   category?: string;
   date: string;
   readTime: string;
@@ -12,6 +17,8 @@ interface Post {
   excerpt: string;
   body: string[];
   gradient: [string, string, ...string[]];
+  featured_image?: string | null;
+  author?: string | null;
 }
 
 interface PostModalProps {
@@ -20,10 +27,126 @@ interface PostModalProps {
   onClose: () => void;
 }
 
+const unwrapItem = (response: any): any => {
+  if (response.data?.data?.data) return response.data.data.data;
+  if (response.data?.data) return response.data.data;
+  return response.data;
+};
+
 export default function PostModal({ post, visible, onClose }: PostModalProps) {
   const { colors } = useTheme();
+  const { postComment, fetchComments, loading: submitting } = useComments();
 
-  if (!post) return null;
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [content, setContent] = useState("");
+  const [comments, setComments] = useState<any[]>([]);
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [detailPost, setDetailPost] = useState<Post | null>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+
+  useEffect(() => {
+    if (visible && post) {
+      setDetailPost(null);
+      loadDetail(post);
+    }
+  }, [visible, post?.slug]);
+
+  const loadDetail = async (p: Post) => {
+    setLoadingDetail(true);
+    try {
+      const response = await api.get(`/v1/blog-posts/${p.slug}`);
+      const data = unwrapItem(response);
+      const featuredImage = data.images && data.images.length > 0
+        ? (data.images.find((img: any) => img.is_primary) || data.images[0])?.image?.url
+        : null;
+      setDetailPost({
+        id: String(data.id),
+        blogId: String(data.id),
+        slug: data.slug,
+        title: data.title || p.title,
+        category: data.category || p.category || "Uncategorized",
+        date: data.published_at
+          ? new Date(data.published_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+          : p.date,
+        readTime: "3 min read",
+        excerpt: data.excerpt || "",
+        body: data.content ? data.content.split("\n") : p.body,
+        gradient: p.gradient,
+        featured_image: featuredImage,
+        author: data.author?.name || null,
+      } as any);
+    } catch (err) {
+      console.error("Failed to fetch post detail, using list data:", err);
+      setDetailPost(p);
+    } finally {
+      setLoadingDetail(false);
+    }
+  };
+
+  const loadComments = useCallback(async (slug: string) => {
+    console.log("[PostModal] Loading comments for slug:", slug);
+    setLoadingComments(true);
+    try {
+      const data = await fetchComments(slug);
+      console.log("[PostModal] Fetched comments:", data.length);
+      console.log("[PostModal] Comment statuses:", data.map((c: any) => c.status));
+      const approved = data.filter((c: any) => {
+        const s = String(c.status).toLowerCase();
+        return s === "approved" || s === "1" || s === "active";
+      });
+      console.log("[PostModal] Approved comments:", approved.length);
+      setComments(approved);
+    } catch (error) {
+      console.error("[PostModal] Failed to load comments:", error);
+      setComments([]);
+    } finally {
+      setLoadingComments(false);
+    }
+  }, [fetchComments]);
+
+  const displaySlug = (detailPost || post)?.slug;
+
+  useEffect(() => {
+    if (visible && displaySlug) {
+      console.log("[PostModal] Effect triggered - loading comments for slug:", displaySlug);
+      loadComments(displaySlug);
+    }
+  }, [visible, displaySlug, loadComments]);
+
+  const displayPost = detailPost || post;
+  if (!displayPost) return null;
+
+  const handleSubmitComment = async () => {
+    if (!name.trim() || !email.trim() || !content.trim()) {
+      Alert.alert("Error", "All fields are required.");
+      return;
+    }
+
+    const blogPostId = displayPost.blogId || displayPost.id;
+    const currentSlug = displayPost.slug;
+
+    try {
+      console.log("[PostModal] Submitting comment for blog_post_id:", blogPostId);
+      await postComment({
+        blog_post_id: blogPostId,
+        name: name.trim(),
+        email: email.trim(),
+        content: content.trim(),
+      });
+      console.log("[PostModal] Comment submitted successfully. Refreshing comments from backend...");
+      setName("");
+      setEmail("");
+      setContent("");
+      Alert.alert("Thank you!", "Your comment is pending review.");
+      if (currentSlug) {
+        await loadComments(currentSlug);
+        console.log("[PostModal] Comments refreshed from backend after submission.");
+      }
+    } catch (err: any) {
+      Alert.alert("Error", err.message || "Could not submit comment.");
+    }
+  };
 
   return (
     <Modal
@@ -33,72 +156,155 @@ export default function PostModal({ post, visible, onClose }: PostModalProps) {
       onRequestClose={onClose}
     >
       <View className="flex-1" style={{ backgroundColor: colors.background }}>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <LinearGradient
-            colors={post.gradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={{ height: 220, justifyContent: "flex-start", alignItems: "flex-end", padding: 16 }}
-          >
-            <TouchableOpacity
-              className="w-9 h-9 rounded-full bg-black/35 items-center justify-center"
-              activeOpacity={0.8}
-              onPress={onClose}
+        {loadingDetail ? (
+          <View className="flex-1 justify-center items-center">
+            <ActivityIndicator size="large" color={colors.primary} />
+          </View>
+        ) : (
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <LinearGradient
+              colors={displayPost.gradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{ height: 220, justifyContent: "flex-start", alignItems: "flex-end", padding: 16 }}
             >
-              <X size={20} color="#FFFFFF" />
-            </TouchableOpacity>
-          </LinearGradient>
-
-          <View className="p-5 gap-3.5">
-            <View className="flex-row items-center flex-wrap gap-2.5">
-              {post.category ? (
-                <View
-                  className="px-3 py-[5px] rounded-full"
-                  style={{ backgroundColor: colors.primary + "26" }}
-                >
-                  <Text
-                    className="text-xs font-bold"
-                    style={{ color: colors.primary }}
-                  >
-                    {post.category}
-                  </Text>
-                </View>
-              ) : null}
-              <Text
-                className="text-[13px]"
-                style={{ color: colors.secondaryText }}
+              <TouchableOpacity
+                className="w-9 h-9 rounded-full bg-black/35 items-center justify-center"
+                activeOpacity={0.8}
+                onPress={onClose}
               >
-                {post.date}
-              </Text>
-              <View className="flex-row items-center gap-1">
-                <Clock size={13} color={colors.secondaryText} />
-                <Text
-                  className="text-[13px]"
-                  style={{ color: colors.secondaryText }}
-                >
-                  {post.readTime}
-                </Text>
+                <X size={20} color="#FFFFFF" />
+              </TouchableOpacity>
+            </LinearGradient>
+
+            {displayPost.featured_image && (
+              <Image
+                source={{ uri: displayPost.featured_image }}
+                className="w-full h-48"
+                resizeMode="cover"
+              />
+            )}
+
+            <View className="p-5 gap-3.5">
+              <View className="flex-row items-center flex-wrap gap-2.5">
+                {displayPost.category ? (
+                  <View className="px-3 py-[5px] rounded-full" style={{ backgroundColor: colors.primary + "26" }}>
+                    <Text className="text-xs font-bold" style={{ color: colors.primary }}>{displayPost.category}</Text>
+                  </View>
+                ) : null}
+                <Text className="text-[13px]" style={{ color: colors.secondaryText }}>{displayPost.date}</Text>
+                <View className="flex-row items-center gap-1">
+                  <Clock size={13} color={colors.secondaryText} />
+                  <Text className="text-[13px]" style={{ color: colors.secondaryText }}>{displayPost.readTime}</Text>
+                </View>
               </View>
+
+              <Text className="text-[26px] font-bold" style={{ color: colors.text }}>{displayPost.title}</Text>
+
+              {displayPost.author ? (
+                <Text className="text-sm font-medium" style={{ color: colors.primary }}>
+                  By {displayPost.author}
+                </Text>
+              ) : null}
+
+              {displayPost.body.map((paragraph, i) => (
+                <Text key={i} className="text-base leading-6" style={{ color: colors.secondaryText }}>
+                  {paragraph}
+                </Text>
+              ))}
             </View>
 
-            <Text
-              className="text-[26px] font-bold"
-              style={{ color: colors.text }}
-            >
-              {post.title}
-            </Text>
-
-            {post.body.map((paragraph, i) => (
-              <Text
-                key={i}
-                className="text-base leading-6"
-                style={{ color: colors.secondaryText }}
-              >
-                {paragraph}
+            <View className="px-5 pb-5 gap-4">
+              <Text className="text-lg font-bold" style={{ color: colors.text }}>
+                Comments ({comments.length})
               </Text>
-            ))}
-          </View>
-        </ScrollView>
+
+              {loadingComments ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+              ) : comments.length === 0 ? (
+                <Text style={{ color: colors.secondaryText }}>No comments yet.</Text>
+              ) : (
+                comments.map((comment) => (
+                  <View
+                    key={comment.id}
+                    className="border-b pb-3 mb-2"
+                    style={{ borderBottomColor: colors.border }}
+                  >
+                    <View className="flex-row items-center justify-between">
+                      <Text className="font-semibold" style={{ color: colors.text }}>
+                        {comment.name}
+                      </Text>
+                      <Text className="text-xs" style={{ color: colors.secondaryText }}>
+                        {comment.createdAt
+                          ? new Date(comment.createdAt).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })
+                          : ""}
+                      </Text>
+                    </View>
+                    <Text style={{ color: colors.text, marginTop: 4 }}>{comment.comment}</Text>
+                  </View>
+                ))
+              )}
+
+              <View className="mt-4 gap-3">
+                <Text className="text-base font-semibold" style={{ color: colors.text }}>
+                  Leave a comment
+                </Text>
+
+                <TextInput
+                  className="border rounded-full px-4 py-2.5"
+                  style={{ borderColor: colors.border, color: colors.text, backgroundColor: colors.card }}
+                  placeholder="Your name"
+                  placeholderTextColor={colors.secondaryText}
+                  value={name}
+                  onChangeText={setName}
+                />
+
+                <TextInput
+                  className="border rounded-full px-4 py-2.5"
+                  style={{ borderColor: colors.border, color: colors.text, backgroundColor: colors.card }}
+                  placeholder="Your email"
+                  placeholderTextColor={colors.secondaryText}
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+
+                <TextInput
+                  className="border rounded-xl px-4 py-2.5"
+                  style={{
+                    borderColor: colors.border,
+                    color: colors.text,
+                    backgroundColor: colors.card,
+                    minHeight: 100,
+                    textAlignVertical: "top",
+                  }}
+                  placeholder="Write your comment..."
+                  placeholderTextColor={colors.secondaryText}
+                  value={content}
+                  onChangeText={setContent}
+                  multiline
+                  numberOfLines={4}
+                />
+
+                <TouchableOpacity
+                  onPress={handleSubmitComment}
+                  disabled={submitting}
+                  className="py-3 rounded-full"
+                  style={{ backgroundColor: colors.primary, opacity: submitting ? 0.5 : 1 }}
+                >
+                  <Text className="text-white font-semibold text-center">
+                    {submitting ? "Submitting..." : "Submit comment"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </ScrollView>
+        )}
       </View>
     </Modal>
   );

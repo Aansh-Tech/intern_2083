@@ -44,43 +44,25 @@ export default function AdminLoginScreen() {
   }, [email, password]);
 
   const handleLogin = useCallback(async () => {
-    //console.log("[LoginScreen] === SIGN IN BUTTON PRESSED ===");
-    //console.log("[LoginScreen] Email:", email);
-
-    //console.log("[LoginScreen] Validation started.");
     if (!validate()) {
-      //console.log("[LoginScreen] Validation failed.");
       return;
     }
-    //console.log("[LoginScreen] Validation passed.");
 
     setLoading(true);
-    //console.log("[LoginScreen] Login request started.");
     let success = false;
     try {
       success = await login(email, password);
     } catch (error: any) {
-      //console.log("[LoginScreen] UNEXPECTED ERROR in login() call");
-      //console.log("[LoginScreen] error.message:", error.message);
-      //console.log("[LoginScreen] error.response?.status:", error.response?.status);
-      //console.log("[LoginScreen] error.response?.data:", JSON.stringify(error.response?.data));
-      //console.log("[LoginScreen] error.stack:", error.stack);
     }
-    //console.log("[LoginScreen] Login request completed. success =", success);
 
     if (success) {
-      //console.log("[LoginScreen] Router navigation STARTED to /admin/adminoverview");
       Keyboard.dismiss();
       try {
         router.replace("/admin/adminoverview" as any);
-        //console.log("[LoginScreen] Router navigation completed (called).");
       } catch (navError: any) {
-        //console.log("[LoginScreen] Router navigation THREW");
-        //console.log("[LoginScreen] navError.message:", navError.message);
-       // console.log("[LoginScreen] navError.stack:", navError.stack);
       }
+      setLoading(false);
     } else {
-      //console.log("[LoginScreen] Login failed. Setting auth error message.");
       setErrors((prev) => ({ ...prev, auth: "Invalid email or password" }));
       setLoading(false);
     }
@@ -93,7 +75,7 @@ export default function AdminLoginScreen() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1, justifyContent: "center", paddingHorizontal: 20, paddingTop: 30, paddingBottom: 30 }}
+          contentContainerStyle={{ flexGrow: 1, justifyContent: "center", paddingHorizontal: 20, paddingTop: 10, paddingBottom: 30 }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -141,7 +123,7 @@ export default function AdminLoginScreen() {
             </LoginCard>
           </View>
 
-          <View style={{ width: "100%", maxWidth: 420, alignSelf: "center", paddingHorizontal: 12, marginTop: -60 }}>
+          <View style={{ width: "100%", maxWidth: 420, alignSelf: "center", paddingHorizontal: 12, marginTop: -60 }} pointerEvents="none">
             <Text
               className="text-center text-[13px] leading-[18]"
               style={{ color: colors.secondaryText }}

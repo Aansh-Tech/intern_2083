@@ -5,31 +5,30 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-class BlogPost extends Model
+class Certificate extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'profile_id',
+        'skill_id',
         'title',
-        'slug',
-        'excerpt',
-        'content',
-        'featured_image',
-        'category',
-        'tags',
-        'status',
-        'published_at',
-        'allow_comments',
+        'issuer',
+        'issue_date',
+        'expiry_date',
+        'credential_url',
+        'image',
+        'description',
+        'display_order',
     ];
 
     protected $casts = [
-        'tags' => 'array',
-        'published_at' => 'datetime',
-        'allow_comments' => 'boolean',
+        'skill_id' => 'integer',
+        'issue_date' => 'date',
+        'expiry_date' => 'date',
+        'display_order' => 'integer',
     ];
 
     public function profile(): BelongsTo
@@ -37,9 +36,9 @@ class BlogPost extends Model
         return $this->belongsTo(Profile::class);
     }
 
-    public function comments(): HasMany
+    public function skill(): BelongsTo
     {
-        return $this->hasMany(Comment::class);
+        return $this->belongsTo(Skill::class);
     }
 
     public function images(): MorphMany

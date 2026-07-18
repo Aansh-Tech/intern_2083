@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
-import { View, ScrollView, RefreshControl } from "react-native";
+import { View, ScrollView, RefreshControl, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../../components/homepage/Header";
 import PageHeader from "../../components/work/PageHeader";
 import FilterTabs, { FilterValue } from "../../components/work/FilterTabs";
@@ -20,47 +21,24 @@ export default function ProjectScreen() {
   }, [activeFilter, projects, loading]);
 
   return (
-    <View className="flex-1" style={{ backgroundColor: colors.background }}>
-      <Header />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshProjects} />}
       >
+        <Header />
         <View className="pb-10">
           <PageHeader />
           <FilterTabs active={activeFilter} onChange={setActiveFilter} />
           <ProjectList projects={filteredProjects as any} />
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
-// import { View, Text, StyleSheet, SafeAreaView } from "react-native";
-// import { useTheme } from "../../context/useTheme";
 
-// export default function ProjectScreen() {
-//   const { colors } = useTheme();
-
-//   return (
-//     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-//       <View style={styles.content}>
-//         <Text style={[styles.title, { color: colors.text }]}>Projects</Text>
-//       </View>
-//     </SafeAreaView>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//   },
-//   content: {
-//     flex: 1,
-//     alignItems: "center",
-//     justifyContent: "center",
-//   },
-//   title: {
-//     fontSize: 28,
-//     fontWeight: "bold",
-//   },
-// });
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});

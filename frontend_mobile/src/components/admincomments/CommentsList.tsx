@@ -5,9 +5,9 @@ import type { Comment } from "../../types/comment";
 
 interface CommentsListProps {
   comments: Comment[];
-  onApprove: (id: string) => void;
-  onReject: (id: string) => void;
-  onDelete: (id: string) => void;
+  onApprove: (id: string) => Promise<void>;
+  onReject: (id: string) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
 }
 
 function CommentsList({ comments, onApprove, onReject, onDelete }: CommentsListProps) {

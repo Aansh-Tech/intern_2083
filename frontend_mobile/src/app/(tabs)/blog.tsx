@@ -1,125 +1,182 @@
-import { useState, useCallback } from "react";
-import { View, ScrollView, RefreshControl } from "react-native";
-import Header from "../../components/homepage/Header";
-import JournalHeader from "../../components/blog/BlogHeader";
-import FeaturedPost from "../../components/blog/FeaturedPost";
-import PostList from "../../components/blog/PostList";
-import PostModal from "../../components/blog/PostModal";
+import { useState, useEffect, useCallback } from "react";
+import { View, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Text, Image, RefreshControl, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../context/useTheme";
+import Header from "../../components/homepage/Header";
+import PostModal from "../../components/blog/PostModal";
+import api from "../../services/api";
 
 interface Post {
   id: string;
+  blogId: string;
+  slug: string;
+  title: string;
   category: string;
   date: string;
   readTime: string;
-  title: string;
   excerpt: string;
   body: string[];
   gradient: [string, string];
+  featured_image?: string | null;
+  author?: string | null;
 }
 
-const posts: Post[] = [
-  {
-    id: "quiet-interfaces",
-    category: "Design",
-    date: "Oct 7, 2024",
-    readTime: "6 min",
-    title: "Designing for Quiet Interfaces",
-    excerpt:
-      "How restraint, negative space, and disciplined type scales create interfaces that respect their user's attention.",
-    body: [
-      "Most interfaces fail not because they lack features, but because they refuse to be quiet. Every panel wants to shout, every badge wants attention, every color wants to be the loudest thing on screen. The result is an interface that exhausts before it helps.",
-      "Restraint is a design decision, not an absence of one. Choosing not to add a border, not to increase contrast, not to introduce a new color — these are just as deliberate as any addition. The best interfaces I've shipped came from repeatedly asking what could be removed rather than what could be added.",
-      "Negative space isn't empty space. It's the room a user's eye needs to move between ideas without friction. When you compress that space to fit more on screen, you're not being efficient — you're borrowing clarity from tomorrow's redesign.",
-      "A disciplined type scale does more heavy lifting than most people credit. Four or five sizes, used consistently, communicate hierarchy far better than a dozen sizes used loosely. Consistency reads as confidence; variation without purpose reads as noise.",
-    ],
-    gradient: ["#6366F1", "#3B82F6"],
-  },
-  {
-    id: "design-system-quarter",
-    category: "Design System",
-    date: "Aug 21, 2024",
-    readTime: "8 min",
-    title: "Shipping a Design System in a Quarter",
-    excerpt:
-      "A pragmatic playbook for launching a token-driven system without pausing product work.",
-    body: [
-      "Design systems have a reputation for stalling product velocity while teams debate token names. That reputation is earned, but it isn't inevitable. Shipping ours in a single quarter meant treating the system as a byproduct of real screens, not a prerequisite for them.",
-      "We started by auditing existing screens for repeated patterns rather than designing components in a vacuum. Anything used in three or more places became a candidate. This kept the system grounded in actual product needs instead of theoretical completeness.",
-      "Tokens came before components. Color, spacing, and type scale were locked first, because every component decision downstream depended on them being stable. Changing a token later is cheap; changing forty components later is not.",
-      "The system shipped alongside feature work, not before it. Every new component was built to solve a real screen's problem that same sprint, which kept the backlog honest and prevented the system from drifting into speculative generality.",
-    ],
-    gradient: ["#A855F7", "#EC4899"],
-  },
-  {
-    id: "type-rules",
-    category: "Typography",
-    date: "Jul 30, 2024",
-    readTime: "5 min",
-    title: "Type Rules Worth Keeping",
-    excerpt:
-      "A short list of type rules that consistently earn their keep in dense product UIs.",
-    body: [
-      "Most typography advice is aesthetic preference dressed up as principle. These are the handful of rules that have actually held up across dense, data-heavy product interfaces.",
-      "Line length matters more indoors than out. In a sidebar or table cell, short line lengths force awkward wraps. Give body text room to breathe, or drop to a smaller size before you let lines get too narrow.",
-      "Tabular numbers are non-negotiable in any table or dashboard. Proportional digits shifting column widths as values change is a small thing that quietly erodes trust in the data.",
-      "Weight does more work than size. Reaching for a heavier font weight to signal hierarchy is often more legible, and more space-efficient, than bumping font size in a dense layout.",
-    ],
-    gradient: ["#10B981", "#06B6D4"],
-  },
-  {
-    id: "onboarding-notes",
-    category: "Product",
-    date: "Jun 12, 2024",
-    readTime: "4 min",
-    title: "Notes on Better Onboarding",
-    excerpt:
-      "Why the fastest onboarding flow is usually the one with the fewest decisions, not the fewest steps.",
-    body: [
-      "Teams optimizing onboarding tend to count steps, when they should be counting decisions. A five-step flow with obvious, low-stakes choices at each step will always outperform a two-step flow that asks the user to make one hard decision.",
-      "The best onboarding flows I've built front-load the decisions that matter and default everything else. Ask for what's essential, infer or defer the rest, and let the user reach value before you ask for anything else.",
-      "Progress indicators help less than people assume. What actually reduces drop-off is showing the user something real — their own data, a preview, a result — as early in the flow as possible.",
-    ],
-    gradient: ["#F97316", "#F43F5E"],
-  },
-];
+const unwrapList = (response: any): any[] => {
+  if (response.data?.data?.data && Array.isArray(response.data.data.data)) {
+    return response.data.data.data;
+  }
+  if (Array.isArray(response.data)) {
+    return response.data;
+  }
+  if (response.data?.data && Array.isArray(response.data.data)) {
+    return response.data.data;
+  }
+  return [];
+};
 
-export default function JournalScreen() {
+export default function BlogScreen() {
   const { colors } = useTheme();
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
 
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await Promise.resolve();
-    setRefreshing(false);
+  const fetchPosts = useCallback(async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
+    try {
+      const response = await api.get('/v1/blog-posts');
+      const postsData = unwrapList(response);
+      const published = postsData.filter((p: any) => p.status === "published");
+
+      const formattedPosts = published.map((p: any) => {
+        let featuredImage = null;
+        if (p.images && p.images.length > 0) {
+          const featured = p.images.find((img: any) => img.is_primary) || p.images[0];
+          featuredImage = featured?.image?.url || null;
+        }
+        return {
+          id: String(p.id),
+          blogId: String(p.id),
+          slug: p.slug,
+          title: p.title,
+          category: p.category || 'Uncategorized',
+          date: p.published_at ? new Date(p.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown date',
+          readTime: '3 min read',
+          excerpt: p.excerpt || p.content?.substring(0, 100) || '',
+          body: p.content?.split('\n') || [],
+          gradient: ['#6366f1', '#8b5cf6'] as [string, string],
+          featured_image: featuredImage,
+          author: p.author?.name || null,
+        };
+      });
+      setPosts(formattedPosts);
+    } catch (error) {
+      console.error('Failed to fetch posts:', error);
+      Alert.alert('Error', 'Could not load blog posts.');
+      setPosts([]);
+    } finally {
+      setLoading(false);
+      if (isRefresh) setRefreshing(false);
+    }
   }, []);
 
-  const openPost = (post: any) => {
-    setSelectedPost(post as Post);
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
+
+  const onRefresh = useCallback(() => {
+    fetchPosts(true);
+  }, [fetchPosts]);
+
+  const openPost = (post: Post) => {
+    setSelectedPost(post);
     setModalVisible(true);
   };
 
-  const closePost = () => {
-    setModalVisible(false);
-  };
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text className="mt-4" style={{ color: colors.secondaryText }}>Loading posts...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
-    <View className="flex-1" style={{ backgroundColor: colors.background }}>
-      <Header />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        <View className="pb-10">
-          <JournalHeader />
-          <FeaturedPost post={posts[0]} onPress={() => openPost(posts[0])} />
-          <PostList posts={posts.slice(1)} onSelectPost={openPost} />
+        <Header />
+
+        <View className="px-5 pt-8 gap-2">
+          <Text className="text-xs font-bold tracking-[2px]" style={{ color: colors.primary }}>
+            BLOG
+          </Text>
+          <Text className="text-[40px] font-bold leading-[44px]" style={{ color: colors.text }}>
+            Blog
+          </Text>
+          <Text className="text-base leading-6" style={{ color: colors.secondaryText }}>
+            Notes, working sketches, and the occasional strong opinion on interface craft.
+          </Text>
         </View>
+
+        {posts.length === 0 ? (
+          <View className="flex-1 justify-center items-center py-20">
+            <Text style={{ color: colors.secondaryText }}>No posts found.</Text>
+          </View>
+        ) : (
+          <View className="px-5 pb-10 gap-4">
+            {posts.map((post) => (
+              <TouchableOpacity
+                key={post.id}
+                onPress={() => openPost(post)}
+                className="p-4 rounded-2xl border"
+                style={{ backgroundColor: colors.card, borderColor: colors.border }}
+                activeOpacity={0.7}
+              >
+                {post.featured_image && (
+                  <Image
+                    source={{ uri: post.featured_image }}
+                    className="w-full h-40 rounded-xl mb-3"
+                    resizeMode="cover"
+                  />
+                )}
+                <Text className="text-sm font-medium uppercase tracking-wide" style={{ color: colors.primary }}>
+                  {post.category}
+                </Text>
+                <Text className="text-xl font-bold mt-1" style={{ color: colors.text }}>
+                  {post.title}
+                </Text>
+                <Text className="text-sm mt-1" style={{ color: colors.secondaryText }} numberOfLines={2}>
+                  {post.excerpt}
+                </Text>
+                <View className="flex-row items-center mt-2">
+                  <Text className="text-xs" style={{ color: colors.secondaryText }}>
+                    {post.date} · {post.readTime}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
       </ScrollView>
 
-      <PostModal post={selectedPost} visible={modalVisible} onClose={closePost} />
-    </View>
+      <PostModal
+        post={selectedPost}
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+      />
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});

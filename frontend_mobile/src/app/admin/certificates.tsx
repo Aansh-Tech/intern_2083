@@ -87,7 +87,7 @@ export default function AdminCertificatesScreen() {
   }, []);
 
   return (
-    <AdminLayout>
+    <AdminLayout refreshing={refreshing} onRefresh={refreshCertificates}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshCertificates} />}

@@ -1,75 +1,124 @@
-import { useMemo, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, RefreshControl } from "react-native";
+// src/components/admin_blog/BlogControl.tsx
+import { useMemo, useState, useEffect, useCallback } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  RefreshControl,
+} from "react-native";
 import { Plus, Search } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
 import BlogPostCard, { BlogPostItem } from "./BlogCard";
 import PostFormModal from "./PostForm";
-
-const initialPosts: BlogPostItem[] = [
-  {
-    id: "designing-for-quiet-interfaces",
-    title: "Designing for Quiet Interfaces",
-    slug: "designing-for-quiet-interfaces",
-    category: "Design",
-    status: "published",
-    date: "Oct 7, 2024",
-  },
-  {
-    id: "shipping-a-design-system-in-a-quarter",
-    title: "Shipping a Design System in a Quarter",
-    slug: "shipping-a-design-system-in-a-quarter",
-    category: "Systems",
-    status: "published",
-    date: "Aug 21, 2024",
-  },
-  {
-    id: "notes-on-typography",
-    title: "Notes on Typography",
-    slug: "notes-on-typography",
-    category: "Type",
-    status: "published",
-    date: "Jun 13, 2024",
-  },
-  {
-    id: "on-building-for-focus",
-    title: "On Building for Focus",
-    slug: "on-building-for-focus",
-    category: "Craft",
-    status: "draft",
-    date: null,
-  },
-];
-
-const formatToday = () =>
-  new Date().toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+import { useComments } from "../../hooks/useComments";
+import api from "../../services/api";
+import { getToken } from "../../utils/token";
 
 interface BlogControlProps {
   refreshing?: boolean;
   onRefresh?: () => void;
 }
 
-export default function BlogControl({ refreshing, onRefresh }: BlogControlProps) {
+const unwrapList = (response: any): any[] => {
+  if (response.data?.data?.data && Array.isArray(response.data.data.data)) {
+    return response.data.data.data;
+  }
+  if (Array.isArray(response.data)) {
+    return response.data;
+  }
+  if (response.data?.data && Array.isArray(response.data.data)) {
+    return response.data.data;
+  }
+  return [];
+};
+
+const unwrapItem = (response: any): any => {
+  if (response.data?.data?.data) return response.data.data.data;
+  if (response.data?.data) return response.data.data;
+  return response.data;
+};
+
+export default function BlogControl({ refreshing: refreshingProp, onRefresh }: BlogControlProps = {}) {
+  const [refreshing, setRefreshing] = useState(false);
+
+  const effectiveRefreshing = refreshingProp || refreshing;
   const { colors } = useTheme();
-  const [posts, setPosts] = useState<BlogPostItem[]>(initialPosts);
+  const [posts, setPosts] = useState<BlogPostItem[]>([]);
+  const [loadingPosts, setLoadingPosts] = useState(true);
   const [query, setQuery] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [editingPost, setEditingPost] = useState<BlogPostItem | null>(null);
 
-  const filteredPosts = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return posts;
-    return posts.filter(
-      (post) =>
-        post.title.toLowerCase().includes(q) ||
-        post.slug.toLowerCase().includes(q) ||
-        post.category.toLowerCase().includes(q)
-    );
-  }, [posts, query]);
+  const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
+  const [commentsMap, setCommentsMap] = useState<Record<string, any[]>>({});
+  const { fetchComments, deleteComment, loading } = useComments();
+
+  const fetchPosts = async () => {
+    try {
+      const token = await getToken();
+      const response = await api.get('/v1/admin/blog-posts', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const postsData = unwrapList(response);
+
+      const apiPosts = postsData.map((p: any) => {
+        let featuredImage = null;
+        if (p.images && p.images.length > 0) {
+          const featured = p.images.find((img: any) => img.is_primary) || p.images[0];
+          featuredImage = featured?.image?.url || null;
+        }
+        return {
+          id: String(p.id),
+          title: p.title,
+          slug: p.slug,
+          category: p.category || 'Uncategorized',
+          status: p.status || 'draft',
+          date: p.published_at
+            ? new Date(p.published_at).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })
+            : null,
+          featured_image: featuredImage,
+        };
+      });
+      setPosts(apiPosts);
+    } catch (error) {
+      console.error('Failed to fetch posts:', error);
+      Alert.alert('Error', 'Could not load blog posts.');
+      setPosts([]);
+    } finally {
+      setLoadingPosts(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await fetchPosts();
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
+
+  const handleParentRefresh = useCallback(async () => {
+    await fetchPosts().finally(() => onRefresh?.());
+  }, [onRefresh]);
+
+  useEffect(() => {
+    if (refreshingProp) {
+      handleParentRefresh();
+    }
+  }, [refreshingProp]);
 
   const openCreateModal = () => {
     setModalMode("create");
@@ -83,115 +132,204 @@ export default function BlogControl({ refreshing, onRefresh }: BlogControlProps)
     setModalVisible(true);
   };
 
-  const handleSubmit = (post: BlogPostItem) => {
+  const handleSubmit = async (post: BlogPostItem) => {
     setPosts((prev) => {
       const exists = prev.some((p) => p.id === post.id);
       return exists ? prev.map((p) => (p.id === post.id ? post : p)) : [post, ...prev];
     });
     setModalVisible(false);
+    setEditingPost(null);
   };
 
-  const togglePublish = (id: string) => {
-    setPosts((prev) =>
-      prev.map((post) => {
-        if (post.id !== id) return post;
-        const nextStatus = post.status === "published" ? "draft" : "published";
-        return {
-          ...post,
-          status: nextStatus,
-          date: nextStatus === "published" ? post.date ?? formatToday() : post.date,
-        };
-      })
-    );
+  const togglePublish = async (post: BlogPostItem) => {
+    try {
+      const newStatus = post.status === "published" ? "draft" : "published";
+      const token = await getToken();
+      await api.put(`/v1/blog-posts/${post.id}`, { status: newStatus }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPosts(
+        posts.map((p) =>
+          p.id === post.id ? { ...p, status: newStatus } : p
+        )
+      );
+    } catch (error) {
+      Alert.alert("Error", "Failed to update post status");
+    }
   };
 
-  const deletePost = (id: string, title: string) => {
-    Alert.alert("Delete post", `Delete "${title}"? This can't be undone.`, [
+  const deletePost = async (post: BlogPostItem) => {
+    Alert.alert("Delete Post", "Are you sure?", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Delete",
-        style: "destructive",
-        onPress: () => setPosts((prev) => prev.filter((post) => post.id !== id)),
+        onPress: async () => {
+          try {
+            const token = await getToken();
+            await api.delete(`/v1/blog-posts/${post.id}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            setPosts(posts.filter((p) => p.id !== post.id));
+          } catch (error) {
+            Alert.alert("Error", "Failed to delete post");
+          }
+        },
       },
     ]);
   };
 
+  const filteredPosts = useMemo(() => {
+    if (!query) return posts;
+    return posts.filter((post) =>
+      post.title.toLowerCase().includes(query.toLowerCase()) ||
+      post.category.toLowerCase().includes(query.toLowerCase())
+    );
+  }, [posts, query]);
+
+  const toggleComments = async (post: BlogPostItem) => {
+    if (expandedPostId === post.id) {
+      setExpandedPostId(null);
+      return;
+    }
+    setExpandedPostId(post.id);
+    if (commentsMap[post.id]) return;
+    try {
+      const comments = await fetchComments(post.slug);
+      setCommentsMap((prev) => ({
+        ...prev,
+        [post.id]: Array.isArray(comments) ? comments : [],
+      }));
+    } catch (err: any) {
+      Alert.alert("Error", err.message || "Could not load comments");
+    }
+  };
+
+  const handleDeleteComment = async (postId: string, commentId: string) => {
+    try {
+      await deleteComment(commentId);
+      setCommentsMap((prev) => ({
+        ...prev,
+        [postId]: (prev[postId] || []).filter((c) => c.id !== commentId),
+      }));
+    } catch (err: any) {
+      Alert.alert("Error", err.message || "Failed to delete comment");
+    }
+  };
+
   return (
     <View className="flex-1">
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerClassName="gap-5 px-5 pb-10"
+      <ScrollView className="flex-1" style={{ backgroundColor: colors.background }}
         refreshControl={
-          onRefresh ? <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} /> : undefined
-        }
-      >
-        <View className="flex-row items-start justify-between pt-2">
-          <View className="gap-1">
-            <Text className="text-[26px] font-bold" style={{ color: colors.text }}>
-              Blog posts
-            </Text>
-            <Text className="text-[14px]" style={{ color: colors.secondaryText }}>
-              {posts.length} total
-            </Text>
-          </View>
+          <RefreshControl refreshing={effectiveRefreshing} onRefresh={handleRefresh} />
+        }>
+        <View className="p-4">
+          <Text className="text-2xl font-bold" style={{ color: colors.text }}>
+            Blog Posts
+          </Text>
+        </View>
 
-          <TouchableOpacity
-            className="h-11 flex-row items-center gap-2 rounded-full px-4"
-            style={{ backgroundColor: colors.primary }}
-            activeOpacity={0.85}
-            onPress={openCreateModal}
+        <View className="px-4 pb-4">
+          <View
+            className="flex-row items-center gap-2 px-3 py-2 rounded-lg"
+            style={{ backgroundColor: colors.background }}
           >
-            <Plus size={16} color={colors.text} />
-            <Text className="text-[14px] font-semibold" style={{ color: colors.text }}>
-              New
+            <Search size={20} color={colors.secondaryText} />
+            <TextInput
+              placeholder="Search posts..."
+              placeholderTextColor={colors.secondaryText}
+              value={query}
+              onChangeText={setQuery}
+              className="flex-1"
+              style={{ color: colors.text }}
+            />
+          </View>
+        </View>
+
+        <View className="px-4 pb-4">
+          <TouchableOpacity
+            onPress={openCreateModal}
+            className="flex-row items-center justify-center gap-2 py-3 rounded-lg"
+            style={{ backgroundColor: colors.primary }}
+          >
+            <Plus size={20} color="#fff" />
+            <Text className="font-semibold" style={{ color: "#fff" }}>
+              Create Post
             </Text>
           </TouchableOpacity>
         </View>
 
-        <View
-          className="h-14 flex-row items-center gap-3 rounded-2xl border px-4"
-          style={{ backgroundColor: colors.card, borderColor: colors.border }}
-        >
-          <Search size={18} color={colors.secondaryText} />
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder="Search posts..."
-            placeholderTextColor={colors.secondaryText}
-            className="flex-1 text-[15px]"
-            style={{ color: colors.text }}
-            cursorColor={colors.primary}
-            selectionColor={colors.primary}
-          />
-        </View>
+        {loadingPosts ? (
+          <View className="items-center justify-center py-8">
+            <Text style={{ color: colors.secondaryText }}>Loading posts...</Text>
+          </View>
+        ) : filteredPosts.length === 0 ? (
+          <View className="items-center justify-center py-8">
+            <Text style={{ color: colors.secondaryText }}>No posts found</Text>
+          </View>
+        ) : (
+          filteredPosts.map((post) => (
+            <View key={post.id} className="px-4 pb-4">
+              <BlogPostCard
+                post={post}
+                onTogglePublish={() => togglePublish(post)}
+                onEdit={() => openEditModal(post)}
+                onDelete={() => deletePost(post)}
+              />
 
-        <View className="gap-4">
-          {filteredPosts.map((post) => (
-            <BlogPostCard
-              key={post.id}
-              post={post}
-              onTogglePublish={() => togglePublish(post.id)}
-              onEdit={() => openEditModal(post)}
-              onDelete={() => deletePost(post.id, post.title)}
-            />
-          ))}
+              <TouchableOpacity
+                onPress={() => toggleComments(post)}
+                className="mt-2 py-2"
+              >
+                <Text style={{ color: colors.primary }}>
+                  {expandedPostId === post.id ? "Hide comments" : "View comments"}
+                </Text>
+              </TouchableOpacity>
 
-          {filteredPosts.length === 0 && (
-            <Text
-              className="pt-6 text-center text-[14px]"
-              style={{ color: colors.secondaryText }}
-            >
-              No posts match your search.
-            </Text>
-          )}
-        </View>
+              {expandedPostId === post.id && (
+                <View className="mt-3 ml-2 border-l-2" style={{ borderColor: colors.border }}>
+                  {loading ? (
+                    <Text style={{ color: colors.secondaryText }} className="pl-3 py-2">
+                      Loading comments...
+                    </Text>
+                  ) : (commentsMap[post.id] && commentsMap[post.id].length === 0) ? (
+                    <Text style={{ color: colors.secondaryText }} className="pl-3 py-2">
+                      No comments yet
+                    </Text>
+                  ) : (
+                    (commentsMap[post.id] || []).map((comment) => (
+                      <View key={comment.id} className="pl-3 py-2 border-b" style={{ borderColor: colors.border }}>
+                        <Text style={{ color: colors.text }} className="font-semibold">
+                          {comment.name || "Anonymous"}
+                        </Text>
+                        <Text style={{ color: colors.secondaryText }} className="text-sm">
+                          {comment.comment}
+                        </Text>
+                        <TouchableOpacity
+                          onPress={() => handleDeleteComment(post.id, comment.id)}
+                          className="mt-1"
+                        >
+                          <Text style={{ color: "#ef4444" }} className="text-xs font-semibold">
+                            Delete
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    ))
+                  )}
+                </View>
+              )}
+            </View>
+          ))
+        )}
       </ScrollView>
 
       <PostFormModal
         visible={modalVisible}
         mode={modalMode}
         initialPost={editingPost}
-        onClose={() => setModalVisible(false)}
+        onClose={() => {
+          setModalVisible(false);
+          setEditingPost(null);
+        }}
         onSubmit={handleSubmit}
       />
     </View>
