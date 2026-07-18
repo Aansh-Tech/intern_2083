@@ -1,24 +1,29 @@
 import * as SecureStore from "expo-secure-store";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const TOKEN_KEY = "portfolio_token";
 
-let memoryToken: string | null = null;
-
-export async function saveToken(token: string, persist = true) {
-  memoryToken = token;
-  if (persist) {
+export async function saveToken(token: string, remember = false) {
+  try {
     await SecureStore.setItemAsync(TOKEN_KEY, token);
-  } else {
-    await SecureStore.deleteItemAsync(TOKEN_KEY);
+  } catch {
+    // Fallback to AsyncStorage if SecureStore fails
+    await AsyncStorage.setItem(TOKEN_KEY, token);
   }
 }
 
 export async function getToken() {
-  if (memoryToken) return memoryToken;
-  return SecureStore.getItemAsync(TOKEN_KEY);
+  try {
+    return await SecureStore.getItemAsync(TOKEN_KEY);
+  } catch {
+    return await AsyncStorage.getItem(TOKEN_KEY);
+  }
 }
 
 export async function removeToken() {
-  memoryToken = null;
-  await SecureStore.deleteItemAsync(TOKEN_KEY);
+  try {
+    await SecureStore.deleteItemAsync(TOKEN_KEY);
+  } catch {
+    await AsyncStorage.removeItem(TOKEN_KEY);
+  }
 }

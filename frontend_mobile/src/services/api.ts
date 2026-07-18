@@ -10,8 +10,10 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(async config => {
-  const token = await getToken();
+  console.log("Base URL:", config.baseURL);
+  console.log("Request URL:", config.url);
 
+  const token = await getToken();
   console.log("Stored token:", token);
 
   if (token) {

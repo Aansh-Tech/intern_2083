@@ -1,3 +1,4 @@
+// src/components/admin_blog/BlogControl.tsx
 import { useMemo, useState, useEffect } from "react";
 import {
   View,
@@ -13,11 +14,7 @@ import BlogPostCard, { BlogPostItem } from "./BlogCard";
 import PostFormModal from "./PostForm";
 import { useComments } from "../../hooks/useComments";
 import api from "../../services/api";
-
-const formatToday = (): string => {
-  const now = new Date();
-  return now.toISOString().split("T")[0];
-};
+import { getToken } from "../../utils/token";
 
 export default function BlogControl() {
   const { colors } = useTheme();
@@ -32,12 +29,13 @@ export default function BlogControl() {
   const [commentsMap, setCommentsMap] = useState<Record<string, any[]>>({});
   const { fetchComments, deleteComment, loading } = useComments();
 
-  // Fetch
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await api.get('/v1/blog-posts');
-        // Laravel: response.data.data.data
+        const token = await getToken();
+        const response = await api.get('/v1/admin/blog-posts', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         let postsData = [];
         if (response.data?.data?.data && Array.isArray(response.data.data.data)) {
           postsData = response.data.data.data;
@@ -46,24 +44,31 @@ export default function BlogControl() {
         } else if (response.data?.data && Array.isArray(response.data.data)) {
           postsData = response.data.data;
         } else {
-          console.warn('Unexpected posts structure:', response.data);
           throw new Error('Unexpected API response');
         }
 
-        const apiPosts = postsData.map((p: any) => ({
-          id: p.id,
-          title: p.title,
-          slug: p.slug,
-          category: p.category || 'Uncategorized',
-          status: p.status || 'published',
-          date: p.published_at
-            ? new Date(p.published_at).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              })
-            : formatToday(),
-        }));
+        const apiPosts = postsData.map((p: any) => {
+          let featuredImage = null;
+          if (p.images && p.images.length > 0) {
+            const featured = p.images.find((img: any) => img.is_primary) || p.images[0];
+            featuredImage = featured?.image?.url || null;
+          }
+          return {
+            id: p.id,
+            title: p.title,
+            slug: p.slug,
+            category: p.category || 'Uncategorized',
+            status: p.status || 'draft',
+            date: p.published_at
+              ? new Date(p.published_at).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                })
+              : null,
+            featured_image: featuredImage,
+          };
+        });
         setPosts(apiPosts);
       } catch (error) {
         console.error('Failed to fetch posts:', error);
@@ -76,7 +81,6 @@ export default function BlogControl() {
     fetchPosts();
   }, []);
 
-  
   const openCreateModal = () => {
     setModalMode("create");
     setEditingPost(null);
@@ -89,46 +93,22 @@ export default function BlogControl() {
     setModalVisible(true);
   };
 
-  const handleSubmit = async (formData: { title: string; slug: string; category: string; status: BlogPostItem["status"] }) => {
-    try {
-      if (modalMode === "create") {
-        const response = await api.post('/v1/blog-posts', formData);
-        const newPost: BlogPostItem = {
-          id: response.data.id,
-          title: response.data.title,
-          slug: response.data.slug,
-          category: response.data.category || formData.category,
-          status: (response.data.status as BlogPostItem["status"]) || formData.status,
-          date: response.data.published_at
-            ? new Date(response.data.published_at).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              })
-            : formatToday(),
-        };
-        setPosts([newPost, ...posts]);
-      } else if (editingPost) {
-        await api.put(`/v1/blog-posts/${editingPost.id}`, formData);
-        setPosts(
-          posts.map((p) =>
-            p.id === editingPost.id
-              ? { ...p, title: formData.title, slug: formData.slug, category: formData.category, status: formData.status }
-              : p
-          )
-        );
-      }
-      setModalVisible(false);
-      setEditingPost(null);
-    } catch (error) {
-      Alert.alert("Error", "Failed to save post");
-    }
+  const handleSubmit = async (post: BlogPostItem) => {
+    setPosts((prev) => {
+      const exists = prev.some((p) => p.id === post.id);
+      return exists ? prev.map((p) => (p.id === post.id ? post : p)) : [post, ...prev];
+    });
+    setModalVisible(false);
+    setEditingPost(null);
   };
 
   const togglePublish = async (post: BlogPostItem) => {
     try {
       const newStatus = post.status === "published" ? "draft" : "published";
-      await api.put(`/v1/blog-posts/${post.id}`, { status: newStatus });
+      const token = await getToken();
+      await api.put(`/v1/blog-posts/${post.id}`, { status: newStatus }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setPosts(
         posts.map((p) =>
           p.id === post.id ? { ...p, status: newStatus } : p
@@ -146,7 +126,10 @@ export default function BlogControl() {
         text: "Delete",
         onPress: async () => {
           try {
-            await api.delete(`/v1/blog-posts/${post.id}`);
+            const token = await getToken();
+            await api.delete(`/v1/blog-posts/${post.id}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
             setPosts(posts.filter((p) => p.id !== post.id));
           } catch (error) {
             Alert.alert("Error", "Failed to delete post");
@@ -164,17 +147,15 @@ export default function BlogControl() {
     );
   }, [posts, query]);
 
-  
   const toggleComments = async (post: BlogPostItem) => {
     if (expandedPostId === post.id) {
       setExpandedPostId(null);
       return;
     }
     setExpandedPostId(post.id);
-    if (commentsMap[post.id]) return; 
+    if (commentsMap[post.id]) return;
     try {
       const comments = await fetchComments(post.slug);
-      
       setCommentsMap((prev) => ({
         ...prev,
         [post.id]: Array.isArray(comments) ? comments : [],
@@ -205,7 +186,6 @@ export default function BlogControl() {
           </Text>
         </View>
 
-        {/* Search */}
         <View className="px-4 pb-4">
           <View
             className="flex-row items-center gap-2 px-3 py-2 rounded-lg"
@@ -223,7 +203,6 @@ export default function BlogControl() {
           </View>
         </View>
 
-        {/* Create Button */}
         <View className="px-4 pb-4">
           <TouchableOpacity
             onPress={openCreateModal}
@@ -237,7 +216,6 @@ export default function BlogControl() {
           </TouchableOpacity>
         </View>
 
-        {/* Posts List */}
         {loadingPosts ? (
           <View className="items-center justify-center py-8">
             <Text style={{ color: colors.secondaryText }}>Loading posts...</Text>
@@ -282,7 +260,7 @@ export default function BlogControl() {
                           {comment.name || "Anonymous"}
                         </Text>
                         <Text style={{ color: colors.secondaryText }} className="text-sm">
-                          {comment.content}
+                          {comment.comment}
                         </Text>
                         <TouchableOpacity
                           onPress={() => handleDeleteComment(post.id, comment.id)}

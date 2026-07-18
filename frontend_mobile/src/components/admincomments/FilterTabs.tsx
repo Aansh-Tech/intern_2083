@@ -2,7 +2,7 @@ import { memo } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { useTheme } from "../../context/useTheme";
 
-type FilterValue = "all" | "pending" | "approved" | "spam";
+export type FilterValue = "all" | "pending" | "approved" | "spam";
 
 interface FilterTabsProps {
   value: FilterValue;
@@ -48,5 +48,4 @@ function FilterTabs({ value, onChange }: FilterTabsProps) {
   );
 }
 
-export type { FilterValue };
 export default memo(FilterTabs);

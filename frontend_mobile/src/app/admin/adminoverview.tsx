@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { View, ActivityIndicator } from "react-native";
+import { View, ActivityIndicator, Text } from "react-native";
 import { useRouter } from "expo-router";
 import { useTheme } from "../../context/useTheme";
 import AdminLayout from "../../components/adminoverview/AdminLayout";
@@ -32,6 +32,7 @@ export default function AdminOverviewScreen() {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background }}>
         <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={{ marginTop: 12, color: colors.secondaryText }}>Loading dashboard...</Text>
       </View>
     );
   }

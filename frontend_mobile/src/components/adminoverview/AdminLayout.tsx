@@ -1,3 +1,4 @@
+// src/components/adminoverview/AdminLayout.tsx
 import { View, ScrollView, RefreshControl } from "react-native";
 import { useTheme } from "../../context/useTheme";
 
@@ -9,16 +10,12 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children, refreshing, onRefresh }: AdminLayoutProps) {
   const { colors } = useTheme();
-
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView
-        style={{ flex: 1 }}
-        showsVerticalScrollIndicator={false}
+        contentContainerClassName="pb-10"
         refreshControl={
-          refreshing !== undefined && onRefresh ? (
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          ) : undefined
+          onRefresh ? <RefreshControl refreshing={refreshing || false} onRefresh={onRefresh} /> : undefined
         }
       >
         {children}

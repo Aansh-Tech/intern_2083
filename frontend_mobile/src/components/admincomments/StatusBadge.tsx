@@ -13,8 +13,9 @@ interface StatusBadgeProps {
 }
 
 function StatusBadge({ status }: StatusBadgeProps) {
-  const bg = colorMap[status] + "20";
-  const color = colorMap[status];
+  const safeStatus = status ?? "pending";
+  const bg = colorMap[safeStatus] + "20";
+  const color = colorMap[safeStatus];
 
   return (
     <View
@@ -25,7 +26,7 @@ function StatusBadge({ status }: StatusBadgeProps) {
         className="text-[11px] font-semibold capitalize"
         style={{ color }}
       >
-        {status}
+        {safeStatus}
       </Text>
     </View>
   );

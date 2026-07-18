@@ -1,4 +1,5 @@
-import { memo, useCallback } from "react";
+// src/components/adminoverview/AdminOverviewTabs.tsx
+import { memo } from "react";
 import { Text, TouchableOpacity, ScrollView } from "react-native";
 import { useTheme } from "../../context/useTheme";
 

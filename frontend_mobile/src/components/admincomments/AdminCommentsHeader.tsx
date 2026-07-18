@@ -8,6 +8,7 @@ interface AdminCommentsHeaderProps {
 
 function AdminCommentsHeader({ pendingCount }: AdminCommentsHeaderProps) {
   const { colors } = useTheme();
+  const count = typeof pendingCount === "number" ? pendingCount : 0;
 
   return (
     <View className="px-5 pt-4">
@@ -15,7 +16,7 @@ function AdminCommentsHeader({ pendingCount }: AdminCommentsHeaderProps) {
         Comments
       </Text>
       <Text className="text-[13px] mt-0.5" style={{ color: colors.secondaryText }}>
-        {pendingCount} awaiting review
+        {String(count)} awaiting review
       </Text>
     </View>
   );

@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import { View } from "react-native";
+import { View, ActivityIndicator, Text } from "react-native";
 import AdminLayout from "../../components/adminoverview/AdminLayout";
 import AdminCommentsHeader from "../../components/admincomments/AdminCommentsHeader";
 import SearchBar from "../../components/admincomments/SearchBar";
@@ -8,9 +8,11 @@ import type { FilterValue } from "../../components/admincomments/FilterTabs";
 import CommentsList from "../../components/admincomments/CommentsList";
 import EmptyComments from "../../components/admincomments/EmptyComments";
 import { useComment } from "../../context/CommentContext";
+import { useTheme } from "../../context/useTheme";
 
 export default function AdminCommentsScreen() {
-  const { comments, loading, refreshing, refreshComments, pendingCount, approveComment, rejectComment, deleteComment } =
+  const { colors } = useTheme();
+  const { comments, loading, pendingCount, approveComment, rejectComment, deleteComment } =
     useComment();
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<FilterValue>("all");
@@ -30,10 +32,10 @@ export default function AdminCommentsScreen() {
       const q = searchQuery.toLowerCase();
       result = result.filter(
         (c) =>
-          c.name.toLowerCase().includes(q) ||
-          c.email.toLowerCase().includes(q) ||
-          c.blogTitle.toLowerCase().includes(q) ||
-          c.comment.toLowerCase().includes(q)
+          (c.name?.toLowerCase() || "").includes(q) ||
+          (c.email?.toLowerCase() || "").includes(q) ||
+          (c.blogTitle?.toLowerCase() || "").includes(q) ||
+          (c.comment?.toLowerCase() || "").includes(q)
       );
     }
 
@@ -53,14 +55,27 @@ export default function AdminCommentsScreen() {
     [deleteComment]
   );
 
+  if (loading) {
+    return (
+      <AdminLayout>
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text className="mt-4" style={{ color: colors.secondaryText }}>
+            Loading comments...
+          </Text>
+        </View>
+      </AdminLayout>
+    );
+  }
+
   return (
-    <AdminLayout refreshing={refreshing} onRefresh={refreshComments}>
+    <AdminLayout>
       <AdminCommentsHeader pendingCount={pendingCount} />
       <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
       <View className="pt-4">
         <FilterTabs value={filter} onChange={setFilter} />
       </View>
-      {loading ? null : displayedComments.length === 0 ? (
+      {displayedComments.length === 0 ? (
         <EmptyComments />
       ) : (
         <CommentsList
