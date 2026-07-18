@@ -59,7 +59,7 @@ export default function AdminLayout() {
   }
 
   const stackNav = (
-    <Stack key={theme}
+    <Stack
       screenOptions={{
         headerShown: false,
         animation: "slide_from_right",

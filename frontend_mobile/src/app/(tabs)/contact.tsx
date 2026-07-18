@@ -29,7 +29,8 @@
 // });
 
 import { useCallback, useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, SafeAreaView, StyleSheet, RefreshControl } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet, RefreshControl } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Mail, Phone, MapPin, Send } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import Header from "../../components/homepage/Header";

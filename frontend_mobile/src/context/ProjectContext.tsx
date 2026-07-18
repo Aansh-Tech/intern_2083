@@ -9,7 +9,7 @@ import {
 
 import type { Project } from "../types/project";
 import * as projectService from "../services/project";
-import { getToken } from "../utils/token";
+//import { getToken } from "../utils/token";
 
 // interface ProjectContextType {
 //   projects: Project[];
@@ -48,7 +48,8 @@ export function ProjectProvider({
     try {
       console.log("Fetching projects from Laravel...");
       //const data = await projectService.getProjects();
-      const data = await projectService.getProjects(true);
+      //const data = await projectService.getProjects(true);
+      const data = await projectService.getProjects();
       console.log("Projects from API:", data);
       setProjects(data);
     } catch (error) {
@@ -80,28 +81,42 @@ export function ProjectProvider({
   //   })();
   // }, [loadProjects]);
 
+  // useEffect(() => {
+  // const init = async () => {
+  //   console.log("[ProjectContext] init effect running, checking token...");
+  //   //const token = await getToken();
+  //   console.log("[ProjectContext] token present:", !!token);
+
+  //  // if (token) {
+  //     console.log("[ProjectContext] loading projects on init...");
+  //     try {
+  //      // await loadProjects();
+  //     } catch (error) {
+  //       console.log("[ProjectContext] loadProjects on init threw:", error);
+  //     }
+  //   }
+
+  //   setLoading(false);
+  //   console.log("[ProjectContext] init complete, loading=false");
+  // };
+
+
   useEffect(() => {
   const init = async () => {
-    console.log("[ProjectContext] init effect running, checking token...");
-    const token = await getToken();
-    console.log("[ProjectContext] token present:", !!token);
+    console.log("[ProjectContext] Loading public projects...");
 
-    if (token) {
-      console.log("[ProjectContext] loading projects on init...");
-      try {
-        await loadProjects();
-      } catch (error) {
-        console.log("[ProjectContext] loadProjects on init threw:", error);
-      }
+    try {
+      await loadProjects();
+    } catch (error) {
+      console.log("[ProjectContext] Failed to load projects:", error);
+    } finally {
+      setLoading(false);
+      console.log("[ProjectContext] init complete");
     }
-
-    setLoading(false);
-    console.log("[ProjectContext] init complete, loading=false");
   };
 
   init();
 }, [loadProjects]);
-
 
   const addProject = async (data: any) => {
   await projectService.createProject(data);

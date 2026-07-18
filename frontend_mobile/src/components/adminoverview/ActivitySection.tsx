@@ -1,4 +1,4 @@
-import { memo } from "react";
+  import { memo } from "react";
 import { View, Text } from "react-native";
 import ActivityItem from "./ActivityItem";
 import { useTheme } from "../../context/useTheme";

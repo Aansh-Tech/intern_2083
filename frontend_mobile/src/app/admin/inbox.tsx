@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
 import { View } from "react-native";
+import { useFocusEffect } from "expo-router";
 import AdminLayout from "../../components/adminoverview/AdminLayout";
 import InboxHeader from "../../components/admininbox/InboxHeader";
 import SearchBar from "../../components/admininbox/SearchBar";
@@ -16,6 +17,12 @@ export default function AdminInboxScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<FilterValue>("all");
   const [selectedMessage, setSelectedMessage] = useState<InboxMessage | null>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshMessages();
+    }, [refreshMessages])
+  );
 
   const displayedMessages = useMemo(() => {
     let result = messages;

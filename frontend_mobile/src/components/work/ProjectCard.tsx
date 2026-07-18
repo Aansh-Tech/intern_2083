@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, Linking } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { ArrowUpRight } from "lucide-react-native";
+import { useRouter } from "expo-router";
 import { useTheme } from "../../context/useTheme";
 import StatusBadge from "./StatusBadge";
 import { Project } from "./ProjectsData";
@@ -11,6 +12,7 @@ interface ProjectCardProps {
 
 export default function ProjectCard({ project }: ProjectCardProps) {
   const { colors } = useTheme();
+  const router = useRouter();
 
   const openLink = (url?: string) => {
     if (url) Linking.openURL(url);
@@ -58,7 +60,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
             className="flex-row items-center justify-center gap-1.5 px-[18px] h-11 rounded-[30px]"
             style={{ backgroundColor: colors.primary }}
             activeOpacity={0.8}
-            onPress={() => openLink(project.viewDetailsUrl)}
+            onPress={() => router.push(`/project/${project.id}` as any)}
           >
             <Text
               className="text-sm font-semibold"

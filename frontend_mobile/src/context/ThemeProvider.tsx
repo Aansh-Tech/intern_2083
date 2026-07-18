@@ -2,7 +2,6 @@ import { useState, useMemo, useCallback } from "react";
 import {
   LayoutAnimation,
   Platform,
-  UIManager,
 } from "react-native";
 import {
   ThemeContext,
@@ -11,13 +10,6 @@ import {
   ThemeMode,
   ThemeContextType,
 } from "./ThemeContext";
-
-if (
-  Platform.OS === "android" &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<ThemeMode>("dark");

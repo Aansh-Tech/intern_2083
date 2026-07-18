@@ -44,6 +44,31 @@ export async function getProjects(admin = false) {
   }));
 }
 
+export async function getProject(id: string) {
+  const response = await api.get(`/v1/projects/${id}`);
+  const project = response.data.data;
+
+  return {
+    id: String(project.id),
+    title: project.title,
+    slug: project.slug,
+    category: project.subtitle ?? "",
+    description: project.description,
+    status: project.status === "published" ? "completed" as const : "in-progress" as const,
+    featured: project.is_featured,
+    technologies: typeof project.technologies === "string"
+      ? project.technologies.split(",").map((t: string) => t.trim()).filter(Boolean)
+      : [],
+    gradient: ["#5B5FEF", "#2F8AFE"] as [string, string],
+    githubUrl: project.github_link,
+    viewDetailsUrl: project.live_link,
+    image: project.image ?? undefined,
+    displayOrder: project.id,
+    dateAdded: project.created_at,
+    completed: project.status === "published",
+  };
+}
+
 export async function createProject(data: any) {
   const payload = {
     title: data.title,

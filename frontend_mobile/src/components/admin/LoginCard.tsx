@@ -30,7 +30,7 @@ export default function LoginCard({ children }: LoginCardProps) {
           className="w-14 h-14 rounded-full items-center justify-center"
           style={{ backgroundColor: colors.primary + "20" }}
         >
-          <Lock size={24} color="#FFFFFF" strokeWidth={2.5} />
+          <Lock size={24} color={colors.text} strokeWidth={2.5} />
         </View>
         <View className="flex-1">
           <Text className="text-[12px] font-semibold uppercase tracking-[2px] mb-1" style={{ color: colors.primary }}>

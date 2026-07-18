@@ -1,6 +1,7 @@
 import { useEffect } from "react";
+import { Platform, StatusBar } from "react-native";
 import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
+import * as NavigationBar from "expo-navigation-bar";
 import { ThemeProvider } from "../context/ThemeProvider";
 import { ProfileProvider } from "../context/ProfileContext";
 import { ProjectProvider } from "../context/ProjectContext";
@@ -20,6 +21,12 @@ function RootLayoutInner() {
     return () => console.log("[RootLayout] Inner unmounted.");
   }, []);
 
+  useEffect(() => {
+    if (Platform.OS === "android") {
+      NavigationBar.setStyle(isDark ? "dark" : "light");
+    }
+  }, [isDark]);
+
   return (
     <>
       <Stack
@@ -34,7 +41,7 @@ function RootLayoutInner() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="admin" />
       </Stack>
-      <StatusBar style={isDark ? "light" : "dark"} />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
     </>
   );
 }

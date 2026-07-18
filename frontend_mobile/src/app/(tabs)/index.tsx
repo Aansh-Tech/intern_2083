@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
-import { SafeAreaView, ScrollView, StyleSheet, View, RefreshControl } from "react-native";
+import { ScrollView, StyleSheet, View, RefreshControl } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Header from "../../components/homepage/Header";
 import HeroSection from "../../components/homepage/HeroSection";
