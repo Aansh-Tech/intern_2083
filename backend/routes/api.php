@@ -33,8 +33,9 @@ Route::prefix('v1')->group(function () {
     Route::get('/projects/{slug}', [ProjectController::class, 'show']);
     Route::get('/blog-posts', [BlogPostController::class, 'index']);
     Route::get('/blog-posts/{slug}', [BlogPostController::class, 'show']);
-    Route::post('/comments', [CommentController::class, 'store']);
-    Route::post('/contact', [ContactController::class, 'store']);
+    Route::get('/blog-posts/{slug}/comments', [CommentController::class, 'index']);
+    Route::post('/comments', [CommentController::class, 'store'])->middleware('throttle:5,1');
+    Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:5,1');
     Route::get('/certificates', [CertificateController::class, 'index']);
     Route::get('/certificates/{id}', [CertificateController::class, 'show']);
 });
@@ -51,7 +52,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::patch('/contact/{id}/read', [ContactController::class, 'markAsRead']);
     Route::delete('/contact/{id}', [ContactController::class, 'destroy']);
 
-    Route::get('/blog-posts/{slug}/comments', [CommentController::class, 'index']);
+
     Route::get('/comments', [CommentController::class, 'indexAll']);
     Route::patch('/comments/{id}', [CommentController::class, 'updateStatus']);
     Route::delete('/comments/{id}', [CommentController::class, 'destroy']);

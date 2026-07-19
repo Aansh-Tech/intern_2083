@@ -124,19 +124,19 @@ class ProjectController extends Controller
             ], 404);
         }
 
-        $validated = $request->validate([
-            'title' => 'sometimes|required|string|max:255',
-            'slug' => 'sometimes|required|string|max:191|unique:projects,slug,' . $project->id,
-            'subtitle' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'content' => 'nullable|string',
-            'github_link' => 'nullable|string|max:255',
-            'live_link' => 'nullable|string|max:255',
-            'technologies' => 'nullable|string|max:255',
-            'is_featured' => 'boolean',
-            'status' => 'in:draft,published,archived',
-            'completed_at' => 'nullable|date',
-        ]);
+      $validated = $request->validate([
+    'title' => 'required|string|max:255',
+    'slug' => 'sometimes|required|string|max:191|unique:projects,slug,' . $project->id,
+    'subtitle' => 'nullable|string|max:255',
+    'description' => 'nullable|string',
+    'content' => 'nullable|string',
+    'github_link' => 'nullable|string|max:255',
+    'live_link' => 'nullable|string|max:255',
+    'technologies' => 'nullable|string|max:255',
+    'is_featured' => 'boolean',
+    'status' => 'in:draft,published,archived',
+    'completed_at' => 'nullable|date',
+]);
 
         $project->update($validated);
 
