@@ -6,6 +6,9 @@ import ImageViewer from "../admin_certificates/ImageViewer";
 import { useTheme } from "../../context/useTheme";
 import { useCertificates } from "../../context/CertificateContext";
 
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
 export default function CertificatesSection() {
   const { colors } = useTheme();
   const { certificates } = useCertificates();

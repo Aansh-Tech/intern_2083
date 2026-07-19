@@ -7,6 +7,10 @@ import QuickActionsSection from "../../components/adminoverview/QuickActionsSect
 import ActivitySection from "../../components/adminoverview/ActivitySection";
 import { useDashboard } from "../../context/DashboardContext";
 
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
+
 export default function AdminOverviewScreen() {
   const router = useRouter();
   const { dashboard, refreshing, refreshDashboard } = useDashboard();

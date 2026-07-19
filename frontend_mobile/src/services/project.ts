@@ -1,5 +1,9 @@
 import api from "./api";
 
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
+
 export async function getProjects(admin = false) {
   const endpoint = admin ? "/v1/admin/projects" : "/v1/projects";
 

@@ -12,6 +12,9 @@ import MessageModal from "../../components/admininbox/MessageModal";
 import { useInbox } from "../../context/InboxContext";
 import type { InboxMessage } from "../../types/inbox";
 
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
 export default function AdminInboxScreen() {
   const { messages, loading, refreshing, refreshMessages, unreadCount, markAsRead, deleteMessage } = useInbox();
   const [searchQuery, setSearchQuery] = useState("");

@@ -1,6 +1,10 @@
 import api from "./api";
 import type { Comment } from "../types/comment";
 
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
+
 const unwrapList = (response: any): any[] => {
   console.log("[commentService] unwrapList - COMPLETE RESPONSE:", JSON.stringify(response.data, null, 2).substring(0, 500));
   const raw = response.data;

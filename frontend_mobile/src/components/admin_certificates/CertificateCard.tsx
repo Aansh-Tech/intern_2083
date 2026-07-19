@@ -4,6 +4,10 @@ import { Trash2, Award } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
 import type { Certificate } from "../../types/certificate";
 
+
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
 interface CertificateCardProps {
   certificate: Certificate;
   onDelete: (id: string) => void;

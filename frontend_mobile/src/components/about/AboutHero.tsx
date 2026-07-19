@@ -4,6 +4,10 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { useTheme } from "../../context/useTheme";
 import { useProfile } from "../../context/ProfileContext";
 
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
+
 const defaultSocialLinks: { key: string; iconName: string; url: string }[] = [
   { key: "github", iconName: "logo-github", url: "https://github.com/aneez11" },
   { key: "linkedin", iconName: "logo-linkedin", url: "https://www.linkedin.com/in/anish-shrestha-4ba524122/" },

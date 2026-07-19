@@ -2,6 +2,7 @@ import {
   createContext,
   useContext,
   useState,
+  useEffect,
   useCallback,
   useMemo,
   useRef,
@@ -15,6 +16,10 @@ import { useSkills } from "./SkillsContext";
 import { useComment } from "./CommentContext";
 import * as dashboardService from "../services/dashboard";
 
+
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
 function formatTimeAgo(dateStr: string): string {
   const now = Date.now();
   const then = new Date(dateStr).getTime();
@@ -99,10 +104,19 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   const [blogPosts, setBlogPosts] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const busyRef = useRef(false);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const fetchBlogCount = useCallback(async () => {
     try {
       const count = await dashboardService.getBlogCount();
+      if (!mountedRef.current) return;
       setBlogPosts(count);
     } catch {
       console.log("Failed to fetch blog count");
@@ -132,6 +146,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       console.log("[DashboardContext] error.message:", error.message);
       console.log("[DashboardContext] error.stack:", error.stack);
     } finally {
+      if (!mountedRef.current) return;
       setRefreshing(false);
       busyRef.current = false;
       console.log("[DashboardContext] refreshDashboard() — finally: refreshing=false, busy=false");

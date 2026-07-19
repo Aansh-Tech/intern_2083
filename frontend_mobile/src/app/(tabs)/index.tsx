@@ -15,6 +15,10 @@ import { useProject } from "../../context/ProjectContext";
 import { useSkills } from "../../context/SkillsContext";
 import { useProfile } from "../../context/ProfileContext";
 
+
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
 export default function HomeScreen() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();

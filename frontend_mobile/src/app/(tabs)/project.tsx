@@ -8,6 +8,11 @@ import ProjectList from "../../components/work/Projectlist";
 import { useProject } from "../../context/ProjectContext";
 import { useTheme } from "../../context/useTheme";
 
+
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
+
 export default function ProjectScreen() {
   const { colors } = useTheme();
   const { projects, loading, refreshing, refreshProjects } = useProject();

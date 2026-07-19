@@ -26,6 +26,10 @@
 // }
 import * as authService from "../services/auth";
 
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
+
 let loginCallCount = 0;
 
 export async function login(

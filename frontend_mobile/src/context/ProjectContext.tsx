@@ -5,10 +5,16 @@ import {
   useState,
   ReactNode,
   useCallback,
+  useRef,
 } from "react";
 
 import type { Project } from "../types/project";
 import * as projectService from "../services/project";
+
+
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
 //import { getToken } from "../utils/token";
 
 // interface ProjectContextType {
@@ -43,14 +49,21 @@ export function ProjectProvider({
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const loadProjects = useCallback(async () => {
     try {
       console.log("Fetching projects from Laravel...");
-      //const data = await projectService.getProjects();
-      //const data = await projectService.getProjects(true);
       const data = await projectService.getProjects();
       console.log("Projects from API:", data);
+      if (!mountedRef.current) return;
       setProjects(data);
     } catch (error) {
       console.log("Failed to load projects", error);
@@ -64,6 +77,7 @@ export function ProjectProvider({
   try {
     await loadProjects();
   } finally {
+    if (!mountedRef.current) return;
     setRefreshing(false);
   }
 }, [loadProjects]);
@@ -102,6 +116,7 @@ export function ProjectProvider({
 
 
   useEffect(() => {
+  let mounted = true;
   const init = async () => {
     console.log("[ProjectContext] Loading public projects...");
 
@@ -110,12 +125,16 @@ export function ProjectProvider({
     } catch (error) {
       console.log("[ProjectContext] Failed to load projects:", error);
     } finally {
+      if (!mounted) return;
       setLoading(false);
       console.log("[ProjectContext] init complete");
     }
   };
 
   init();
+  return () => {
+    mounted = false;
+  };
 }, [loadProjects]);
 
   const addProject = async (data: any) => {

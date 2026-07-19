@@ -20,6 +20,9 @@ import api from "../../services/api";
 import { getToken } from "../../utils/token";
 import { resolveImageUrl } from "../../services/image";
 
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
 const slugify = (text: string) =>
   text
     .toLowerCase()

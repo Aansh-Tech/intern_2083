@@ -8,6 +8,9 @@ import { useProject } from "../../context/ProjectContext";
 import { useTheme } from "../../context/useTheme";
 import type { Project } from "../../types/project";
 
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
 export default function AdminProjectsScreen() {
   const { colors } = useTheme();
   const { projects, loading, refreshing, refreshProjects, addProject, editProject, deleteProject, toggleFeatured, toggleCompleted } = useProject();

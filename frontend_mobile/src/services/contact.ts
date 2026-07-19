@@ -11,7 +11,9 @@ import api from "./api";
 
 //   return response.data.data;
 // }
-
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
 export async function submitContact(data: {
   name: string;
   email: string;

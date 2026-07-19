@@ -1,6 +1,10 @@
 import axios from "axios";
 import { getToken } from "../utils/token";
 
+
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
 const baseConfig = {
   baseURL: process.env.EXPO_PUBLIC_API_BASE_URL,
   headers: {

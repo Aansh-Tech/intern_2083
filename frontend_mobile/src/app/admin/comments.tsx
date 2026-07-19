@@ -11,6 +11,11 @@ import EmptyComments from "../../components/admincomments/EmptyComments";
 import { useComment } from "../../context/CommentContext";
 import { useTheme } from "../../context/useTheme";
 
+
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
+
 export default function AdminCommentsScreen() {
   const { colors } = useTheme();
   const { comments, loading, pendingCount, approveComment, rejectComment, deleteComment, refreshComments } =

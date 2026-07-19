@@ -10,6 +10,9 @@ import {
 import type { Skill, SkillCategory } from "../types/skill";
 import * as skillService from "../services/skill";
 
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
 
 interface SkillsContextType {
   skills: Skill[];
@@ -38,11 +41,20 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
   const [refreshing, setRefreshing] = useState(false);
   const skillsRef = useRef(skills);
   skillsRef.current = skills;
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const loadSkills = useCallback(async () => {
     console.log("[SkillsContext] loadSkills() called. Current skills count:", skillsRef.current.length);
     try {
       const data = await skillService.getSkills();
+      if (!mountedRef.current) return;
       console.log("[SkillsContext] getSkills returned", data.length, "skills");
       setSkills(data);
       console.log("[SkillsContext] setSkills() called with", data.length, "items");
@@ -51,6 +63,7 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
       console.log("[SkillsContext] error.message:", error.message);
       console.log("[SkillsContext] error.stack:", error.stack);
     }
+    if (!mountedRef.current) return;
     setLoading(false);
     console.log("[SkillsContext] loadSkills() complete, loading=false");
   }, []);
@@ -61,6 +74,7 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
     try {
       await loadSkills();
     } finally {
+      if (!mountedRef.current) return;
       setRefreshing(false);
       console.log("[SkillsContext] refreshSkills() complete, skills count:", skillsRef.current.length);
     }

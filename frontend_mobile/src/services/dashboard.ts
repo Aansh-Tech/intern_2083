@@ -1,5 +1,7 @@
 import api from "./api";
-
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
 export async function getBlogCount(): Promise<number> {
   try {
     const response = await api.get("/v1/blog-posts");

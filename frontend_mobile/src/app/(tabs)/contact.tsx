@@ -52,6 +52,10 @@ export default function ContactScreen() {
   const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; email?: string; subject?: string; message?: string }>({});
 
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
+
   const validate = useCallback(() => {
     const newErrors: typeof errors = {};
     if (!name.trim()) newErrors.name = "Name is required";

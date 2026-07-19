@@ -1,6 +1,11 @@
 import { useState, useCallback } from 'react';
 import api from '../services/api';
 
+
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
+
 const normalizeComment = (c: any): any => ({
   id: String(c.id),
   blog_post_id: c.blog_post_id,

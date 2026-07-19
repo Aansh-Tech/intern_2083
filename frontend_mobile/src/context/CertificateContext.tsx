@@ -4,11 +4,15 @@ import {
   useState,
   useEffect,
   useCallback,
+  useRef,
   type ReactNode,
 } from "react";
 import type { Certificate } from "../types/certificate";
 import * as certificateService from "../services/certificate";
 
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
 interface CertificateContextType {
   certificates: Certificate[];
   loading: boolean;
@@ -39,10 +43,19 @@ export function CertificateProvider({ children }: { children: ReactNode }) {
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const loadCertificates = useCallback(async () => {
     try {
       const data = await certificateService.getCertificates();
+      if (!mountedRef.current) return;
       setCertificates(data);
     } catch {
       console.log("Failed to load certificates");
@@ -54,15 +67,21 @@ export function CertificateProvider({ children }: { children: ReactNode }) {
     try {
       await loadCertificates();
     } finally {
+      if (!mountedRef.current) return;
       setRefreshing(false);
     }
   }, [loadCertificates]);
 
   useEffect(() => {
+    let mounted = true;
     (async () => {
       await loadCertificates();
+      if (!mounted) return;
       setLoading(false);
     })();
+    return () => {
+      mounted = false;
+    };
   }, [loadCertificates]);
 
   const addCertificate = useCallback(

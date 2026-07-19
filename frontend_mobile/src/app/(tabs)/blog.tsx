@@ -6,6 +6,11 @@ import Header from "../../components/homepage/Header";
 import PostModal from "../../components/blog/PostModal";
 import api from "../../services/api";
 
+
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
+
 interface Post {
   id: string;
   blogId: string;

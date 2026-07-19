@@ -9,6 +9,9 @@ import { useSkills } from "../../context/SkillsContext";
 import { useTheme } from "../../context/useTheme";
 import type { Skill, SkillCategory } from "../../types/skill";
 
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
 export default function AdminSkillsScreen() {
   const { colors } = useTheme();
   const { skills, getSkillsByCategory, addSkill, updateSkill, deleteSkill, loading, refreshing, refreshSkills } = useSkills();

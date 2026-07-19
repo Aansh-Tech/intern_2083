@@ -1,6 +1,10 @@
 import api from "./api";
 import { resolveImageUrl } from "./image";
 
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
+
 export interface BackendImageItem {
   id?: number;
   image_path?: string;

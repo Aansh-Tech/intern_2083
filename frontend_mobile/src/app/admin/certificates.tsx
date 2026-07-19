@@ -11,6 +11,10 @@ import { useTheme } from "../../context/useTheme";
 import { uploadImage } from "../../services/image";
 import type { Certificate } from "../../types/certificate";
 
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
+
 export default function AdminCertificatesScreen() {
   const { colors } = useTheme();
   const { certificates, loading, refreshing, refreshCertificates, addCertificate, editCertificate, deleteCertificate } = useCertificates();

@@ -1,5 +1,9 @@
 import api from "./api";
 
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
+
 const API_BASE_URL = (process.env.EXPO_PUBLIC_API_BASE_URL ?? "").replace(/\/+$/, "");
 const SERVER_ROOT = API_BASE_URL.replace(/\/api$/i, "");
 

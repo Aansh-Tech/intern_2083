@@ -1,8 +1,12 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from "react";
 import type { Comment } from "../types/comment";
 import { getAllComments, approveComment, rejectComment, deleteComment } from "../services/commentService";
 import { getToken } from "../utils/token";
 
+
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
 interface CommentContextType {
   comments: Comment[];
   loading: boolean;
@@ -18,21 +22,33 @@ const CommentContext = createContext<CommentContextType | undefined>(undefined);
 export const CommentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const fetchComments = useCallback(async () => {
     setLoading(true);
     try {
       const token = await getToken();
       if (!token) {
+        if (!mountedRef.current) return;
         setComments([]);
         return;
       }
       const data = await getAllComments();
+      if (!mountedRef.current) return;
       setComments(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Failed to fetch comments:", error);
+      if (!mountedRef.current) return;
       setComments([]);
     } finally {
+      if (!mountedRef.current) return;
       setLoading(false);
     }
   }, []);

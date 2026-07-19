@@ -13,6 +13,9 @@ import { CertificateProvider } from "../context/CertificateContext";
 import { useTheme } from "../context/useTheme";
 import "../../global.css";
 
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
 function RootLayoutInner() {
   const { isDark, colors } = useTheme();
 

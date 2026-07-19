@@ -5,6 +5,7 @@ import {
   useState,
   useCallback,
   useMemo,
+  useRef,
   type ReactNode,
 } from "react";
 
@@ -12,6 +13,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { InboxMessage } from "../types/inbox";
 import * as contactService from "../services/contact";
 
+
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
 const READ_IDS_KEY = "@inbox_read_ids";
 
 async function loadReadIds(): Promise<Set<string>> {
@@ -56,6 +61,14 @@ export function InboxProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<InboxMessage[]>([]);
   const [loading, setLoading] =useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const loadMessages = useCallback(async () => {
     try {
@@ -78,6 +91,7 @@ export function InboxProvider({ children }: { children: ReactNode }) {
         isRead: readIds.has(String(item.id)) || (item.read ?? false),
       }));
 
+      if (!mountedRef.current) return;
       setMessages(formatted);
     } catch (error) {
       console.log("Failed to load inbox", error);
@@ -87,10 +101,12 @@ export function InboxProvider({ children }: { children: ReactNode }) {
   const refreshMessages = useCallback(async () => {
     setRefreshing(true);
     await loadMessages();
+    if (!mountedRef.current) return;
     setRefreshing(false);
   }, [loadMessages]);
 
   useEffect(() => {
+    let mounted = true;
     (async () => {
       console.log("[InboxContext] init effect running...");
       try {
@@ -98,9 +114,13 @@ export function InboxProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         console.log("[InboxContext] loadMessages on init threw:", error);
       }
+      if (!mounted) return;
       setLoading(false);
       console.log("[InboxContext] init complete, loading=false");
     })();
+    return () => {
+      mounted = false;
+    };
   }, [loadMessages]);
 
   const addMessage = async (data: {

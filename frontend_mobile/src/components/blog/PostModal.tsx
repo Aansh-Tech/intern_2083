@@ -6,6 +6,10 @@ import { useState, useEffect, useCallback } from "react";
 import { useComments } from "../../hooks/useComments";
 import api from "../../services/api";
 
+
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
 interface Post {
   id: string;
   slug: string;

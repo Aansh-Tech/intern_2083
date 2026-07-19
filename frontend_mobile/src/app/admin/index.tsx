@@ -18,6 +18,10 @@ import PasswordField from "../../components/admin/PasswordField";
 import { login } from "../../utils/adminAuth";
 import { useTheme } from "../../context/useTheme";
 
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
+
 export default function AdminLoginScreen() {
   const { colors } = useTheme();
   const router = useRouter();

@@ -2,6 +2,10 @@ import api from "./api";
 import type { ProfileData } from "../types/profile";
 import { resolveImageUrl, uploadImage as sharedUploadImage } from "./image";
 
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
+
 export async function getProfile(): Promise<ProfileData> {
   const response = await api.get("/v1/profile");
   const rawData = response.data.data ?? response.data;

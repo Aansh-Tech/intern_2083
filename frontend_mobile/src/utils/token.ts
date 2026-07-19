@@ -1,6 +1,10 @@
 import * as SecureStore from "expo-secure-store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
+
 const TOKEN_KEY = "portfolio_token";
 
 
