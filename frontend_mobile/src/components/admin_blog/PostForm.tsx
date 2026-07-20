@@ -34,6 +34,7 @@ interface PostFormModalProps {
   visible: boolean;
   mode: "create" | "edit";
   initialPost: BlogPostItem | null;
+  initialData?: any;
   onClose: () => void;
   onSubmit: (post: BlogPostItem) => void;
 }
@@ -42,6 +43,7 @@ export default function PostFormModal({
   visible,
   mode,
   initialPost,
+  initialData,
   onClose,
   onSubmit,
 }: PostFormModalProps) {
@@ -64,13 +66,13 @@ export default function PostFormModal({
 
   useEffect(() => {
     if (visible) {
-      if (initialPost) {
-        fetchPostData(initialPost.id);
-      } else {
+      if (initialPost && initialData) {
+        populateFromData(initialData);
+      } else if (!initialPost) {
         resetForm();
       }
     }
-  }, [visible, initialPost]);
+  }, [visible, initialPost, initialData]);
 
   const unwrapItem = (response: any): any => {
     if (response.data?.data?.data) return response.data.data.data;
@@ -78,39 +80,29 @@ export default function PostFormModal({
     return response.data;
   };
 
-  const fetchPostData = async (id: string) => {
-    try {
-      const token = await getToken();
-      const response = await api.get(`/v1/blog-posts/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = unwrapItem(response);
-      setTitle(data.title || "");
-      setSlug(data.slug || "");
-      setExcerpt(data.excerpt || "");
-      setContent(data.content || "");
-      setCategory(data.category || "");
-      setTags(data.tags ? (Array.isArray(data.tags) ? data.tags.join(", ") : String(data.tags)) : "");
-      setStatus(data.status || "draft");
-      setPublishedAt(data.published_at
-        ? (() => {
-            const d = new Date(data.published_at);
-            return isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 16);
-          })()
-        : "");
-      setAllowComments(data.allow_comments ?? true);
-      if (data.images && data.images.length > 0) {
-        const featured = data.images.find((img: any) => img.is_primary) || data.images[0];
-        if (featured?.image?.url) {
-          setFeaturedImage(featured.image.url);
-          setImageId(featured.id);
-        }
+  const populateFromData = (data: any) => {
+    setTitle(data.title || "");
+    setSlug(data.slug || "");
+    setExcerpt(data.excerpt || "");
+    setContent(data.content || "");
+    setCategory(data.category || "");
+    setTags(data.tags ? (Array.isArray(data.tags) ? data.tags.join(", ") : String(data.tags)) : "");
+    setStatus(data.status || "draft");
+    setPublishedAt(data.published_at
+      ? (() => {
+          const d = new Date(data.published_at);
+          return isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 16);
+        })()
+      : "");
+    setAllowComments(data.allow_comments ?? true);
+    if (data.images && data.images.length > 0) {
+      const featured = data.images.find((img: any) => img.is_primary) || data.images[0];
+      if (featured?.image?.url) {
+        setFeaturedImage(featured.image.url);
+        setImageId(featured.id);
       }
-      setSlugTouched(!!data.slug);
-    } catch (error) {
-      console.error("Failed to fetch post data", error);
-      Alert.alert("Error", "Could not load post data.");
     }
+    setSlugTouched(!!data.slug);
   };
 
   const resetForm = () => {
@@ -272,7 +264,7 @@ export default function PostFormModal({
       const token = await getToken();
 
       if (mode === "create") {
-        const response = await api.post("/v1/blog-posts", postData, {
+        const response = await api.post("/v1/admin/blog-posts", postData, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = unwrapItem(response);
@@ -294,7 +286,7 @@ export default function PostFormModal({
         }
       } else {
         if (!initialPost) return;
-        const response = await api.put(`/v1/blog-posts/${initialPost.id}`, postData, {
+        const response = await api.put(`/v1/admin/blog-posts/${initialPost.id}`, postData, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = unwrapItem(response);

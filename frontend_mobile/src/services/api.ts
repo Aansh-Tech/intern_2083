@@ -21,7 +21,7 @@ function stripHost(url: string): string {
 
 function isPublicGet(url: string, method: string): boolean {
   const path = stripHost(url);
-  return method === "GET" && path.startsWith("/v1/blog-posts");
+  return method === "GET" && path.startsWith("/v1/blog-posts") && !path.startsWith("/v1/admin/blog-posts");
 }
 
 api.interceptors.request.use(async config => {
