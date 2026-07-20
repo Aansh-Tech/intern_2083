@@ -45,7 +45,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('projects', ProjectController::class)->except(['index', 'show']);
     Route::apiResource('skills', SkillController::class)->except(['index', 'show']);
     Route::apiResource('social-links', SocialLinkController::class)->except(['index', 'show']);
-    Route::apiResource('blog-posts', BlogPostController::class)->except(['index', 'show']);
+    Route::apiResource('/admin/blog-posts', BlogPostController::class)->except(['index', 'show']);
     Route::apiResource('certificates', CertificateController::class)->except(['index', 'show']);
 
     Route::get('/contact', [ContactController::class, 'index']);
