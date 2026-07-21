@@ -2,7 +2,7 @@ import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, Alert, Acti
 import { LinearGradient } from "expo-linear-gradient";
 import { X, Clock, Send } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useComments } from "../../hooks/useComments";
 import api from "../../services/api";
 
@@ -40,6 +40,14 @@ const unwrapItem = (response: any): any => {
 export default function PostModal({ post, visible, onClose }: PostModalProps) {
   const { colors } = useTheme();
   const { postComment, fetchComments, loading: submitting } = useComments();
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -60,6 +68,7 @@ export default function PostModal({ post, visible, onClose }: PostModalProps) {
     setLoadingDetail(true);
     try {
       const response = await api.get(`/v1/blog-posts/${p.slug}`);
+      if (!mountedRef.current) return;
       const data = unwrapItem(response);
       const featuredImage = data.images && data.images.length > 0
         ? (data.images.find((img: any) => img.is_primary) || data.images[0])?.image?.url
@@ -81,10 +90,11 @@ export default function PostModal({ post, visible, onClose }: PostModalProps) {
         author: data.author?.name || null,
       } as any);
     } catch (err) {
+      if (!mountedRef.current) return;
       console.error("Failed to fetch post detail, using list data:", err);
       setDetailPost(p);
     } finally {
-      setLoadingDetail(false);
+      if (mountedRef.current) setLoadingDetail(false);
     }
   };
 
@@ -93,6 +103,7 @@ export default function PostModal({ post, visible, onClose }: PostModalProps) {
     setLoadingComments(true);
     try {
       const data = await fetchComments(slug);
+      if (!mountedRef.current) return;
       console.log("[PostModal] Fetched comments:", data.length);
       console.log("[PostModal] Comment statuses:", data.map((c: any) => c.status));
       const approved = data.filter((c: any) => {
@@ -102,10 +113,11 @@ export default function PostModal({ post, visible, onClose }: PostModalProps) {
       console.log("[PostModal] Approved comments:", approved.length);
       setComments(approved);
     } catch (error) {
+      if (!mountedRef.current) return;
       console.error("[PostModal] Failed to load comments:", error);
       setComments([]);
     } finally {
-      setLoadingComments(false);
+      if (mountedRef.current) setLoadingComments(false);
     }
   }, [fetchComments]);
 
@@ -138,6 +150,7 @@ export default function PostModal({ post, visible, onClose }: PostModalProps) {
         email: email.trim(),
         content: content.trim(),
       });
+      if (!mountedRef.current) return;
       console.log("[PostModal] Comment submitted successfully. Refreshing comments from backend...");
       setName("");
       setEmail("");

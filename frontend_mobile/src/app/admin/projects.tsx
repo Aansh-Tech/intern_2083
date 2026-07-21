@@ -1,11 +1,13 @@
 import { useState, useCallback, useMemo } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Alert } from "react-native";
+import { useRouter } from "expo-router";
 import AdminLayout from "../../components/adminoverview/AdminLayout";
 import ProjectSearch from "../../components/adminprojects/ProjectSearch";
 import ProjectCard from "../../components/adminprojects/ProjectCard";
 import ProjectModal from "../../components/adminprojects/ProjectModal";
 import { useProject } from "../../context/ProjectContext";
 import { useTheme } from "../../context/useTheme";
+import { uploadImage } from "../../services/image";
 import type { Project } from "../../types/project";
 
 console.log = () => {};
@@ -16,10 +18,15 @@ export default function AdminProjectsScreen() {
   const { projects, loading, refreshing, refreshProjects, addProject, editProject, deleteProject, toggleFeatured, toggleCompleted } = useProject();
   console.log(useProject());
 
+  const handleAdminRefresh = useCallback(() => {
+    refreshProjects(true);
+  }, [refreshProjects]);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [editTarget, setEditTarget] = useState<Project | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
+  const router = useRouter();
 
   const displayedProjects = useMemo(() => {
     if (!searchQuery.trim()) return projects;
@@ -43,15 +50,33 @@ export default function AdminProjectsScreen() {
       featured: boolean;
       completed: boolean;
     }) => {
-      await addProject(data);
+      const imageUri = data.image && !data.image.startsWith("http") ? data.image : undefined;
+      const newProject = await addProject({ ...data, image: imageUri ? undefined : data.image });
+      if (imageUri && newProject?.id) {
+        try {
+          await uploadImage(imageUri, "project", newProject.id, { isPrimary: true });
+          await refreshProjects();
+        } catch (error) {
+          console.error("Failed to upload image for project:", error);
+        }
+      }
       setModalVisible(false);
     },
-    [addProject]
+    [addProject, refreshProjects]
   );
 
   const handleEdit = useCallback(
-    async (id: string, data: Partial<Project>) => {
-      await editProject(id, data);
+    async (id: string, data: any) => {
+      let image = data.image;
+      if (image && !image.startsWith("http")) {
+        try {
+          const resultUrl = await uploadImage(image, "project", id, { isPrimary: true });
+          if (resultUrl) image = resultUrl;
+        } catch (error) {
+          console.error("Failed to upload image for project:", error);
+        }
+      }
+      await editProject(id, { ...data, image });
       setEditTarget(null);
     },
     [editProject]
@@ -84,7 +109,7 @@ export default function AdminProjectsScreen() {
   );
 
   return (
-    <AdminLayout refreshing={refreshing} onRefresh={refreshProjects}>
+    <AdminLayout refreshing={refreshing} onRefresh={handleAdminRefresh}>
       <View className="px-5 pt-4">
         <View className="flex-row justify-between items-start">
           <View className="flex-1">
@@ -130,6 +155,7 @@ export default function AdminProjectsScreen() {
             <ProjectCard
               key={project.id}
               project={project}
+              onPress={() => router.push(`/project/${project.id}`)}
               onEdit={setEditTarget}
               onToggleFeatured={toggleFeatured}
               onToggleCompleted={toggleCompleted}
@@ -180,6 +206,8 @@ export default function AdminProjectsScreen() {
         onClose={() => { setModalVisible(false); setEditTarget(null); }}
         onSave={handleModalSave}
       />
+
+
     </AdminLayout>
   );
 }

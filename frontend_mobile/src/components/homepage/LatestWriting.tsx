@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import BlogCard from "./BlogCard";
@@ -31,22 +31,29 @@ export default function LatestWriting() {
   const router = useRouter();
   const [blogs, setBlogs] = useState<HomepageBlog[]>([]);
   const [loading, setLoading] = useState(true);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
+    mountedRef.current = true;
     const fetch = async () => {
       try {
         const response = await api.get("/v1/blog-posts");
+        if (!mountedRef.current) return;
         let items = unwrapList(response);
         items = items.filter((p: any) => p.status === "published");
         setBlogs(items.slice(0, 3));
       } catch (err) {
+        if (!mountedRef.current) return;
         console.error("Failed to fetch blogs for homepage:", err);
         setBlogs([]);
       } finally {
-        setLoading(false);
+        if (mountedRef.current) setLoading(false);
       }
     };
     fetch();
+    return () => {
+      mountedRef.current = false;
+    };
   }, []);
 
   return (

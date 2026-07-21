@@ -21,7 +21,19 @@ function stripHost(url: string): string {
 
 function isPublicGet(url: string, method: string): boolean {
   const path = stripHost(url);
-  return method === "GET" && path.startsWith("/v1/blog-posts") && !path.startsWith("/v1/admin/blog-posts");
+  if (method !== "GET") return false;
+  if (path.startsWith("/v1/admin/")) return false;
+  if (
+    path.startsWith("/v1/blog-posts") ||
+    path.startsWith("/v1/projects") ||
+    path.startsWith("/v1/skills") ||
+    path.startsWith("/v1/certificates") ||
+    path.startsWith("/v1/profile") ||
+    path.startsWith("/v1/social-links")
+  ) {
+    return true;
+  }
+  return false;
 }
 
 api.interceptors.request.use(async config => {

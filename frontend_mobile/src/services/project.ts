@@ -1,8 +1,19 @@
 import api from "./api";
+import { resolveImageUrl } from "./image";
 
 console.log = () => {};
 console.info = () => {};
 console.debug = () => {};
+
+function mapProjectImages(images: any[] | undefined): Array<{ id: string; url: string }> {
+  if (!images || !Array.isArray(images)) return [];
+  return images
+    .map((img: any) => {
+      const rawUrl = img.image?.url || img.url || img.path || "";
+      return rawUrl ? { id: String(img.id), url: resolveImageUrl(rawUrl) } : null;
+    })
+    .filter(Boolean) as Array<{ id: string; url: string }>;
+}
 
 export async function getProjects(admin = false) {
   const endpoint = admin ? "/v1/admin/projects" : "/v1/projects";
@@ -42,14 +53,18 @@ export async function getProjects(admin = false) {
 
     completed: project.status === "published",
 
+    image: project.image ?? undefined,
+    images: mapProjectImages(project.images),
+
     displayOrder: project.id,
 
     dateAdded: project.created_at,
+    updatedAt: project.updated_at || undefined,
   }));
 }
 
-export async function getProject(id: string) {
-  const response = await api.get(`/v1/projects/${id}`);
+export async function getProject(id: string, admin = false) {
+  const response = await api.get(admin ? `/v1/admin/projects/${id}` : `/v1/projects/${id}`);
   const project = response.data.data;
 
   return {
@@ -67,8 +82,10 @@ export async function getProject(id: string) {
     githubUrl: project.github_link,
     viewDetailsUrl: project.live_link,
     image: project.image ?? undefined,
+    images: mapProjectImages(project.images),
     displayOrder: project.id,
     dateAdded: project.created_at,
+    updatedAt: project.updated_at || undefined,
     completed: project.status === "published",
   };
 }

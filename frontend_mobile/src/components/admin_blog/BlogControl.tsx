@@ -1,5 +1,5 @@
 // src/components/admin_blog/BlogControl.tsx
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -59,6 +59,14 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
   const { fetchComments, deleteComment, loading } = useComments();
 
   const [rawPostsMap, setRawPostsMap] = useState<Record<string, any>>({});
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const fetchPosts = async () => {
     try {
@@ -66,6 +74,7 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
       const response = await api.get('/v1/admin/blog-posts', {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (!mountedRef.current) return;
       const postsData = unwrapList(response);
 
       const rawMap: Record<string, any> = {};
@@ -96,11 +105,12 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
       setRawPostsMap(rawMap);
       setPosts(apiPosts);
     } catch (error) {
+      if (!mountedRef.current) return;
       console.error('Failed to fetch posts:', error);
       Alert.alert('Error', 'Could not load blog posts.');
       setPosts([]);
     } finally {
-      setLoadingPosts(false);
+      if (mountedRef.current) setLoadingPosts(false);
     }
   };
 
@@ -113,11 +123,12 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
     try {
       await fetchPosts();
     } finally {
-      setRefreshing(false);
+      if (mountedRef.current) setRefreshing(false);
     }
   }, []);
 
   const handleParentRefresh = useCallback(async () => {
+    if (!mountedRef.current) return;
     await fetchPosts().finally(() => onRefresh?.());
   }, [onRefresh]);
 
@@ -157,6 +168,7 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
       await api.put(`/v1/admin/blog-posts/${post.id}`, { status: newStatus }, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (!mountedRef.current) return;
       setPosts(
         posts.map((p) =>
           p.id === post.id ? { ...p, status: newStatus } : p
@@ -178,6 +190,7 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
             await api.delete(`/v1/admin/blog-posts/${post.id}`, {
               headers: { Authorization: `Bearer ${token}` },
             });
+            if (!mountedRef.current) return;
             setPosts(posts.filter((p) => p.id !== post.id));
           } catch (error) {
             Alert.alert("Error", "Failed to delete post");
@@ -204,6 +217,7 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
     if (commentsMap[post.id]) return;
     try {
       const comments = await fetchComments(post.slug);
+      if (!mountedRef.current) return;
       setCommentsMap((prev) => ({
         ...prev,
         [post.id]: Array.isArray(comments) ? comments : [],
@@ -216,6 +230,7 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
   const handleDeleteComment = async (postId: string, commentId: string) => {
     try {
       await deleteComment(commentId);
+      if (!mountedRef.current) return;
       setCommentsMap((prev) => ({
         ...prev,
         [postId]: (prev[postId] || []).filter((c) => c.id !== commentId),

@@ -10,6 +10,8 @@ export interface Project {
   gradient: string[];
   githubUrl?: string;
   viewDetailsUrl?: string;
+  image?: string;
+  images?: Array<{ id: string; url: string }>;
 }
 
 export const projects: Project[] = [

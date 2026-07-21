@@ -2,19 +2,15 @@ import { View, Text, TextInput } from "react-native";
 import { useTheme } from "../../context/useTheme";
 
 interface IdentityFormProps {
-  name: string;
   role: string;
   bio: string;
-  onChangeName: (value: string) => void;
   onChangeRole: (value: string) => void;
   onChangeBio: (value: string) => void;
 }
 
 export default function IdentityForm({
-  name,
   role,
   bio,
-  onChangeName,
   onChangeRole,
   onChangeBio,
 }: IdentityFormProps) {
@@ -36,22 +32,6 @@ export default function IdentityForm({
       >
         IDENTITY
       </Text>
-
-      <View className="gap-2">
-        <Text className="text-[14px]" style={{ color: colors.secondaryText }}>
-          Name
-        </Text>
-        <TextInput
-          value={name}
-          onChangeText={onChangeName}
-          placeholder="Your name"
-          placeholderTextColor={colors.secondaryText}
-          className="h-12 rounded-2xl border px-4 text-[15px]"
-          style={inputStyle}
-          cursorColor={colors.primary}
-          selectionColor={colors.primary}
-        />
-      </View>
 
       <View className="gap-2">
         <Text className="text-[14px]" style={{ color: colors.secondaryText }}>

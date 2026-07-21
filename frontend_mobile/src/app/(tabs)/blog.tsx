@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { View, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Text, Image, RefreshControl, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../context/useTheme";
@@ -46,11 +46,20 @@ export default function BlogScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const fetchPosts = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
     try {
       const response = await api.get('/v1/blog-posts');
+      if (!mountedRef.current) return;
       const postsData = unwrapList(response);
       const published = postsData.filter((p: any) => p.status === "published");
 
@@ -77,10 +86,12 @@ export default function BlogScreen() {
       });
       setPosts(formattedPosts);
     } catch (error) {
+      if (!mountedRef.current) return;
       console.error('Failed to fetch posts:', error);
       Alert.alert('Error', 'Could not load blog posts.');
       setPosts([]);
     } finally {
+      if (!mountedRef.current) return;
       setLoading(false);
       if (isRefresh) setRefreshing(false);
     }

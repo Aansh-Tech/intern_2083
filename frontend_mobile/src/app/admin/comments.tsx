@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { View, ActivityIndicator, Text } from "react-native";
 import { useFocusEffect } from "expo-router";
 import AdminLayout from "../../components/adminoverview/AdminLayout";
@@ -30,13 +30,21 @@ export default function AdminCommentsScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<FilterValue>("all");
   const [refreshing, setRefreshing] = useState(false);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
       await refreshComments();
     } finally {
-      setRefreshing(false);
+      if (mountedRef.current) setRefreshing(false);
     }
   }, [refreshComments]);
 

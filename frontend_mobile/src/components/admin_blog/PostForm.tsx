@@ -1,5 +1,5 @@
 // src/components/admin_blog/PostFormModal.tsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -48,6 +48,14 @@ export default function PostFormModal({
   onSubmit,
 }: PostFormModalProps) {
   const { colors } = useTheme();
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
@@ -184,6 +192,7 @@ export default function PostFormModal({
       });
 
       console.log("Image upload success:", response.data);
+      if (!mountedRef.current) return null;
       setUploading(false);
       const result = response.data.data || response.data;
       const rawUrl = result.path || result.url || result.image || "";
@@ -191,6 +200,7 @@ export default function PostFormModal({
       console.log("Image upload resolved URL:", resolved);
       return resolved;
     } catch (error: any) {
+      if (!mountedRef.current) return null;
       console.error("Image upload failed:", error);
       setUploading(false);
       let message = "Failed to upload image.";
@@ -220,6 +230,7 @@ export default function PostFormModal({
         console.error("Failed to delete image", error);
       }
     }
+    if (!mountedRef.current) return;
     setFeaturedImage(null);
     setImageFile(null);
     setImageId(null);
@@ -267,6 +278,7 @@ export default function PostFormModal({
         const response = await api.post("/v1/admin/blog-posts", postData, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        if (!mountedRef.current) return;
         const data = unwrapItem(response);
         const rawDate = data.published_at;
         savedPost = {
@@ -289,6 +301,7 @@ export default function PostFormModal({
         const response = await api.put(`/v1/admin/blog-posts/${initialPost.id}`, postData, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        if (!mountedRef.current) return;
         const data = unwrapItem(response);
         const editRawDate = data.published_at;
         savedPost = {
@@ -315,6 +328,7 @@ export default function PostFormModal({
       resetForm();
       onClose();
     } catch (error) {
+      if (!mountedRef.current) return;
       console.error("Submit failed", error);
       Alert.alert("Error", "Failed to save post.");
     }

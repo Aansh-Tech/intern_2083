@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Linking } from "react-native";
+import { View, Text, Image, TouchableOpacity, Linking } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { ArrowUpRight } from "lucide-react-native";
 import { useRouter } from "expo-router";
@@ -13,6 +13,7 @@ interface ProjectCardProps {
 export default function ProjectCard({ project }: ProjectCardProps) {
   const { colors } = useTheme();
   const router = useRouter();
+  const projectImage = project.images?.[0]?.url ?? project.image;
 
   const openLink = (url?: string) => {
     if (url) Linking.openURL(url);
@@ -23,17 +24,35 @@ export default function ProjectCard({ project }: ProjectCardProps) {
       className="rounded-[20px] border overflow-hidden"
       style={{ backgroundColor: colors.card, borderColor: colors.border }}
     >
-      <LinearGradient
-        colors={project.gradient as [string, string]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        className="w-full aspect-[6.4] justify-start"
-      >
-        <View className="flex-row gap-2 p-4">
-          <StatusBadge variant={project.status} />
-          {project.featured && <StatusBadge variant="featured" />}
+      {projectImage ? (
+        <View className="w-full aspect-[6.4]">
+          <Image
+            source={{ uri: projectImage }}
+            className="w-full h-full"
+            resizeMode="cover"
+          />
+          <LinearGradient
+            colors={["rgba(0,0,0,0.4)", "transparent"]}
+            className="absolute inset-0"
+          />
+          <View className="absolute bottom-3 left-3 flex-row gap-2">
+            <StatusBadge variant={project.status} />
+            {project.featured && <StatusBadge variant="featured" />}
+          </View>
         </View>
-      </LinearGradient>
+      ) : (
+        <LinearGradient
+          colors={project.gradient as [string, string]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          className="w-full aspect-[6.4] justify-start"
+        >
+          <View className="flex-row gap-2 p-4">
+            <StatusBadge variant={project.status} />
+            {project.featured && <StatusBadge variant="featured" />}
+          </View>
+        </LinearGradient>
+      )}
 
       <View className="p-5 gap-1.5">
         <Text

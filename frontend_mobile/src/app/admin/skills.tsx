@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
-import { View, Text } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
+import { Plus } from "lucide-react-native";
 import AdminLayout from "../../components/adminoverview/AdminLayout";
 import SkillForm from "../../components/adminskills/SkillForm";
 import SkillSection from "../../components/adminskills/SkillSection";
@@ -27,6 +28,7 @@ export default function AdminSkillsScreen() {
   const [editName, setEditName] = useState("");
   const [editPercentage, setEditPercentage] = useState(50);
   const [editError, setEditError] = useState<string | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
 
   const handleAdd = useCallback(
     async (data: { category: SkillCategory; name: string; percentage: number }) => {
@@ -83,7 +85,23 @@ export default function AdminSkillsScreen() {
       </View>
 
       <View className="pt-6">
-        <SkillForm onAdd={handleAdd} />
+        {!showAddForm ? (
+          <View className="mx-5">
+            <TouchableOpacity
+              className="flex-row items-center justify-center gap-2 h-14 rounded-3xl border-2 border-dashed"
+              style={{ borderColor: colors.border }}
+              activeOpacity={0.7}
+              onPress={() => setShowAddForm(true)}
+            >
+              <Plus size={20} color={colors.primary} />
+              <Text className="text-[15px] font-bold" style={{ color: colors.primary }}>
+                Add Skill
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <SkillForm onAdd={handleAdd} onSuccess={() => setShowAddForm(false)} />
+        )}
       </View>
 
       {loading ? null : categories.length === 0 ? (

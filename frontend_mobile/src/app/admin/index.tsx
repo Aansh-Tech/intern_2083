@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -29,6 +29,14 @@ export default function AdminLoginScreen() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; auth?: string }>({});
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const validate = useCallback(() => {
     const newErrors: { email?: string; password?: string } = {};
@@ -58,6 +66,7 @@ export default function AdminLoginScreen() {
       success = await login(email, password);
     } catch (error: any) {
     }
+    if (!mountedRef.current) return;
 
     if (success) {
       Keyboard.dismiss();

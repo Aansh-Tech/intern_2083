@@ -1,34 +1,4 @@
-// import { View, Text, StyleSheet, SafeAreaView } from "react-native";
-// import { useTheme } from "../../context/useTheme";
-
-// export default function ContactScreen() {
-//   const { colors } = useTheme();
-
-//   return (
-//     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-//       <View style={styles.content}>
-//         <Text style={[styles.title, { color: colors.text }]}>Contact</Text>
-//       </View>
-//     </SafeAreaView>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//   },
-//   content: {
-//     flex: 1,
-//     alignItems: "center",
-//     justifyContent: "center",
-//   },
-//   title: {
-//     fontSize: 28,
-//     fontWeight: "bold",
-//   },
-// });
-
-import { useCallback, useState } from "react";
+import { useCallback, useState, useRef, useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Mail, Phone, MapPin, Send } from "lucide-react-native";
@@ -51,10 +21,18 @@ export default function ContactScreen() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; email?: string; subject?: string; message?: string }>({});
+  const mountedRef = useRef(true);
 
 console.log = () => {};
 console.info = () => {};
 console.debug = () => {};
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const validate = useCallback(() => {
     const newErrors: typeof errors = {};
@@ -71,13 +49,14 @@ console.debug = () => {};
     if (!validate()) return;
     setLoading(true);
     await addMessage({ name, email, subject, message });
+    if (!mountedRef.current) return;
     setName("");
     setEmail("");
     setSubject("");
     setMessage("");
     setLoading(false);
     setSuccess(true);
-    setTimeout(() => setSuccess(false), 3000);
+    setTimeout(() => { if (mountedRef.current) setSuccess(false); }, 3000);
   }, [validate, name, email, subject, message, addMessage]);
 
   const [refreshing, setRefreshing] = useState(false);
@@ -85,7 +64,7 @@ console.debug = () => {};
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await Promise.resolve();
-    setRefreshing(false);
+    if (mountedRef.current) setRefreshing(false);
   }, []);
 
   return (

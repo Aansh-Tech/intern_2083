@@ -1,11 +1,13 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useRouter, usePathname } from "expo-router";
 import { isLoggedIn, logout } from "../../utils/adminAuth";
 import { useTheme } from "../../context/useTheme";
+import { NotificationProvider } from "../../context/NotificationContext";
 import AdminOverviewHeader from "../../components/adminoverview/AdminOverviewHeader";
 import AdminOverviewTabs from "../../components/adminoverview/AdminOverviewTabs";
+import NotificationPanel from "../../components/adminoverview/NotificationPanel";
 
 
 console.log = () => {};
@@ -17,13 +19,19 @@ export default function AdminLayout() {
   const router = useRouter();
   const pathname = usePathname();
   const [checking, setChecking] = useState(true);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const mountedRef = useRef(true);
 
   const isLoginPage = pathname === "/admin" || pathname === "/admin/";
   const currentTab = pathname.split("/").pop() || "adminoverview";
 
   useEffect(() => {
+    mountedRef.current = true;
     console.log("[AdminLayout] checkAuth running...");
     checkAuth();
+    return () => {
+      mountedRef.current = false;
+    };
   }, []);
 
   async function checkAuth() {
@@ -34,6 +42,7 @@ export default function AdminLayout() {
     } catch (error: any) {
       console.log("[AdminLayout] isLoggedIn() threw:", error.message, error.stack);
     }
+    if (!mountedRef.current) return;
     console.log("[AdminLayout] isLoggedIn result:", loggedIn, "isLoginPage:", isLoginPage);
     if (!loggedIn && !isLoginPage) {
       console.log("[AdminLayout] Redirecting to /admin (login page)");
@@ -55,6 +64,10 @@ export default function AdminLayout() {
     [router]
   );
 
+  const handleNotificationPress = useCallback(() => {
+    setShowNotifications(true);
+  }, []);
+
   if (checking) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background }}>
@@ -68,7 +81,7 @@ export default function AdminLayout() {
       screenOptions={{
         headerShown: false,
         animation: "slide_from_right",
-        animationDuration: 200,
+        animationDuration: 2,
         gestureEnabled: true,
         contentStyle: { backgroundColor: colors.background },
       }}
@@ -86,16 +99,22 @@ export default function AdminLayout() {
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
-      {!isLoginPage && (
-        <SafeAreaView edges={["top"]} style={{ backgroundColor: colors.background }}>
-          <AdminOverviewHeader onSignOut={handleSignOut} />
-          <AdminOverviewTabs activeTab={currentTab} onTabChange={handleTabChange} />
-        </SafeAreaView>
-      )}
-      <View style={{ flex: 1 }}>
-        {stackNav}
+    <NotificationProvider>
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        {!isLoginPage && (
+          <SafeAreaView edges={["top"]} style={{ backgroundColor: colors.background }}>
+            <AdminOverviewHeader onSignOut={handleSignOut} onNotificationPress={handleNotificationPress} />
+            <AdminOverviewTabs activeTab={currentTab} onTabChange={handleTabChange} />
+          </SafeAreaView>
+        )}
+        <View style={{ flex: 1 }}>
+          {stackNav}
+        </View>
+        <NotificationPanel
+          visible={showNotifications}
+          onClose={() => setShowNotifications(false)}
+        />
       </View>
-    </View>
+    </NotificationProvider>
   );
 }

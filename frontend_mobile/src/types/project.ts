@@ -13,7 +13,9 @@ export interface Project {
   githubUrl?: string;
   viewDetailsUrl?: string;
   image?: string;
+  images?: Array<{ id: string; url: string }>;
   displayOrder: number;
   dateAdded: string;
+  updatedAt?: string;
   completed?: boolean;
 }
