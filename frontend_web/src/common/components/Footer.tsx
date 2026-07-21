@@ -1,27 +1,15 @@
 import { Link } from "react-router-dom";
-import { NAV_LINKS, ROUTES } from "../constants/routes";
-
-// TODO: replace with real data from social_links API once ready
-const SOCIAL_LINKS = [
-  { platform: "GitHub", url: "https://github.com" },
-  { platform: "LinkedIn", url: "https://linkedin.com" },
-  { platform: "Twitter", url: "https://twitter.com" },
-];
-
-// Hardcoded site config (remove SITE_CONFIG import)
-const SITE_CONFIG = {
-  brandPrefix: 'Anish',
-  brandSuffix: 'Shrestha',
-  footerBlurb: 'Building digital experiences with passion and precision.'
-};
+import { NAV_LINKS } from "../constants/routes";
+import { SITE_CONFIG } from "../constants/siteConfig";
+import { useSocialLinks } from "../context/SocialLinksContext";
 
 export function Footer() {
+  const socialLinks = useSocialLinks();
   const year = new Date().getFullYear();
 
   return (
     <footer className="border-t border-slate-200 bg-slate-100/80 dark:border-slate-800 dark:bg-slate-950">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-14 md:grid-cols-3">
-        {/* Brand blurb */}
         <div>
           <p className="text-lg font-bold text-slate-900 dark:text-white">
             <span className="text-indigo-600 dark:text-indigo-400">
@@ -34,7 +22,6 @@ export function Footer() {
           </p>
         </div>
 
-        {/* Navigate */}
         <div>
           <p className="text-sm font-semibold text-slate-900 dark:text-white">
             Navigate
@@ -53,24 +40,27 @@ export function Footer() {
           </ul>
         </div>
 
-        {/* Elsewhere */}
         <div>
           <p className="text-sm font-semibold text-slate-900 dark:text-white">
             Elsewhere
           </p>
           <ul className="mt-4 space-y-2">
-            {SOCIAL_LINKS.map((social) => (
-              <li key={social.platform}>
-                <a
-                  href={social.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-sm text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-300"
-                >
-                  {social.platform}
-                </a>
-              </li>
-            ))}
+            {socialLinks.length > 0 ? (
+              socialLinks.map((social) => (
+                <li key={social.id}>
+                  <a
+                    href={social.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-sm text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-300"
+                  >
+                    {social.platform}
+                  </a>
+                </li>
+              ))
+            ) : (
+              <li className="text-sm text-slate-400">No links added yet.</li>
+            )}
           </ul>
         </div>
       </div>

@@ -17,7 +17,7 @@ export const ROUTES = {
 
   // Disabled until backend support exists — see routes.tsx for commented-out routes
   // adminContactMessages: "/admin/contact-messages",
-  // adminBlogPosts: "/admin/blog-posts",
+  adminBlogPosts: "/admin/blog-posts",
   // adminComments: "/admin/comments",
   adminCertificates: "/admin/certificates",
 } as const;

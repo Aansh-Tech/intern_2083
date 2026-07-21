@@ -28,7 +28,7 @@ export const adminBlogPostsService = {
 
   async update(id: number, payload: Partial<BlogPost>): Promise<BlogPost> {
     const { data } = await apiClient.put<ApiResponse<BlogPost>>(
-      `/v1/blog-posts/${id}`,
+      `/v1/admin/blog-posts/${id}`,
       payload
     );
     if (!data.success) throw new Error(data.message ?? "Failed to update post");
@@ -37,7 +37,7 @@ export const adminBlogPostsService = {
 
   async remove(id: number): Promise<void> {
     const { data } = await apiClient.delete<ApiResponse<null>>(
-      `/v1/blog-posts/${id}`
+      `/v1/admin/blog-posts/${id}`
     );
     if (!data.success) throw new Error(data.message ?? "Failed to delete post");
   },
