@@ -1,43 +1,39 @@
-import { View, Text, TouchableOpacity, Linking, Image } from "react-native";
+import { View, Text, TouchableOpacity, Linking, Image, Alert, Platform } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { File, Paths } from "expo-file-system";
+import { StorageAccessFramework } from "expo-file-system/legacy";
 import { useTheme } from "../../context/useTheme";
 import { useProfile } from "../../context/ProfileContext";
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
-
-const defaultSocialLinks: { key: string; iconName: string; url: string }[] = [
-  { key: "github", iconName: "logo-github", url: "https://github.com/aneez11" },
-  { key: "linkedin", iconName: "logo-linkedin", url: "https://www.linkedin.com/in/anish-shrestha-4ba524122/" },
-  { key: "facebook", iconName: "logo-facebook", url: "https://www.facebook.com/shresthaanish51" },
-  { key: "instagram", iconName: "logo-instagram", url: "https://www.instagram.com/aneez_st" },
-  { key: "mail", iconName: "mail-outline", url: "mailto:shresthaanish51@gmail.com" },
-] as const;
+const platformIcons: Record<string, string> = {
+  github: "logo-github",
+  linkedin: "logo-linkedin",
+  facebook: "logo-facebook",
+  instagram: "logo-instagram",
+  email: "mail-outline",
+  website: "globe-outline",
+  twitter: "logo-twitter",
+  youtube: "logo-youtube",
+};
 
 export default function AboutHero() {
   const { colors } = useTheme();
-  const { profile } = useProfile();
+  const { profile, photoTimestamp } = useProfile();
 
   const name = profile.name ?? "Anish Shrestha";
   const role = profile.title ?? profile.subtitle ?? profile.headline ?? "Developer & Designer";
-  const avatarUrl = profile.avatar ?? profile.profile_image ?? null;
-  const resumeUrl = profile.resume ?? null;
-
-  if (!avatarUrl) {
-    console.log("[AboutHero] FAIL: Component received null image URL — profile.avatar:", profile.avatar, "profile.profile_image:", profile.profile_image);
-  } else {
-    console.log("[AboutHero] Image URL received:", avatarUrl.substring(0, 80));
-  }
+  const rawAvatar = profile.avatar ?? profile.profile_image ?? null;
+  const avatarUrl = rawAvatar?.startsWith("http") ? `${rawAvatar}${rawAvatar.includes('?') ? '&' : '?'}t=${photoTimestamp}` : rawAvatar;
+  const resumeUrl = profile.resume_url ?? null;
 
   const bioRaw = profile.bio ?? profile.description ?? "";
   const bioParagraphs = bioRaw ? bioRaw.split("\n").filter((p) => p.trim()) : [];
 
-  const socialLinksMap = profile.social_links ?? {};
-  const socialLinks = defaultSocialLinks.map((link) => ({
-    ...link,
-    url: socialLinksMap[link.key] ?? link.url,
+  const socialLinks = (profile.socialLinks ?? []).map((link) => ({
+    id: link.id,
+    iconName: platformIcons[link.platform.toLowerCase()] ?? "link-outline",
+    url: link.platform.toLowerCase() === "email" ? `mailto:${link.url}` : link.url,
   }));
 
   const initials = name
@@ -45,8 +41,38 @@ export default function AboutHero() {
     .map((n) => n[0])
     .join("");
 
-  const openLink = (url: string) => {
-    Linking.openURL(url).catch(() => {});
+  const openLink = (url: any) => {
+    const resolved = typeof url === "string" ? url : url?.url ?? String(url);
+    Linking.openURL(resolved).catch(() => {});
+  };
+
+  const downloadResume = async (url: string) => {
+    try {
+      const downloadedFile = await File.downloadFileAsync(url, Paths.document, { idempotent: true });
+
+      if (Platform.OS === "android") {
+        const safPermission = await StorageAccessFramework.requestDirectoryPermissionsAsync(
+          "Choose a folder to save the resume"
+        );
+        if (!safPermission.granted) {
+          Alert.alert("Permission Denied", "Please grant permission to save the file.");
+          return;
+        }
+        const safUri = await StorageAccessFramework.createFileAsync(
+          safPermission.directoryUri,
+          "Resume",
+          "application/pdf"
+        );
+        const base64 = await downloadedFile.base64();
+        await StorageAccessFramework.writeAsStringAsync(safUri, base64, {
+          encoding: "base64",
+        });
+      }
+
+      Alert.alert("Success", "Resume downloaded successfully.");
+    } catch (error: any) {
+      Alert.alert("Download Failed", error?.message ?? "Unable to download the resume. Please try again.");
+    }
   };
 
   return (
@@ -86,29 +112,42 @@ export default function AboutHero() {
       ))}
 
       {resumeUrl ? (
-        <TouchableOpacity
-          className="flex-row items-center justify-center gap-2 h-[54px] rounded-2xl mt-1"
-          style={{ backgroundColor: colors.primary }}
-          activeOpacity={0.85}
-          onPress={() => openLink(resumeUrl)}
-        >
-          <Ionicons name="download-outline" size={18} color={colors.text} />
-          <Text className="text-base font-semibold" style={{ color: colors.text }}>
-            Download résumé
-          </Text>
-        </TouchableOpacity>
+        <View className="flex-row gap-3 mt-1">
+          <TouchableOpacity
+            className="flex-1 flex-row items-center justify-center gap-2 h-[54px] rounded-2xl"
+            style={{ backgroundColor: colors.primary }}
+            activeOpacity={0.85}
+            onPress={() => openLink(resumeUrl)}
+          >
+            <Ionicons name="eye-outline" size={18} color={colors.text} />
+            <Text className="text-base font-semibold" style={{ color: colors.text }}>
+              View Resume
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="flex-1 flex-row items-center justify-center gap-2 h-[54px] rounded-2xl border"
+            style={{ backgroundColor: colors.card, borderColor: colors.border }}
+            activeOpacity={0.85}
+            onPress={() => downloadResume(resumeUrl)}
+          >
+            <Ionicons name="download-outline" size={18} color={colors.text} />
+            <Text className="text-base font-semibold" style={{ color: colors.text }}>
+              Download Resume
+            </Text>
+          </TouchableOpacity>
+        </View>
       ) : null}
 
       <View className="flex-row gap-2.5 mt-1">
-        {socialLinks.map(({ key, iconName, url }) => (
+        {socialLinks.map(({ id, iconName, url }) => (
           <TouchableOpacity
-            key={key}
-            className="flex-1 aspect-square rounded-[14px] border items-center justify-center"
+            key={id}
+            className="w-[44px] h-[44px] rounded-[14px] border items-center justify-center"
             style={[{ backgroundColor: colors.card, borderColor: colors.border }]}
             activeOpacity={0.7}
             onPress={() => openLink(url)}
           >
-            <Ionicons name={iconName as any} size={20} color={colors.secondaryText} />
+            <Ionicons name={iconName as any} size={16} color={colors.secondaryText} />
           </TouchableOpacity>
         ))}
       </View>

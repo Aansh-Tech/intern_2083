@@ -1,18 +1,19 @@
 import { memo } from "react";
-import { View, Text, TouchableOpacity, Linking } from "react-native";
+import { View, Text, Image, TouchableOpacity, Linking } from "react-native";
 import { ArrowUpRight, ExternalLink } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useTheme } from "../../context/useTheme";
 import type { Project } from "../../data/projects";
 
 function ProjectCard({
+  id,
   title,
   category,
   description,
   gradient,
   githubLink,
-  projectLink,
   featured,
+  image,
 }: Project) {
   const { colors } = useTheme();
   const router = useRouter();
@@ -36,18 +37,26 @@ function ProjectCard({
       <TouchableOpacity
         className="absolute top-3 right-3 w-8 h-8 rounded-full items-center justify-center z-10"
         style={{ backgroundColor: colors.background }}
-        onPress={() => router.push(projectLink as any)}
+        onPress={() => router.push("/(tabs)/project")}
         activeOpacity={0.7}
       >
         <ArrowUpRight size={16} color={colors.primary} />
       </TouchableOpacity>
 
-      <View style={[{ height: 160, backgroundColor: gradient[0] }]}>
-        <View
-          className="absolute inset-0"
-          style={[{ backgroundColor: gradient[1], opacity: 0.4 }]}
+      {image ? (
+        <Image
+          source={{ uri: image }}
+          style={{ width: "100%", height: 160 }}
+          resizeMode="cover"
         />
-      </View>
+      ) : (
+        <View style={[{ height: 160, backgroundColor: gradient[0] }]}>
+          <View
+            className="absolute inset-0"
+            style={[{ backgroundColor: gradient[1], opacity: 0.4 }]}
+          />
+        </View>
+      )}
 
       <View className="p-6 gap-2">
         <Text className="text-xs font-semibold uppercase tracking-[1px]" style={{ color: colors.primary }}>
@@ -66,7 +75,7 @@ function ProjectCard({
           <TouchableOpacity
             className="py-2.5 px-5 rounded-[20]"
             style={{ backgroundColor: colors.primary }}
-            onPress={() => router.push(projectLink as any)}
+            onPress={() => router.push(`/project/${id}`)}
             activeOpacity={0.8}
           >
             <Text className="text-[13px] font-semibold" style={{ color: colors.text }}>View Details</Text>

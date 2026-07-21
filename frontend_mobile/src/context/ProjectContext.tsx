@@ -27,10 +27,10 @@ interface ProjectContextType {
   projects: Project[];
   loading: boolean;
   refreshing: boolean;
-  refreshProjects: () => Promise<void>;
+  refreshProjects: (admin?: boolean) => Promise<void>;
 
-  addProject: (data: any) => Promise<void>;
-  editProject: (id: string, data: any) => Promise<void>;
+  addProject: (data: any) => Promise<any>;
+  editProject: (id: string, data: any) => Promise<any>;
   deleteProject: (id: string) => Promise<void>;
 
   toggleFeatured: (id: string) => Promise<void>;
@@ -58,10 +58,10 @@ export function ProjectProvider({
     };
   }, []);
 
-  const loadProjects = useCallback(async () => {
+  const loadProjects = useCallback(async (admin = false) => {
     try {
       console.log("Fetching projects from Laravel...");
-      const data = await projectService.getProjects();
+      const data = await projectService.getProjects(admin);
       console.log("Projects from API:", data);
       if (!mountedRef.current) return;
       setProjects(data);
@@ -71,11 +71,11 @@ export function ProjectProvider({
   }, []);
 
 
-  const refreshProjects = useCallback(async () => {
+  const refreshProjects = useCallback(async (admin = false) => {
   setRefreshing(true);
 
   try {
-    await loadProjects();
+    await loadProjects(admin);
   } finally {
     if (!mountedRef.current) return;
     setRefreshing(false);
@@ -138,13 +138,15 @@ export function ProjectProvider({
 }, [loadProjects]);
 
   const addProject = async (data: any) => {
-  await projectService.createProject(data);
+  const result = await projectService.createProject(data);
   await refreshProjects();
+  return result;
 };
 
 const editProject = async (id: string, data: any) => {
-  await projectService.updateProject(id, data);
+  const result = await projectService.updateProject(id, data);
   await refreshProjects();
+  return result;
 };
 
 const deleteProject = async (id: string) => {

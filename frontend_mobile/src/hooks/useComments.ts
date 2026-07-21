@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import api from '../services/api';
 
 
@@ -51,16 +51,26 @@ const unwrapList = (response: any): any[] => {
 export function useComments() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const postComment = useCallback(async (data: { blog_post_id: string; name: string; email: string; content: string }) => {
     console.log("[useComments] postComment - blog_post_id:", data.blog_post_id, "name:", data.name);
     setLoading(true);
     try {
       const response = await api.post('/v1/comments', data);
+      if (!mountedRef.current) return response.data;
       console.log("[useComments] postComment - success, status:", response.status);
       setLoading(false);
       return response.data;
     } catch (err: any) {
+      if (!mountedRef.current) throw err;
       console.warn("[useComments] postComment - failed:", err.response?.status, err.response?.data);
       const message = err.response?.data?.message || 'Failed to post comment.';
       setError(message);
@@ -74,6 +84,7 @@ export function useComments() {
     setLoading(true);
     try {
       const response = await api.get(`/v1/blog-posts/${slug}/comments`);
+      if (!mountedRef.current) return [];
       console.log("[useComments] fetchComments - status:", response.status);
       const raw = unwrapList(response);
       console.log("[useComments] fetchComments - raw count:", raw.length);
@@ -90,6 +101,7 @@ export function useComments() {
       setLoading(false);
       return comments;
     } catch (err: any) {
+      if (!mountedRef.current) return [];
       console.warn("[useComments] fetchComments - FAILED:", err.response?.status, err.message);
       console.warn("[useComments] fetchComments - error details:", JSON.stringify(err.response?.data || {}).substring(0, 300));
       setLoading(false);
@@ -101,9 +113,11 @@ export function useComments() {
     setLoading(true);
     try {
       await api.delete(`/v1/comments/${id}`);
+      if (!mountedRef.current) return false;
       setLoading(false);
       return true;
     } catch (err: any) {
+      if (!mountedRef.current) throw err;
       const message = err.response?.data?.message || 'Failed to delete comment';
       setError(message);
       setLoading(false);

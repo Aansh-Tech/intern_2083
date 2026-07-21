@@ -21,6 +21,7 @@ export default function FeaturedProjects() {
           githubLink={project.githubUrl || "https://github.com"}
           projectLink={project.viewDetailsUrl || "/project"}
           featured={project.featured}
+          image={project.images?.[0]?.url ?? project.image}
         />
       ))}
     </View>

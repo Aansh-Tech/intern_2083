@@ -1,5 +1,5 @@
 // src/components/admin_blog/BlogControl.tsx
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -52,10 +52,21 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [editingPost, setEditingPost] = useState<BlogPostItem | null>(null);
+  const [editingRawData, setEditingRawData] = useState<any>(null);
 
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
   const [commentsMap, setCommentsMap] = useState<Record<string, any[]>>({});
   const { fetchComments, deleteComment, loading } = useComments();
+
+  const [rawPostsMap, setRawPostsMap] = useState<Record<string, any>>({});
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const fetchPosts = async () => {
     try {
@@ -63,16 +74,20 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
       const response = await api.get('/v1/admin/blog-posts', {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (!mountedRef.current) return;
       const postsData = unwrapList(response);
 
+      const rawMap: Record<string, any> = {};
       const apiPosts = postsData.map((p: any) => {
+        const id = String(p.id);
+        rawMap[id] = p;
         let featuredImage = null;
         if (p.images && p.images.length > 0) {
           const featured = p.images.find((img: any) => img.is_primary) || p.images[0];
           featuredImage = featured?.image?.url || null;
         }
         return {
-          id: String(p.id),
+          id,
           title: p.title,
           slug: p.slug,
           category: p.category || 'Uncategorized',
@@ -87,13 +102,15 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
           featured_image: featuredImage,
         };
       });
+      setRawPostsMap(rawMap);
       setPosts(apiPosts);
     } catch (error) {
+      if (!mountedRef.current) return;
       console.error('Failed to fetch posts:', error);
       Alert.alert('Error', 'Could not load blog posts.');
       setPosts([]);
     } finally {
-      setLoadingPosts(false);
+      if (mountedRef.current) setLoadingPosts(false);
     }
   };
 
@@ -106,11 +123,12 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
     try {
       await fetchPosts();
     } finally {
-      setRefreshing(false);
+      if (mountedRef.current) setRefreshing(false);
     }
   }, []);
 
   const handleParentRefresh = useCallback(async () => {
+    if (!mountedRef.current) return;
     await fetchPosts().finally(() => onRefresh?.());
   }, [onRefresh]);
 
@@ -129,6 +147,7 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
   const openEditModal = (post: BlogPostItem) => {
     setModalMode("edit");
     setEditingPost(post);
+    setEditingRawData(rawPostsMap[post.id] || null);
     setModalVisible(true);
   };
 
@@ -139,15 +158,17 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
     });
     setModalVisible(false);
     setEditingPost(null);
+    setEditingRawData(null);
   };
 
   const togglePublish = async (post: BlogPostItem) => {
     try {
       const newStatus = post.status === "published" ? "draft" : "published";
       const token = await getToken();
-      await api.put(`/v1/blog-posts/${post.id}`, { status: newStatus }, {
+      await api.put(`/v1/admin/blog-posts/${post.id}`, { status: newStatus }, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (!mountedRef.current) return;
       setPosts(
         posts.map((p) =>
           p.id === post.id ? { ...p, status: newStatus } : p
@@ -166,9 +187,10 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
         onPress: async () => {
           try {
             const token = await getToken();
-            await api.delete(`/v1/blog-posts/${post.id}`, {
+            await api.delete(`/v1/admin/blog-posts/${post.id}`, {
               headers: { Authorization: `Bearer ${token}` },
             });
+            if (!mountedRef.current) return;
             setPosts(posts.filter((p) => p.id !== post.id));
           } catch (error) {
             Alert.alert("Error", "Failed to delete post");
@@ -195,6 +217,7 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
     if (commentsMap[post.id]) return;
     try {
       const comments = await fetchComments(post.slug);
+      if (!mountedRef.current) return;
       setCommentsMap((prev) => ({
         ...prev,
         [post.id]: Array.isArray(comments) ? comments : [],
@@ -207,6 +230,7 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
   const handleDeleteComment = async (postId: string, commentId: string) => {
     try {
       await deleteComment(commentId);
+      if (!mountedRef.current) return;
       setCommentsMap((prev) => ({
         ...prev,
         [postId]: (prev[postId] || []).filter((c) => c.id !== commentId),
@@ -326,9 +350,11 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
         visible={modalVisible}
         mode={modalMode}
         initialPost={editingPost}
+        initialData={editingRawData}
         onClose={() => {
           setModalVisible(false);
           setEditingPost(null);
+          setEditingRawData(null);
         }}
         onSubmit={handleSubmit}
       />

@@ -1,26 +1,32 @@
 import { memo } from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { LogOut, Sun, Moon } from "lucide-react-native";
+import { LogOut, Sun, Moon, Bell } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
 import { useProfile } from "../../context/ProfileContext";
+import { useNotifications } from "../../context/NotificationContext";
 
 interface AdminOverviewHeaderProps {
   onSignOut: () => void;
+  onNotificationPress: () => void;
 }
 
-function AdminOverviewHeader({ onSignOut }: AdminOverviewHeaderProps) {
+function AdminOverviewHeader({ onSignOut, onNotificationPress }: AdminOverviewHeaderProps) {
   const { colors, isDark, toggleTheme } = useTheme();
-  const { profile } = useProfile();
+  const { profile, photoTimestamp } = useProfile();
+  const { unreadCount } = useNotifications();
 
   const name = profile.name ?? "";
-  const avatarUrl = profile.avatar ?? profile.profile_image ?? null;
+  const rawAvatar = profile.avatar ?? profile.profile_image ?? null;
+  const avatarUrl = rawAvatar?.startsWith("http") ? `${rawAvatar}${rawAvatar.includes('?') ? '&' : '?'}t=${photoTimestamp}` : rawAvatar;
   const initials = name
     .split(" ")
     .map((n: string) => n[0])
     .join("")
     .toUpperCase()
     .slice(0, 2);
+
+  const badgeText = unreadCount > 99 ? "99+" : String(unreadCount);
 
   return (
     <View className="flex-row items-center justify-between px-5 pt-2">
@@ -72,13 +78,29 @@ function AdminOverviewHeader({ onSignOut }: AdminOverviewHeaderProps) {
         </TouchableOpacity>
 
         <TouchableOpacity
-          className="flex-row items-center h-[42px] rounded-full border px-5 gap-2"
-          style={{ borderColor: colors.border }}
+          className="w-[36px] h-[36px] rounded-full items-center justify-center border"
+          style={{ backgroundColor: colors.card, borderColor: colors.border }}
+          onPress={onNotificationPress}
+          activeOpacity={0.7}
+        >
+          <Bell size={18} color={colors.secondaryText} />
+          {unreadCount > 0 && (
+            <View
+              className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full items-center justify-center px-1"
+              style={{ backgroundColor: "#EF4444" }}
+            >
+              <Text className="text-[10px] font-bold text-white">{badgeText}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          className="w-[36px] h-[36px] rounded-full items-center justify-center border"
+          style={{ backgroundColor: colors.card, borderColor: colors.border }}
           onPress={onSignOut}
           activeOpacity={0.7}
         >
-          <LogOut size={16} color={colors.secondaryText} />
-          <Text className="text-[14px] font-medium" style={{ color: colors.secondaryText }}>Sign out</Text>
+          <LogOut size={18} color={colors.secondaryText} />
         </TouchableOpacity>
       </View>
     </View>

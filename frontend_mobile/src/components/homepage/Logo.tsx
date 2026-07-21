@@ -5,10 +5,11 @@ import { useProfile } from "../../context/ProfileContext";
 
 export default function Logo() {
   const { colors } = useTheme();
-  const { profile } = useProfile();
+  const { profile, photoTimestamp } = useProfile();
 
   const name = profile.name ?? "";
-  const avatarUrl = profile.avatar ?? profile.profile_image ?? null;
+  const rawUrl = profile.avatar ?? profile.profile_image ?? null;
+  const avatarUrl = rawUrl?.startsWith("http") ? `${rawUrl}${rawUrl.includes('?') ? '&' : '?'}t=${photoTimestamp}` : rawUrl;
   const initials = name
     .split(" ")
     .map((n: string) => n[0])

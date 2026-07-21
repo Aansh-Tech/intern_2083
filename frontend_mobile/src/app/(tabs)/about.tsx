@@ -1,6 +1,7 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { View, ScrollView, RefreshControl, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "expo-router";
 import Header from "../../components/homepage/Header";
 import AboutHero from "../../components/about/AboutHero";
 import SkillsSection from "../../components/about/Skills";
@@ -26,6 +27,20 @@ export default function AboutScreen() {
   const onRefresh = useCallback(async () => {
     await Promise.all([refreshProfile(), refreshSkills(), refreshCertificates()]);
   }, [refreshProfile, refreshSkills, refreshCertificates]);
+
+  useEffect(() => {
+    refreshProfile();
+    refreshSkills();
+    refreshCertificates();
+  }, [refreshProfile, refreshSkills, refreshCertificates]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshProfile();
+      refreshSkills();
+      refreshCertificates();
+    }, [refreshProfile, refreshSkills, refreshCertificates])
+  );
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>

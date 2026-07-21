@@ -8,9 +8,10 @@ import type { SkillCategory } from "../../types/skill";
 
 interface SkillFormProps {
   onAdd: (data: { category: SkillCategory; name: string; percentage: number }) => Promise<string | null>;
+  onSuccess?: () => void;
 }
 
-function SkillForm({ onAdd }: SkillFormProps) {
+function SkillForm({ onAdd, onSuccess }: SkillFormProps) {
   const { colors } = useTheme();
   const [category, setCategory] = useState<SkillCategory>("Frontend");
   const [name, setName] = useState("");
@@ -25,8 +26,9 @@ function SkillForm({ onAdd }: SkillFormProps) {
     } else {
       setName("");
       setPercentage(50);
+      onSuccess?.();
     }
-  }, [onAdd, category, name, percentage]);
+  }, [onAdd, category, name, percentage, onSuccess]);
 
   return (
     <View

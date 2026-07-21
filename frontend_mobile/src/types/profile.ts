@@ -1,3 +1,5 @@
+import type { SocialLink } from "./socialLink";
+
 export interface ProfileData {
   id?: number;
   name?: string;
@@ -10,10 +12,16 @@ export interface ProfileData {
   phone?: string;
   location?: string;
   resume?: string;
+  resume_url?: string;
+  resume_path?: string;
   avatar?: string;
   profile_image?: string;
   profile_photo?: string;
   cover_image?: string;
-  social_links?: Record<string, string>;
+  socialLinks?: SocialLink[];
+  github_url?: string;
+  linkedin_url?: string;
+  facebook_url?: string;
+  instagram_url?: string;
   [key: string]: unknown;
 }

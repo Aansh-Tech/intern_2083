@@ -1,7 +1,8 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { ScrollView, StyleSheet, View, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useFocusEffect } from "expo-router";
 import Header from "../../components/homepage/Header";
 import HeroSection from "../../components/homepage/HeroSection";
 import CTASection from "../../components/homepage/CTASection";
@@ -26,15 +27,37 @@ export default function HomeScreen() {
   const { refreshSkills } = useSkills();
   const { refreshProfile } = useProfile();
   const [refreshing, setRefreshing] = useState(false);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
       await Promise.all([refreshProjects(), refreshSkills(), refreshProfile()]);
     } finally {
-      setRefreshing(false);
+      if (mountedRef.current) setRefreshing(false);
     }
   }, [refreshProjects, refreshSkills, refreshProfile]);
+
+  useEffect(() => {
+    refreshSkills();
+    refreshProfile();
+    refreshProjects();
+  }, [refreshSkills, refreshProfile, refreshProjects]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshSkills();
+      refreshProfile();
+      refreshProjects();
+    }, [refreshSkills, refreshProfile, refreshProjects])
+  );
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>

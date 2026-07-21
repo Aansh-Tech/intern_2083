@@ -43,6 +43,7 @@ function RootLayoutInner() {
       >
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="admin" />
+        <Stack.Screen name="project/[id]" />
       </Stack>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
     </>

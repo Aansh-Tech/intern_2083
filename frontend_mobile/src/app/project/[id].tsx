@@ -1,38 +1,68 @@
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Linking, Image } from "react-native";
 import { useLocalSearchParams, Stack, useRouter } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ArrowLeft, ExternalLink } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
 import { useProject } from "../../context/ProjectContext";
+import * as projectService from "../../services/project";
+import type { Project } from "../../types/project";
 import StatusBadge from "../../components/work/StatusBadge";
 
 export default function ProjectDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const { projects, loading } = useProject();
+  const [detailProject, setDetailProject] = useState<Project | null>(null);
+  const [detailLoading, setDetailLoading] = useState(true);
 
   const project = useMemo(
     () => projects.find((p) => p.id === id),
     [projects, id]
   );
 
+  useEffect(() => {
+    if (!project?.slug) return;
+    setDetailProject(null);
+    setDetailLoading(true);
+    let mounted = true;
+    projectService
+      .getProject(project.slug)
+      .then((data) => {
+        if (mounted) {
+          setDetailProject(data as unknown as Project);
+          setDetailLoading(false);
+        }
+      })
+      .catch(() => {
+        if (mounted) setDetailLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [project?.slug]);
+
+  const isDetailValid = detailProject && detailProject.id === project?.id;
+  const source = isDetailValid ? detailProject : project;
+  const projectImage = source?.images?.[0]?.url ?? source?.image ?? null;
+
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-        <Stack.Screen options={{ headerShown: false }} />
+      <View style={{ flex: 1, backgroundColor: colors.background, paddingTop: insets.top }}>
+        <Stack.Screen options={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }} />
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (!project) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-        <Stack.Screen options={{ headerShown: false }} />
+      <View style={{ flex: 1, backgroundColor: colors.background, paddingTop: insets.top }}>
+        <Stack.Screen options={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }} />
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 24 }}>
           <Text style={{ fontSize: 18, fontWeight: "600", color: colors.text, marginBottom: 8 }}>
             Project not found
@@ -50,13 +80,13 @@ export default function ProjectDetailsScreen() {
             </Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-      <Stack.Screen options={{ headerShown: false }} />
+    <View style={{ flex: 1, backgroundColor: colors.background, paddingTop: insets.top }}>
+      <Stack.Screen options={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }} />
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8 }}>
           <TouchableOpacity
@@ -68,19 +98,19 @@ export default function ProjectDetailsScreen() {
           </TouchableOpacity>
         </View>
 
-        {project.image ? (
-          <Image
-            source={{ uri: project.image }}
-            style={{ width: "100%", aspectRatio: 16 / 9 }}
-            resizeMode="cover"
-          />
+        {projectImage ? (
+          <View style={{ paddingHorizontal: 20 }}>
+            <Image
+              source={{ uri: projectImage }}
+              style={{ width: "100%", height: 220, borderRadius: 16 }}
+              resizeMode="cover"
+            />
+          </View>
         ) : (
           <View
-            style={{ width: "100%", aspectRatio: 16 / 9, backgroundColor: colors.card, alignItems: "center", justifyContent: "center" }}
+            style={{ marginHorizontal: 20, height: 220, borderRadius: 16, alignItems: "center", justifyContent: "center", backgroundColor: colors.card }}
           >
-            <Text style={{ fontSize: 48, fontWeight: "700", color: colors.primary }}>
-              {project.title.charAt(0)}
-            </Text>
+            <Text style={{ fontSize: 14, color: colors.secondaryText }}>No image</Text>
           </View>
         )}
 
@@ -157,6 +187,6 @@ export default function ProjectDetailsScreen() {
           )}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

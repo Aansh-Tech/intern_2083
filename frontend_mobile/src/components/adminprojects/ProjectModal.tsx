@@ -10,8 +10,11 @@ import {
   Switch,
   KeyboardAvoidingView,
   Platform,
+  Image,
+  ActivityIndicator,
 } from "react-native";
-import { X } from "lucide-react-native";
+import { X, Plus } from "lucide-react-native";
+import * as ImagePicker from "expo-image-picker";
 import type { Project } from "../../types/project";
 import { useTheme } from "../../context/useTheme";
 
@@ -41,7 +44,7 @@ function ProjectModal({ visible, project, onClose, onSave }: ProjectModalProps) 
   const [description, setDescription] = useState("");
   const [githubUrl, setGithubUrl] = useState("");
   const [viewDetailsUrl, setViewDetailsUrl] = useState("");
-  const [image, setImage] = useState("");
+  const [imageUri, setImageUri] = useState<string | null>(null);
   const [featured, setFeatured] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -54,7 +57,7 @@ function ProjectModal({ visible, project, onClose, onSave }: ProjectModalProps) 
       setDescription(project.description);
       setGithubUrl(project.githubUrl || "");
       setViewDetailsUrl(project.viewDetailsUrl || "");
-      setImage(project.image || "");
+      setImageUri(project.image || null);
       setFeatured(project.featured);
       setCompleted(!!project.completed);
     } else {
@@ -64,12 +67,27 @@ function ProjectModal({ visible, project, onClose, onSave }: ProjectModalProps) 
       setDescription("");
       setGithubUrl("");
       setViewDetailsUrl("");
-      setImage("");
+      setImageUri(null);
       setFeatured(false);
       setCompleted(false);
     }
     setErrors({});
   }, [project, visible]);
+
+  const pickImage = useCallback(async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) return;
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets?.[0]?.uri) {
+      setImageUri(result.assets[0].uri);
+    }
+  }, []);
 
   const handleSlugGenerate = useCallback((text: string) => {
     setTitle(text);
@@ -105,11 +123,11 @@ function ProjectModal({ visible, project, onClose, onSave }: ProjectModalProps) 
       description: description.trim(),
       githubUrl: githubUrl.trim() || undefined,
       viewDetailsUrl: viewDetailsUrl.trim() || undefined,
-      image: image.trim() || undefined,
+      image: imageUri ?? undefined,
       featured,
       completed,
     });
-  }, [title, category, description, githubUrl, viewDetailsUrl, image, featured, completed, onSave]);
+  }, [title, category, description, githubUrl, viewDetailsUrl, imageUri, featured, completed, onSave]);
 
   return (
     <Modal transparent visible={visible} animationType="slide" onRequestClose={onClose}>
@@ -156,9 +174,35 @@ function ProjectModal({ visible, project, onClose, onSave }: ProjectModalProps) 
               <Field label="Live URL">
                 <Input value={viewDetailsUrl} onChangeText={setViewDetailsUrl} placeholder="https://..." />
               </Field>
-              <Field label="Image URL (optional)">
-                <Input value={image} onChangeText={setImage} placeholder="https://..." />
-              </Field>
+              <View className="gap-2 mb-4">
+                <Text className="text-[12px] font-semibold mb-1.5" style={{ color: colors.secondaryText }}>
+                  Image
+                </Text>
+                {imageUri ? (
+                  <View className="relative">
+                    <Image source={{ uri: imageUri }} className="w-full h-[160px] rounded-2xl" resizeMode="cover" />
+                    <TouchableOpacity
+                      className="absolute top-2 right-2 w-8 h-8 rounded-full items-center justify-center"
+                      style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+                      onPress={() => setImageUri(null)}
+                    >
+                      <X size={16} color="#FFFFFF" />
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <TouchableOpacity
+                    className="h-[56px] flex-row items-center justify-center gap-2 rounded-2xl border"
+                    style={{ backgroundColor: colors.background, borderColor: colors.border }}
+                    onPress={pickImage}
+                    activeOpacity={0.7}
+                  >
+                    <Plus size={18} color={colors.primary} />
+                    <Text className="text-[14px] font-semibold" style={{ color: colors.primary }}>
+                      Select Image
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
               <Field label="Featured">
                 <Switch
                   value={featured}
