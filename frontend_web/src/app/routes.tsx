@@ -23,6 +23,8 @@ import { ManageBlogPostsPage } from "../Modules/admin/blog/pages/ManageBlogPostP
 import { ManageCommentsPage } from "../Modules/admin/comments/pages/ManageCommentPage";
 import { ManageAboutPage } from "../Modules/admin/about/pages/ManageAboutPage";
 import { ManageCertificatesPage } from "../Modules/admin/certificates/pages/ManageCertificatesPage";
+import { ForgotPasswordPage } from "../Modules/admin/auth/pages/ForgetPasswordPage";
+import { ResetPasswordPage } from "../Modules/admin/auth/pages/ResetPasswordPage";
 
 function RequireAdminAuth({ children }: { children: ReactNode }) {
   const { isAuthenticated, isCheckingSession } = useAuth();
@@ -65,6 +67,8 @@ export function AppRoutes() {
       <Route path="/admin/comments" element={<ProtectedAdminPage><ManageCommentsPage /></ProtectedAdminPage>} />
       <Route path="/admin/about" element={<ProtectedAdminPage><ManageAboutPage /></ProtectedAdminPage>} />
       <Route path="/admin/certificates" element={<ProtectedAdminPage><ManageCertificatesPage /></ProtectedAdminPage>} />
+      <Route path={ROUTES.adminForgotPassword} element={<ForgotPasswordPage />} />
+      <Route path={ROUTES.adminResetPassword} element={<ResetPasswordPage />} />
     </Routes>
   );
 }

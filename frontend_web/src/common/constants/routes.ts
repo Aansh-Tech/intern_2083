@@ -14,6 +14,8 @@ export const ROUTES = {
   adminProjects: "/admin/projects",
   adminSkills: "/admin/skills",
   adminSocialLinks: "/admin/social-links",
+  adminForgotPassword: "/admin/forgot-password",
+  adminResetPassword: "/admin/reset-password",
 
   // Disabled until backend support exists — see routes.tsx for commented-out routes
   // adminContactMessages: "/admin/contact-messages",

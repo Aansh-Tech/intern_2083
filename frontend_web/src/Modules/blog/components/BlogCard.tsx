@@ -1,29 +1,38 @@
 import { Link } from "react-router-dom";
 import { Card } from "@/common/components/Card";
+import { Badge } from "@/common/components/Badge";
 import { formatDate } from "@/common/utils/formatDate";
+import { resolveMediaUrl } from "@/common/utils/resolveMediaUrl";
 import { ROUTES } from "@/common/constants/routes";
 import type { BlogPost } from "@/types/blogPost.types";
-import { resolveMediaUrl } from "@/common/utils/resolveMediaUrl";
 
 interface BlogCardProps {
   post: BlogPost;
 }
 
 export function BlogCard({ post }: BlogCardProps) {
+  const thumbnail = post.images?.find((img) => img.is_primary) ?? post.images?.[0];
+  const thumbnailSrc = resolveMediaUrl(thumbnail?.image?.url);
+
   return (
     <Card>
       <Link to={`${ROUTES.blog}/${post.slug}`} className="block">
-        {post.featured_image && (
+        {thumbnailSrc && (
           <img
-            src={resolveMediaUrl(post.featured_image)}
+            src={thumbnailSrc}
             alt={post.title}
-            className="w-full aspect-video object-cover rounded-md mb-3"
+            className="mb-3 w-full aspect-video rounded-lg object-cover"
           />
         )}
-        <p className="text-xs text-muted-foreground mb-1">{formatDate(post.published_at)}</p>
-        <h3 className="text-lg font-semibold text-foreground mb-2">{post.title}</h3>
-        <p className="text-sm text-muted-foreground line-clamp-2">{post.excerpt}</p>
+
+        {post.category && <Badge>{post.category}</Badge>}
+
+        <h3 className="mt-2 text-lg font-semibold text-foreground mb-2">{post.title}</h3>
+        {post.excerpt && (
+          <p className="text-sm text-muted-foreground line-clamp-2">{post.excerpt}</p>
+        )}
+        <p className="mt-3 text-xs text-muted-foreground">{formatDate(post.published_at)}</p>
       </Link>
     </Card>
   );
-}
+}``

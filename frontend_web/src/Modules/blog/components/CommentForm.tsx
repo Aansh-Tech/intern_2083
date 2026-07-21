@@ -4,37 +4,48 @@ import { commentsService } from "../services/comments.service";
 import type { Comment, CommentPayload } from "@/types/comment.types";
 
 interface CommentFormProps {
-  postSlug: string;
+  postId: number;
   onCommentAdded: (comment: Comment) => void;
 }
 
-export function CommentForm({ postSlug, onCommentAdded }: CommentFormProps) {
-  const [authorName, setAuthorName] = useState("");
+export function CommentForm({ postId, onCommentAdded }: CommentFormProps) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [content, setContent] = useState("");
-  const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "submitting" | "error" | "success">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
 
-    if (!authorName.trim() || !content.trim()) return;
+    if (!name.trim() || !email.trim() || !content.trim()) return;
 
     setStatus("submitting");
     setErrorMessage(null);
 
-    const payload: CommentPayload = { author_name: authorName, content };
+    const payload: CommentPayload = {
+      blog_post_id: postId,
+      name,
+      email,
+      content,
+    };
 
     try {
-      const newComment = await commentsService.submit(postSlug, payload);
+      const newComment = await commentsService.submit(payload);
       onCommentAdded(newComment);
-      setAuthorName("");
+      setName("");
+      setEmail("");
       setContent("");
-      setStatus("idle");
-    } catch (err) {
+      setStatus("success");
+    } catch (err: any) {
       setStatus("error");
-      setErrorMessage(
-        err instanceof Error ? err.message : "Couldn't post your comment right now."
-      );
+      if (err?.response?.status === 429) {
+        setErrorMessage("You're commenting too quickly. Please wait a minute and try again.");
+      } else {
+        setErrorMessage(
+          err instanceof Error ? err.message : "Couldn't post your comment right now."
+        );
+      }
     }
   }
 
@@ -43,8 +54,15 @@ export function CommentForm({ postSlug, onCommentAdded }: CommentFormProps) {
       <input
         type="text"
         placeholder="Your name"
-        value={authorName}
-        onChange={(e) => setAuthorName(e.target.value)}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        className="w-full rounded-md border border-border bg-background px-3 py-2 text-foreground"
+      />
+      <input
+        type="email"
+        placeholder="Your email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
         className="w-full rounded-md border border-border bg-background px-3 py-2 text-foreground"
       />
       <textarea
@@ -56,6 +74,11 @@ export function CommentForm({ postSlug, onCommentAdded }: CommentFormProps) {
       />
       {status === "error" && errorMessage && (
         <p className="text-sm text-red-500">{errorMessage}</p>
+      )}
+      {status === "success" && (
+        <p className="text-sm text-emerald-600">
+          Thanks! Your comment is awaiting approval and will appear once reviewed.
+        </p>
       )}
       <Button type="submit" variant="primary" disabled={status === "submitting"}>
         {status === "submitting" ? "Posting..." : "Post comment"}

@@ -83,6 +83,14 @@ export function AdminLoginPage() {
               </button>
             </div>
           </div>
+          <div className="text-left">
+            <Link
+              to={ROUTES.adminForgotPassword}
+              className="text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
+            >
+              Forgot password?
+            </Link>
+          </div>
           <Button type="submit" className="w-full" disabled={submitting}>
             {submitting ? "Signing in…" : "Sign in"}
           </Button>
