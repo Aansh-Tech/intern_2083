@@ -5,6 +5,7 @@ import { Button } from "@/common/components/Button";
 import { ThemeToggle } from "@/common/components/Themetoggle";
 import { authService } from "../services/auth.services";
 import { ROUTES } from "@/common/constants/routes";
+import type { AxiosError } from "axios";
 
 export function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -21,8 +22,9 @@ export function ForgotPasswordPage() {
       const responseMessage = await authService.forgotPassword(email);
       setMessage(responseMessage || "If that email exists, a reset link has been sent.");
     } catch (err) {
-      console.error("Forgot password failed:", err);
-      setError("Something went wrong. Please try again.");
+    console.error("Forgot password failed:", err);
+    const axiosError = err as AxiosError<{ message?: string }>;
+    setError(axiosError.response?.data?.message ?? "Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }

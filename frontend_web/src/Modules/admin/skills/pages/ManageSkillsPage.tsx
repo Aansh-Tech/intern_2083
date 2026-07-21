@@ -32,7 +32,29 @@ export function ManageSkillsPage() {
   function openAddModal() { setEditingId(null); setForm(emptyForm); setModalOpen(true); }
   function openEditModal(skill: Skill) { setEditingId(skill.id); setForm(skill); setModalOpen(true); }
 
+  function handleProficiencyChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = e.target.value;
+
+    if (value === "") {
+      setForm({ ...form, proficiency: undefined });
+      return;
+    }
+
+    if (!/^\d+$/.test(value)) return;
+
+    const num = Number(value);
+    if (num >= 0 && num <= 100) {
+      setForm({ ...form, proficiency: num });
+    }
+  }
+
   async function handleSave() {
+    const proficiency = form.proficiency;
+    if (proficiency == null || proficiency < 0 || proficiency > 100) {
+      alert("Proficiency must be between 0 and 100.");
+      return;
+    }
+
     if (editingId) await adminSkillsService.update(editingId, form);
     else await adminSkillsService.create(form);
     setModalOpen(false);
@@ -62,11 +84,11 @@ export function ManageSkillsPage() {
       <div className="mt-6">
         {loading ? <p className="text-slate-500">Loading…</p> : (
           <AdminTable rows={filteredSkills} keyExtractor={(s) => s.id} emptyMessage="No skills added yet."
-  columns={[
-    { header: "Name", accessor: (s) => s.name },
-    { header: "Category", accessor: (s) => s.category ?? "—" },
-    { header: "Proficiency", accessor: (s) => (s.proficiency != null ? `${s.proficiency}%` : "—") },
-    { header: "Actions", accessor: (s) => (
+            columns={[
+              { header: "Name", accessor: (s) => s.name },
+              { header: "Category", accessor: (s) => s.category ?? "—" },
+              { header: "Proficiency", accessor: (s) => (s.proficiency != null ? `${s.proficiency}%` : "—") },
+              { header: "Actions", accessor: (s) => (
                 <div className="flex gap-3">
                   <button onClick={() => openEditModal(s)} aria-label="Edit"><Pencil className="h-4 w-4 text-slate-500 hover:text-indigo-600" /></button>
                   <button onClick={() => handleDelete(s.id)} aria-label="Delete"><Trash2 className="h-4 w-4 text-slate-500 hover:text-red-600" /></button>
@@ -87,19 +109,16 @@ export function ManageSkillsPage() {
             <input placeholder="e.g. Framework" value={form.category ?? ""} onChange={(e) => setForm({ ...form, category: e.target.value })} className={FIELD_CLASS} />
           </div>
           <div>
-          <label className={LABEL_CLASS}>Proficiency (0-100)</label>
-          <input
-            type="number"
-            min={0}
-            max={100}
-            step={1}
-            value={form.proficiency ?? 0}
-            onChange={(e) => setForm({ ...form, proficiency: Number(e.target.value) })}
-            onKeyDown={(e) => e.preventDefault()}
-            onPaste={(e) => e.preventDefault()}
-            className={FIELD_CLASS}
+            <label className={LABEL_CLASS}>Proficiency (0-100)</label>
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="0–100"
+              value={form.proficiency ?? ""}
+              onChange={handleProficiencyChange}
+              className={FIELD_CLASS}
             />
-           </div>
+          </div>
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
             <Button onClick={handleSave}>Save</Button>

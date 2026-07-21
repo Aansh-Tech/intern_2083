@@ -15,11 +15,11 @@ export const ROUTES = {
   adminSkills: "/admin/skills",
   adminSocialLinks: "/admin/social-links",
   adminForgotPassword: "/admin/forgot-password",
-  adminResetPassword: "/admin/reset-password",
+  adminResetPassword: "/reset-password",
 
   // Disabled until backend support exists — see routes.tsx for commented-out routes
   // adminContactMessages: "/admin/contact-messages",
-  // adminBlogPosts: "/admin/blog-posts",
+  adminBlogPosts: "/admin/blog-posts",
   // adminComments: "/admin/comments",
   adminCertificates: "/admin/certificates",
 } as const;

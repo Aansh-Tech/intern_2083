@@ -3,9 +3,11 @@ import { ProfileHeader } from "../components/ProfileHeader";
 import { SkillsSection } from "../components/SkillsSection";
 import { CertificatesSection } from "../components/CertificatesSection";
 import { aboutService } from "../services/about.service";
+import { useSocialLinks } from "@/common/context/SocialLinksContext";
 import type { Profile } from "@/types/profile.types";
 
 export function AboutPage() {
+  const socialLinks = useSocialLinks();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +27,7 @@ export function AboutPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-20">
-      <ProfileHeader profile={profile} socialLinks={[]} isLoading={isLoading} error={error} />
+      <ProfileHeader profile={profile} socialLinks={socialLinks} isLoading={isLoading} error={error} />
       <SkillsSection />
       <CertificatesSection />
     </div>
