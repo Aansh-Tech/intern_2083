@@ -1,18 +1,73 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import { useEffect } from "react";
+import { Platform, StatusBar } from "react-native";
+import { Stack } from "expo-router";
+import * as NavigationBar from "expo-navigation-bar";
+import { ThemeProvider } from "../context/ThemeProvider";
+import { ProfileProvider } from "../context/ProfileContext";
+import { ProjectProvider } from "../context/ProjectContext";
+import { InboxProvider } from "../context/InboxContext";
+import { CommentProvider } from "../context/CommentContext";
+import { SkillsProvider } from "../context/SkillsContext";
+import { DashboardProvider } from "../context/DashboardContext";
+import { CertificateProvider } from "../context/CertificateContext";
+import { useTheme } from "../context/useTheme";
+import "../../global.css";
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+console.log = () => {};
+console.info = () => {};
+console.debug = () => {};
+function RootLayoutInner() {
+  const { isDark, colors } = useTheme();
 
-SplashScreen.preventAutoHideAsync();
+  useEffect(() => {
+    console.log("[RootLayout] Inner mounted. All context providers active.");
+    return () => console.log("[RootLayout] Inner unmounted.");
+  }, []);
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  useEffect(() => {
+    if (Platform.OS === "android") {
+      NavigationBar.setStyle(isDark ? "dark" : "light");
+    }
+  }, [isDark]);
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
+    <>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          animation: "slide_from_right",
+          animationDuration: 200,
+          gestureEnabled: true,
+          contentStyle: { backgroundColor: colors.background },
+        }}
+      >
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="admin" />
+        <Stack.Screen name="project/[id]" />
+      </Stack>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
+    </>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <ProfileProvider>
+        <CertificateProvider>
+        <ProjectProvider>
+          <InboxProvider>
+            <CommentProvider>
+              <SkillsProvider>
+                <DashboardProvider>
+                  <RootLayoutInner />
+                </DashboardProvider>
+              </SkillsProvider>
+            </CommentProvider>
+          </InboxProvider>
+        </ProjectProvider>
+        </CertificateProvider>
+      </ProfileProvider>
     </ThemeProvider>
   );
 }

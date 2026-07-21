@@ -10,8 +10,8 @@ const SOCIAL_LINKS = [
 
 // Hardcoded site config (remove SITE_CONFIG import)
 const SITE_CONFIG = {
-  brandPrefix: 'Anish',
-  brandSuffix: 'Shrestha',
+  brandPrefix: 'MARCHETTI',
+  brandSuffix: 'DEV',
   footerBlurb: 'Building digital experiences with passion and precision.'
 };
 
@@ -19,7 +19,7 @@ export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-slate-200 bg-slate-100/80 dark:border-slate-800 dark:bg-slate-950">
+    <footer className="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-14 md:grid-cols-3">
         {/* Brand blurb */}
         <div>

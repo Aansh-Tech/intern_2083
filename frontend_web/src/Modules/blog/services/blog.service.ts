@@ -1,15 +1,14 @@
 import { apiClient } from "@/services/apiClient";
 import { ENDPOINTS } from "@/services/endpoints";
-import type { ApiResponse, PaginatedData } from "@/types/apiResponse.types";
+import type { ApiResponse } from "@/services/apiResponse.types";
 import type { BlogPost } from "@/types/blogPost.types";
 
 export const blogService = {
+  // NOT LIVE YET — BlogPostController has no methods implemented.
+  // Calling the real endpoint anyway so this works the moment backend adds it.
   async getAll(): Promise<BlogPost[]> {
-    const { data } = await apiClient.get<ApiResponse<PaginatedData<BlogPost>>>(
-      ENDPOINTS.blogPosts
-    );
-    if (!data.success) throw new Error(data.message ?? "Failed to load posts");
-    return data.data.data; // unwrap: ApiResponse.data → PaginatedData.data (the actual array)
+    const { data } = await apiClient.get<ApiResponse<BlogPost[]>>(ENDPOINTS.blogPosts);
+    return data.data;
   },
 
   async getLatestPosts(limit = 3): Promise<BlogPost[]> {

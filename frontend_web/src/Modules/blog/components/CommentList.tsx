@@ -21,7 +21,7 @@ export function CommentList({ comments }: CommentListProps) {
       {comments.map((comment) => (
         <div key={comment.id} className="border-b border-border pb-4">
           <div className="flex justify-between items-center mb-1">
-            <p className="text-sm font-medium text-foreground">{comment.name}</p>
+            <p className="text-sm font-medium text-foreground">{comment.author_name}</p>
             <p className="text-xs text-muted-foreground">{formatDate(comment.created_at)}</p>
           </div>
           <p className="text-sm text-foreground">{comment.content}</p>

@@ -1,0 +1,22 @@
+module.exports = function (api) {
+  api.cache(true);
+  return {
+    presets: [
+      "nativewind/babel",                // first
+      ["babel-preset-expo", { jsxImportSource: "nativewind" }]
+    ],
+  };
+};
+
+// module.exports = function (api) {
+//   api.cache(true);
+
+//   return {
+//     presets: [
+//       ["babel-preset-expo", { jsxImportSource: "nativewind" }],
+//     ],
+//     plugins: [
+//       "nativewind/babel",
+//     ],
+//   };
+// };

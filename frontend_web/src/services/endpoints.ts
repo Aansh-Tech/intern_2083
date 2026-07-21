@@ -1,21 +1,29 @@
+/**
+ * Central map of API endpoints.
+ *
+ * These paths are confirmed against the real controllers your backend
+ * friend shared: ProfileController, ProjectController, SkillController,
+ * SocialLinkController are live. BlogPostController, CommentController,
+ * and ContactController are still empty -- their paths below are the
+ * conventional Laravel routes to use once those controllers are filled in.
+ */
 export const ENDPOINTS = {
-  profile: "/v1/profile",
-  skills: "/v1/skills",
-  socialLinks: "/v1/social-links",
+  profile: "/profile",
+  skills: "/skills",
+  socialLinks: "/social-links",
 
-  projects: "/v1/projects",
-  projectsFeatured: "/v1/projects/featured",
-  projectBySlug: (slug: string) => `/v1/projects/${slug}`,
+  projects: "/projects",
+  projectsFeatured: "/projects/featured",
+  projectBySlug: (slug: string) => `/projects/${slug}`,
 
-  blogPosts: "/v1/blog-posts",
-  blogPostBySlug: (slug: string) => `/v1/blog-posts/${slug}`,
+  // not live yet -- BlogPostController has no methods
+  blogPosts: "/blog-posts",
+  blogPostBySlug: (slug: string) => `/blog-posts/${slug}`,
 
-  comments: "/v1/comments",
-  commentsByPostSlug: (slug: string) => `/v1/blog-posts/${slug}/comments`,
+  // not live yet -- CommentController has no methods
+  commentsByPost: (blogPostId: string) =>
+    `/blog-posts/${blogPostId}/comments`,
 
-  contact: "/v1/contact",
-  contactById: (id: number) => `/v1/contact/${id}`,
-
-  certificates: "/v1/certificates",
-  certificateById: (id: number) => `/v1/certificates/${id}`,
+  // not live yet -- ContactController has no methods
+  contactMessages: "/contact-messages",
 } as const;

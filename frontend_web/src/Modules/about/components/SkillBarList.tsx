@@ -34,14 +34,14 @@ export function SkillBarList({ skills, isLoading, error }: SkillBarListProps) {
               <div key={skill.id}>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-foreground">{skill.name}</span>
-                  {typeof skill.proficiency === "number" && (
-                    <span className="text-muted-foreground">{skill.proficiency}%</span>
+                  {typeof skill.percentage === "number" && (
+                    <span className="text-muted-foreground">{skill.percentage}%</span>
                   )}
                 </div>
                 <div className="h-2 w-full rounded-full bg-border">
                   <div
                     className="h-2 rounded-full bg-primary"
-                    style={{ width: `${skill.proficiency ?? 0}%` }}
+                    style={{ width: `${skill.percentage ?? 0}%` }}
                   />
                 </div>
               </div>

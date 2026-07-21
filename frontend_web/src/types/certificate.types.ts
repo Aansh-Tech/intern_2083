@@ -1,16 +1,12 @@
+/**
+ * NOTE: there is currently NO CertificateController or Certificate model
+ * on the backend at all. This type exists only because the live UI shows
+ * a certificates section. Ask the backend team to add this table/endpoint,
+ * or drop the section from the UI until they do. Stays mock-only for now.
+ */
 export interface Certificate {
-  id: number;
-  profile_id: number;
-  skill_id?: number; // confirmed — backend added this column
+  id: string;
   title: string;
-  issuer: string;
-  issue_date?: string;
-  expiry_date?: string;
-  credential_url?: string;
-    images?: Array<{
-    is_primary: boolean;
-    image: { url: string };
-  }>;
-  description?: string;
-  display_order?: number;
+  category: string;
+  url: string;
 }
