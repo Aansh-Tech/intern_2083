@@ -80,7 +80,7 @@ export default function AdminLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
-        animation: "slide_from_right",
+        animation: "fade_from_bottom",
         animationDuration: 2,
         gestureEnabled: true,
         contentStyle: { backgroundColor: colors.background },
