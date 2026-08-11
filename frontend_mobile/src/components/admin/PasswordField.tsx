@@ -7,9 +7,10 @@ interface PasswordFieldProps {
   value: string;
   onChangeText: (text: string) => void;
   error?: string;
+  label?: string;
 }
 
-export default function PasswordField({ value, onChangeText, error }: PasswordFieldProps) {
+export default function PasswordField({ value, onChangeText, error, label = "Password" }: PasswordFieldProps) {
   const { colors } = useTheme();
   const [visible, setVisible] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -20,7 +21,7 @@ export default function PasswordField({ value, onChangeText, error }: PasswordFi
         className="text-[13px] font-semibold uppercase tracking-[0.8px]"
         style={{ color: colors.secondaryText }}
       >
-        Password
+        {label}
       </Text>
       <View
         className="flex-row items-center rounded-[14px] border px-4 gap-3"

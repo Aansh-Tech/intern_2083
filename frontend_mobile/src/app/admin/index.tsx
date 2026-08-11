@@ -133,6 +133,17 @@ export default function AdminLoginScreen() {
                   <Text className="text-base font-bold" style={{ color: colors.text }}>Sign in</Text>
                 )}
               </TouchableOpacity>
+
+              <TouchableOpacity
+                className="items-center justify-center py-1"
+                onPress={() => router.push("/reset")}
+                disabled={loading}
+                activeOpacity={0.7}
+              >
+                <Text className="text-[14px] font-medium underline" style={{ color: colors.primary }}>
+                  Forgot Password?
+                </Text>
+              </TouchableOpacity>
             </LoginCard>
           </View>
 
