@@ -1,5 +1,5 @@
 import { useMemo, useEffect, useState } from "react";
-import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Linking, Image } from "react-native";
+import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Linking } from "react-native";
 import { useLocalSearchParams, Stack, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ArrowLeft, ExternalLink } from "lucide-react-native";
@@ -7,7 +7,9 @@ import { useTheme } from "../../context/useTheme";
 import { useProject } from "../../context/ProjectContext";
 import * as projectService from "../../services/project";
 import type { Project } from "../../types/project";
+import { MAX_PROJECT_PHOTOS } from "../../types/project";
 import StatusBadge from "../../components/work/StatusBadge";
+import ProjectGallery from "../../components/work/ProjectGallery";
 
 export default function ProjectDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -47,6 +49,13 @@ export default function ProjectDetailsScreen() {
   const isDetailValid = detailProject && detailProject.id === project?.id;
   const source = isDetailValid ? detailProject : project;
   const projectImage = source?.images?.[0]?.url ?? source?.image ?? null;
+  const projectImages = (
+    source?.images && source.images.length > 0
+      ? source.images
+      : projectImage
+      ? [{ id: "image", url: projectImage }]
+      : []
+  ).slice(0, MAX_PROJECT_PHOTOS);
 
   if (loading) {
     return (
@@ -100,11 +109,7 @@ export default function ProjectDetailsScreen() {
 
         {projectImage ? (
           <View style={{ paddingHorizontal: 20 }}>
-            <Image
-              source={{ uri: projectImage }}
-              style={{ width: "100%", height: 220, borderRadius: 16 }}
-              resizeMode="cover"
-            />
+            <ProjectGallery images={projectImages} />
           </View>
         ) : (
           <View

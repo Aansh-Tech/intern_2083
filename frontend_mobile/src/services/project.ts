@@ -1,18 +1,32 @@
 import api from "./api";
-import { resolveImageUrl } from "./image";
+import { resolveImageUrl, dedupeImages } from "./image";
+import type { ProjectImage } from "../types/project";
+import { MAX_PROJECT_PHOTOS } from "../types/project";
 
 console.log = () => {};
 console.info = () => {};
 console.debug = () => {};
 
-function mapProjectImages(images: any[] | undefined): Array<{ id: string; url: string }> {
+function mapProjectImages(images: any[] | undefined): ProjectImage[] {
   if (!images || !Array.isArray(images)) return [];
-  return images
+  const mapped = images
     .map((img: any) => {
       const rawUrl = img.image?.url || img.url || img.path || "";
-      return rawUrl ? { id: String(img.id), url: resolveImageUrl(rawUrl) } : null;
+      if (!rawUrl) return null;
+      return {
+        id: String(img.id),
+        url: resolveImageUrl(rawUrl),
+        displayOrder: img.display_order ?? img.displayOrder,
+        isPrimary: img.is_primary ?? img.isPrimary,
+      } as ProjectImage;
     })
-    .filter(Boolean) as Array<{ id: string; url: string }>;
+    .filter(Boolean) as ProjectImage[];
+  return dedupeImages(mapped).slice(0, MAX_PROJECT_PHOTOS);
+}
+
+function primaryImageUrl(images: ProjectImage[], fallback: any): string | undefined {
+  if (fallback) return fallback;
+  return images?.[0]?.url ?? undefined;
 }
 
 export async function getProjects(admin = false) {
@@ -20,52 +34,57 @@ export async function getProjects(admin = false) {
 
   const response = await api.get(endpoint);
 
-  return response.data.data.map((project: any) => ({
-    id: String(project.id),
+  return response.data.data.map((project: any) => {
+    const images = mapProjectImages(project.images);
 
-    title: project.title,
-    slug: project.slug,
+    return {
+      id: String(project.id),
 
-    category: project.subtitle ?? "",
+      title: project.title,
+      slug: project.slug,
 
-    description: project.description,
+      category: project.subtitle ?? "",
 
-    status:
-      project.status === "published"
-        ? "completed"
-        : "in-progress",
+      description: project.description,
 
-    featured: project.is_featured,
+      status:
+        project.status === "published"
+          ? "completed"
+          : "in-progress",
 
-    githubUrl: project.github_link,
+      featured: project.is_featured,
 
-    viewDetailsUrl: project.live_link,
+      githubUrl: project.github_link,
 
-    technologies:
-      typeof project.technologies === "string"
-        ? project.technologies
-            .split(",")
-            .map((t: string) => t.trim())
-            .filter(Boolean)
-        : [],
+      viewDetailsUrl: project.live_link,
 
-    gradient: ["#5B5FEF", "#2F8AFE"],
+      technologies:
+        typeof project.technologies === "string"
+          ? project.technologies
+              .split(",")
+              .map((t: string) => t.trim())
+              .filter(Boolean)
+          : [],
 
-    completed: project.status === "published",
+      gradient: ["#5B5FEF", "#2F8AFE"],
 
-    image: project.image ?? undefined,
-    images: mapProjectImages(project.images),
+      completed: project.status === "published",
 
-    displayOrder: project.id,
+      image: primaryImageUrl(images, project.image),
+      images,
 
-    dateAdded: project.created_at,
-    updatedAt: project.updated_at || undefined,
-  }));
+      displayOrder: project.id,
+
+      dateAdded: project.created_at,
+      updatedAt: project.updated_at || undefined,
+    };
+  });
 }
 
 export async function getProject(id: string, admin = false) {
   const response = await api.get(admin ? `/v1/admin/projects/${id}` : `/v1/projects/${id}`);
   const project = response.data.data;
+  const images = mapProjectImages(project.images);
 
   return {
     id: String(project.id),
@@ -81,8 +100,8 @@ export async function getProject(id: string, admin = false) {
     gradient: ["#5B5FEF", "#2F8AFE"] as [string, string],
     githubUrl: project.github_link,
     viewDetailsUrl: project.live_link,
-    image: project.image ?? undefined,
-    images: mapProjectImages(project.images),
+    image: primaryImageUrl(images, project.image),
+    images,
     displayOrder: project.id,
     dateAdded: project.created_at,
     updatedAt: project.updated_at || undefined,
@@ -90,16 +109,28 @@ export async function getProject(id: string, admin = false) {
   };
 }
 
-export async function createProject(data: any) {
-  const payload = {
+/**
+ * Maps the mobile form shape ({ title, category, description, githubUrl,
+ * viewDetailsUrl, featured, completed, ... }) onto the fields the Laravel
+ * backend accepts/validates for project create + update. Shared by both so an
+ * edit persists every field (previously edits only sent camelCase keys that the
+ * backend dropped, so category/links/featured/completed were lost on update).
+ */
+export function buildProjectPayload(data: any) {
+  return {
     title: data.title,
 
-    slug: data.title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, ""),
+    slug:
+      typeof data.slug === "string" && data.slug.trim()
+        ? data.slug.trim()
+        : data.title
+          ? data.title
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/^-|-$/g, "")
+          : "",
 
-    subtitle: data.category,
+    subtitle: data.category ?? "",
 
     description: data.description,
 
@@ -113,7 +144,7 @@ export async function createProject(data: any) {
       ? data.technologies.join(",")
       : "",
 
-    is_featured: data.featured,
+    is_featured: !!data.featured,
 
     status: data.completed ? "published" : "draft",
 
@@ -121,6 +152,10 @@ export async function createProject(data: any) {
       ? new Date().toISOString().split("T")[0]
       : null,
   };
+}
+
+export async function createProject(data: any) {
+  const payload = buildProjectPayload(data);
 
   console.log("Sending:", payload);
 

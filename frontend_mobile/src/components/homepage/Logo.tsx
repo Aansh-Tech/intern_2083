@@ -2,15 +2,23 @@ import { View, Text, Image, StyleSheet } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "../../context/useTheme";
 import { useProfile } from "../../context/ProfileContext";
+import { resolveImageUrl } from "../../services/image";
 
 export default function Logo() {
   const { colors } = useTheme();
   const { profile, photoTimestamp } = useProfile();
 
-  const name = profile.name ?? "";
-  const rawUrl = profile.avatar ?? profile.profile_image ?? null;
-  const avatarUrl = rawUrl?.startsWith("http") ? `${rawUrl}${rawUrl.includes('?') ? '&' : '?'}t=${photoTimestamp}` : rawUrl;
-  const initials = name
+  const displayName = profile.name ?? "Anish Shrestha";
+  const rawUrl = profile.avatar ?? profile.profile_image ?? profile.profile_photo ?? null;
+  const resolvedUrl = rawUrl
+    ? rawUrl.startsWith("http")
+      ? rawUrl
+      : resolveImageUrl(rawUrl)
+    : null;
+  const avatarUrl = resolvedUrl
+    ? `${resolvedUrl}${resolvedUrl.includes("?") ? "&" : "?"}t=${photoTimestamp}`
+    : null;
+  const initials = displayName
     .split(" ")
     .map((n: string) => n[0])
     .join("")
@@ -32,7 +40,7 @@ export default function Logo() {
         </LinearGradient>
       ) : null}
       <Text style={[styles.logo, { color: colors.text }]}>
-        {name || "Anish Shrestha"}
+        {displayName}
       </Text>
     </View>
   );

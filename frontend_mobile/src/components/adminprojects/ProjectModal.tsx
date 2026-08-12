@@ -1,4 +1,4 @@
-import { useState, useEffect, memo, useCallback } from "react";
+import { useState, useEffect, memo, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -15,7 +15,9 @@ import {
 } from "react-native";
 import { X, Plus } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
-import type { Project } from "../../types/project";
+import type { Project, ProjectPhoto } from "../../types/project";
+import { MAX_PROJECT_PHOTOS } from "../../types/project";
+import { dedupeImages } from "../../services/image";
 import { useTheme } from "../../context/useTheme";
 
 interface ProjectModalProps {
@@ -28,7 +30,8 @@ interface ProjectModalProps {
     description: string;
     githubUrl?: string;
     viewDetailsUrl?: string;
-    image?: string;
+    slug?: string;
+    photos: ProjectPhoto[];
     featured: boolean;
     completed: boolean;
   }) => void;
@@ -44,10 +47,11 @@ function ProjectModal({ visible, project, onClose, onSave }: ProjectModalProps) 
   const [description, setDescription] = useState("");
   const [githubUrl, setGithubUrl] = useState("");
   const [viewDetailsUrl, setViewDetailsUrl] = useState("");
-  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<ProjectPhoto[]>([]);
   const [featured, setFeatured] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const localKeyRef = useRef(0);
 
   useEffect(() => {
     if (project) {
@@ -57,7 +61,19 @@ function ProjectModal({ visible, project, onClose, onSave }: ProjectModalProps) 
       setDescription(project.description);
       setGithubUrl(project.githubUrl || "");
       setViewDetailsUrl(project.viewDetailsUrl || "");
-      setImageUri(project.image || null);
+      setPhotos(
+        project.images && project.images.length > 0
+          ? project.images.slice(0, MAX_PROJECT_PHOTOS).map((img) => ({
+              uid: `existing-${img.id}`,
+              id: img.id,
+              uri: img.url,
+              isNew: false,
+              order: img.displayOrder ?? 0,
+            }))
+          : project.image
+          ? [{ uid: `existing-${project.image}`, uri: project.image, isNew: false, order: 0 }]
+          : []
+      );
       setFeatured(project.featured);
       setCompleted(!!project.completed);
     } else {
@@ -67,26 +83,46 @@ function ProjectModal({ visible, project, onClose, onSave }: ProjectModalProps) 
       setDescription("");
       setGithubUrl("");
       setViewDetailsUrl("");
-      setImageUri(null);
+      setPhotos([]);
       setFeatured(false);
       setCompleted(false);
     }
     setErrors({});
   }, [project, visible]);
 
-  const pickImage = useCallback(async () => {
+  const pickImages = useCallback(async () => {
+    const remaining = MAX_PROJECT_PHOTOS - photos.length;
+    if (remaining <= 0) return;
+
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) return;
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
-      allowsEditing: true,
+      allowsMultipleSelection: true,
+      selectionLimit: remaining,
+      orderedSelection: true,
       quality: 0.8,
     });
 
-    if (!result.canceled && result.assets?.[0]?.uri) {
-      setImageUri(result.assets[0].uri);
+    if (result.canceled || !result.assets) return;
+
+    const existingUris = new Set(photos.map((p) => p.uri));
+    const picked: ProjectPhoto[] = result.assets
+      .filter((a) => !!a.uri && !existingUris.has(a.uri))
+      .map((a) => ({
+        uid: `new-${localKeyRef.current++}`,
+        uri: a.uri,
+        isNew: true,
+      }));
+
+    if (picked.length > 0) {
+      setPhotos((prev) => dedupeImages([...prev, ...picked], MAX_PROJECT_PHOTOS));
     }
+  }, [photos]);
+
+  const removePhoto = useCallback((uid: string) => {
+    setPhotos((prev) => prev.filter((p) => p.uid !== uid));
   }, []);
 
   const handleSlugGenerate = useCallback((text: string) => {
@@ -123,11 +159,12 @@ function ProjectModal({ visible, project, onClose, onSave }: ProjectModalProps) 
       description: description.trim(),
       githubUrl: githubUrl.trim() || undefined,
       viewDetailsUrl: viewDetailsUrl.trim() || undefined,
-      image: imageUri ?? undefined,
+      slug: slug.trim() || undefined,
+      photos,
       featured,
       completed,
     });
-  }, [title, category, description, githubUrl, viewDetailsUrl, imageUri, featured, completed, onSave]);
+  }, [title, category, description, githubUrl, viewDetailsUrl, photos, featured, completed, onSave]);
 
   return (
     <Modal transparent visible={visible} animationType="slide" onRequestClose={onClose}>
@@ -175,30 +212,47 @@ function ProjectModal({ visible, project, onClose, onSave }: ProjectModalProps) 
                 <Input value={viewDetailsUrl} onChangeText={setViewDetailsUrl} placeholder="https://..." />
               </Field>
               <View className="gap-2 mb-4">
-                <Text className="text-[12px] font-semibold mb-1.5" style={{ color: colors.secondaryText }}>
-                  Image
-                </Text>
-                {imageUri ? (
-                  <View className="relative">
-                    <Image source={{ uri: imageUri }} className="w-full h-[160px] rounded-2xl" resizeMode="cover" />
-                    <TouchableOpacity
-                      className="absolute top-2 right-2 w-8 h-8 rounded-full items-center justify-center"
-                      style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
-                      onPress={() => setImageUri(null)}
-                    >
-                      <X size={16} color="#FFFFFF" />
-                    </TouchableOpacity>
+                <View className="flex-row justify-between items-center mb-1.5">
+                  <Text className="text-[12px] font-semibold" style={{ color: colors.secondaryText }}>
+                    Photos
+                  </Text>
+                  <Text className="text-[12px] font-semibold" style={{ color: colors.secondaryText }}>
+                    {photos.length} / {MAX_PROJECT_PHOTOS} photos
+                  </Text>
+                </View>
+
+                {photos.length > 0 && (
+                  <View className="flex-row flex-wrap gap-3">
+                    {photos.map((photo) => (
+                      <View key={photo.uid} className="relative">
+                        <Image
+                          source={{ uri: photo.uri }}
+                          className="w-[96px] h-[96px] rounded-2xl"
+                          resizeMode="cover"
+                        />
+                        <TouchableOpacity
+                          className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full items-center justify-center"
+                          style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+                          onPress={() => removePhoto(photo.uid)}
+                          activeOpacity={0.7}
+                        >
+                          <X size={14} color="#FFFFFF" />
+                        </TouchableOpacity>
+                      </View>
+                    ))}
                   </View>
-                ) : (
+                )}
+
+                {photos.length < MAX_PROJECT_PHOTOS && (
                   <TouchableOpacity
                     className="h-[56px] flex-row items-center justify-center gap-2 rounded-2xl border"
                     style={{ backgroundColor: colors.background, borderColor: colors.border }}
-                    onPress={pickImage}
+                    onPress={pickImages}
                     activeOpacity={0.7}
                   >
                     <Plus size={18} color={colors.primary} />
                     <Text className="text-[14px] font-semibold" style={{ color: colors.primary }}>
-                      Select Image
+                      {photos.length === 0 ? "Select Images" : "Add Photo"}
                     </Text>
                   </TouchableOpacity>
                 )}

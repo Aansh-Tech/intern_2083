@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import AdminLayout from "../../components/adminoverview/AdminLayout";
@@ -7,8 +7,10 @@ import ProjectCard from "../../components/adminprojects/ProjectCard";
 import ProjectModal from "../../components/adminprojects/ProjectModal";
 import { useProject } from "../../context/ProjectContext";
 import { useTheme } from "../../context/useTheme";
-import { uploadImage } from "../../services/image";
-import type { Project } from "../../types/project";
+import { uploadProjectImage, deleteImage, dedupeImages } from "../../services/image";
+import { buildProjectPayload } from "../../services/project";
+import type { Project, ProjectPhoto } from "../../types/project";
+import { MAX_PROJECT_PHOTOS } from "../../types/project";
 
 console.log = () => {};
 console.info = () => {};
@@ -26,6 +28,7 @@ export default function AdminProjectsScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [editTarget, setEditTarget] = useState<Project | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
+  const savingRef = useRef(false);
   const router = useRouter();
 
   const displayedProjects = useMemo(() => {
@@ -46,47 +49,112 @@ export default function AdminProjectsScreen() {
       description: string;
       githubUrl?: string;
       viewDetailsUrl?: string;
-      image?: string;
+      slug?: string;
+      photos: ProjectPhoto[];
       featured: boolean;
       completed: boolean;
     }) => {
-      const imageUri = data.image && !data.image.startsWith("http") ? data.image : undefined;
-      const newProject = await addProject({ ...data, image: imageUri ? undefined : data.image });
-      if (imageUri && newProject?.id) {
-        try {
-          await uploadImage(imageUri, "project", newProject.id, { isPrimary: true });
-          await refreshProjects();
-        } catch (error) {
-          console.error("Failed to upload image for project:", error);
-        }
+      const newPhotos = dedupeImages(data.photos).filter((p) => p.isNew);
+      if (
+        data.photos.length > MAX_PROJECT_PHOTOS ||
+        newPhotos.length > MAX_PROJECT_PHOTOS
+      ) {
+        Alert.alert("Error", "A project can have at most 5 photos.");
+        return;
       }
-      setModalVisible(false);
+      try {
+        const newProject = await addProject({
+          title: data.title,
+          category: data.category,
+          description: data.description,
+          githubUrl: data.githubUrl,
+          viewDetailsUrl: data.viewDetailsUrl,
+          slug: data.slug,
+          featured: data.featured,
+          completed: data.completed,
+        });
+
+        if (newProject?.id) {
+          for (let i = 0; i < newPhotos.length; i++) {
+            const uploaded = await uploadProjectImage(newPhotos[i].uri, "project", newProject.id, {
+              isPrimary: i === 0,
+              displayOrder: i,
+            });
+            newPhotos[i].id = uploaded.id;
+            newPhotos[i].uri = uploaded.url;
+            newPhotos[i].isNew = false;
+          }
+        }
+
+        await refreshProjects(true);
+        setModalVisible(false);
+      } catch (error: any) {
+        console.error("Failed to save project or upload images:", error);
+        Alert.alert("Error", "Failed to save project or upload its images.");
+      }
     },
     [addProject, refreshProjects]
   );
 
   const handleEdit = useCallback(
     async (id: string, data: any) => {
-      let image = data.image;
-      if (image && !image.startsWith("http")) {
-        try {
-          const resultUrl = await uploadImage(image, "project", id, { isPrimary: true });
-          if (resultUrl) image = resultUrl;
-        } catch (error) {
-          console.error("Failed to upload image for project:", error);
+      const photos = dedupeImages((data.photos ?? []) as ProjectPhoto[]);
+      if (photos.length > MAX_PROJECT_PHOTOS) {
+        Alert.alert("Error", "A project can have at most 5 photos.");
+        return;
+      }
+
+      const existingPhotos = photos.filter((p) => !p.isNew);
+      const newPhotos = photos.filter((p) => p.isNew);
+      const keptIds = new Set<string>();
+      for (const p of existingPhotos) {
+        if (p.id !== undefined && p.id !== null && p.id !== "") {
+          keptIds.add(String(p.id));
         }
       }
-      await editProject(id, { ...data, image });
-      setEditTarget(null);
+      const removedPhotos = (editTarget?.images ?? []).filter(
+        (img) => img.id !== undefined && img.id !== null && !keptIds.has(String(img.id))
+      );
+
+      try {
+        for (const removed of removedPhotos) {
+          await deleteImage(removed.id);
+        }
+
+        await editProject(id, buildProjectPayload(data));
+
+        const slots = MAX_PROJECT_PHOTOS - existingPhotos.length;
+        const toUpload = slots > 0 ? newPhotos.slice(0, slots) : [];
+        const maxOrder = existingPhotos.reduce(
+          (max, p) => Math.max(max, p.order ?? 0),
+          -1
+        );
+        for (let i = 0; i < toUpload.length; i++) {
+          const uploaded = await uploadProjectImage(toUpload[i].uri, "project", id, {
+            isPrimary: existingPhotos.length === 0 && i === 0,
+            displayOrder: maxOrder + 1 + i,
+          });
+          toUpload[i].id = uploaded.id;
+          toUpload[i].uri = uploaded.url;
+          toUpload[i].isNew = false;
+        }
+
+        await refreshProjects(true);
+        setEditTarget(null);
+      } catch (error: any) {
+        console.error("Failed to save project or upload its images:", error);
+        Alert.alert("Error", "Failed to save project or its images.");
+      }
     },
-    [editProject]
+    [editTarget, editProject, refreshProjects]
   );
 
   const handleDelete = useCallback(async () => {
     if (!deleteTarget) return;
     await deleteProject(deleteTarget.id);
+    await refreshProjects(true);
     setDeleteTarget(null);
-  }, [deleteTarget, deleteProject]);
+  }, [deleteTarget, deleteProject, refreshProjects]);
 
   const handleModalSave = useCallback(
     (data: {
@@ -95,15 +163,21 @@ export default function AdminProjectsScreen() {
       description: string;
       githubUrl?: string;
       viewDetailsUrl?: string;
-      image?: string;
+      slug?: string;
+      photos: ProjectPhoto[];
       featured: boolean;
       completed: boolean;
     }) => {
-      if (editTarget) {
-        handleEdit(editTarget.id, data);
-      } else {
-        handleAdd(data);
-      }
+      if (savingRef.current) return;
+      savingRef.current = true;
+      const task = editTarget
+        ? handleEdit(editTarget.id, data)
+        : handleAdd(data);
+      Promise.resolve(task)
+        .catch(() => {})
+        .finally(() => {
+          savingRef.current = false;
+        });
     },
     [editTarget, handleEdit, handleAdd]
   );
