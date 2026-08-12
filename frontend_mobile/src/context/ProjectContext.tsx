@@ -139,19 +139,16 @@ export function ProjectProvider({
 
   const addProject = async (data: any) => {
   const result = await projectService.createProject(data);
-  await refreshProjects();
   return result;
 };
 
 const editProject = async (id: string, data: any) => {
   const result = await projectService.updateProject(id, data);
-  await refreshProjects();
   return result;
 };
 
 const deleteProject = async (id: string) => {
   await projectService.deleteProject(id);
-  await refreshProjects();
 };
 
 const toggleFeatured = async (id: string) => {

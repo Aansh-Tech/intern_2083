@@ -6,9 +6,11 @@ import { resolveImageUrl } from "./image";
 function normalizeProfile(raw: any): ProfileData {
   const data: ProfileData = { ...raw };
 
+  const imagesArr = Array.isArray(raw?.images) ? raw.images : [];
   const primaryAvatar =
-    (raw as any).images?.find((img: any) => img.is_primary)?.image?.url ??
-    (raw as any).images?.find((img: any) => img.type === "avatar")?.image?.url ??
+    imagesArr.find((img: any) => img.is_primary)?.image?.url ??
+    imagesArr.find((img: any) => img.type === "avatar")?.image?.url ??
+    imagesArr[0]?.image?.url ??
     raw.profile_photo ??
     raw.avatar ??
     raw.profile_image ??
