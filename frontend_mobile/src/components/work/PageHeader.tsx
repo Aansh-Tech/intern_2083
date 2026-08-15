@@ -1,11 +1,14 @@
 import { View, Text } from "react-native";
 import { useTheme } from "../../context/useTheme";
+import { useResponsiveContainer, useResponsiveFontSize } from "../../utils/responsive";
 
 export default function PageHeader() {
   const { colors } = useTheme();
+  const container = useResponsiveContainer();
+  const titleSize = useResponsiveFontSize(38);
 
   return (
-    <View className="px-5 pt-7 gap-2">
+    <View style={[container, { paddingHorizontal: 20, paddingTop: 28, gap: 8 }]}>
       <Text
         className="text-[13px] font-semibold tracking-[2px]"
         style={{ color: colors.primary }}
@@ -13,8 +16,8 @@ export default function PageHeader() {
         PORTFOLIO
       </Text>
       <Text
-        className="text-[38px] font-bold"
-        style={{ color: colors.text }}
+        className="font-bold"
+        style={{ color: colors.text, fontSize: titleSize, lineHeight: Math.round(titleSize * 1.1) }}
       >
         Projects
       </Text>

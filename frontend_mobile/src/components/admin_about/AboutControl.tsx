@@ -12,6 +12,7 @@ import type { SocialLinkInput } from "../../services/aboutService";
 import { uploadImage, uploadProjectImage, deleteImage, resolveImageUrl } from "../../services/image";
 import ProfileAvatar from "./ProfileAvatar";
 import IdentityForm from "./IdForm";
+import { useResponsiveContainer } from "../../utils/responsive";
 
 function detectPlatform(url: string): string {
   const lower = url.toLowerCase().trim();
@@ -42,6 +43,7 @@ export default function AboutControl() {
   const { profile, refreshProfile, applyAvatar, loading } = useProfile();
   const mountedRef = useRef(true);
   const previousSocialLinksRef = useRef<SocialLinkInput[]>([]);
+  const container = useResponsiveContainer();
 
   useEffect(() => {
     mountedRef.current = true;
@@ -266,7 +268,7 @@ export default function AboutControl() {
   };
 
   return (
-    <View className="gap-5 px-5 pb-10">
+    <View style={[container, { gap: 20, paddingHorizontal: 20, paddingBottom: 40 }]}>
       <View className="flex-row items-start justify-between pt-2">
         <View className="gap-1">
           <Text className="text-[26px] font-bold" style={{ color: colors.text }}>
@@ -358,51 +360,9 @@ export default function AboutControl() {
           SOCIAL LINKS
         </Text>
 
-        {socialLinks.map((link, index) => (
-          <View
-            key={link.id != null ? `saved-${link.id}` : `new-${index}`}
-            className="flex-row items-center gap-3 rounded-2xl border px-4 py-3"
-            style={{ backgroundColor: colors.background, borderColor: colors.border }}
-          >
-            <Ionicons
-              name={(PLATFORM_ICONS[link.platform.toLowerCase()] || "link-outline") as any}
-              size={20}
-              color={colors.text}
-            />
-            <View className="flex-1 gap-0.5">
-              <Text className="text-[13px] font-semibold" style={{ color: colors.text }}>
-                {link.platform}
-              </Text>
-              <Text
-                className="text-[12px]"
-                style={{ color: colors.secondaryText }}
-                numberOfLines={1}
-              >
-                {typeof link.url === "string" ? link.url : String(link.url ?? "")}
-              </Text>
-            </View>
-            <TouchableOpacity
-              className="w-8 h-8 rounded-full items-center justify-center"
-              style={{ backgroundColor: colors.card }}
-              onPress={() => openEditForm(index)}
-              activeOpacity={0.7}
-            >
-              <Pencil size={14} color={colors.secondaryText} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              className="w-8 h-8 rounded-full items-center justify-center"
-              style={{ backgroundColor: colors.card }}
-              onPress={() => handleDelete(index)}
-              activeOpacity={0.7}
-            >
-              <Trash2 size={14} color="#EF4444" />
-            </TouchableOpacity>
-          </View>
-        ))}
-
         {!showForm ? (
           <TouchableOpacity
-            className="flex-row items-center justify-center gap-2 h-12 rounded-2xl border border-dashed"
+            className="flex-row items-center justify-center gap-2 h-12 rounded-2xl border border-dashed px-4"
             style={{ borderColor: colors.border }}
             activeOpacity={0.7}
             onPress={openAddForm}
@@ -480,6 +440,48 @@ export default function AboutControl() {
             </ScrollView>
           </KeyboardAvoidingView>
         )}
+
+        {socialLinks.map((link, index) => (
+          <View
+            key={link.id != null ? `saved-${link.id}` : `new-${index}`}
+            className="flex-row items-center gap-3 rounded-2xl border px-4 py-3"
+            style={{ backgroundColor: colors.background, borderColor: colors.border }}
+          >
+            <Ionicons
+              name={(PLATFORM_ICONS[link.platform.toLowerCase()] || "link-outline") as any}
+              size={20}
+              color={colors.text}
+            />
+            <View className="flex-1 gap-0.5">
+              <Text className="text-[13px] font-semibold" style={{ color: colors.text }}>
+                {link.platform}
+              </Text>
+              <Text
+                className="text-[12px]"
+                style={{ color: colors.secondaryText }}
+                numberOfLines={1}
+              >
+                {typeof link.url === "string" ? link.url : String(link.url ?? "")}
+              </Text>
+            </View>
+            <TouchableOpacity
+              className="w-8 h-8 rounded-full items-center justify-center"
+              style={{ backgroundColor: colors.card }}
+              onPress={() => openEditForm(index)}
+              activeOpacity={0.7}
+            >
+              <Pencil size={14} color={colors.secondaryText} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="w-8 h-8 rounded-full items-center justify-center"
+              style={{ backgroundColor: colors.card }}
+              onPress={() => handleDelete(index)}
+              activeOpacity={0.7}
+            >
+              <Trash2 size={14} color="#EF4444" />
+            </TouchableOpacity>
+          </View>
+        ))}
       </View>
     </View>
   );

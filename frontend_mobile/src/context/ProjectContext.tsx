@@ -156,6 +156,7 @@ const toggleFeatured = async (id: string) => {
   if (!project) return;
 
   await projectService.updateProject(id, {
+    title: project.title,
     is_featured: !project.featured,
   });
 
@@ -167,6 +168,7 @@ const toggleCompleted = async (id: string) => {
   if (!project) return;
 
   await projectService.updateProject(id, {
+    title: project.title,
     status: project.completed ? "draft" : "published",
   });
 

@@ -12,6 +12,7 @@ import { uploadProjectImage, deleteImage, dedupeImages } from "../../services/im
 import { buildProjectPayload } from "../../services/project";
 import type { Project, ProjectPhoto } from "../../types/project";
 import { MAX_PROJECT_PHOTOS } from "../../types/project";
+import { useResponsiveContainer } from "../../utils/responsive";
 
 console.log = () => {};
 console.info = () => {};
@@ -20,7 +21,6 @@ export default function AdminProjectsScreen() {
   const { colors } = useTheme();
   const { showModal, showConfirm, showToast } = usePopup();
   const { projects, loading, refreshing, refreshProjects, addProject, editProject, deleteProject, toggleFeatured, toggleCompleted } = useProject();
-  console.log(useProject());
 
   const handleAdminRefresh = useCallback(() => {
     refreshProjects(true);
@@ -31,6 +31,8 @@ export default function AdminProjectsScreen() {
   const [editTarget, setEditTarget] = useState<Project | null>(null);
   const savingRef = useRef(false);
   const router = useRouter();
+  const headerContainer = useResponsiveContainer();
+  const listContainer = useResponsiveContainer();
 
   const displayedProjects = useMemo(() => {
     if (!searchQuery.trim()) return projects;
@@ -227,7 +229,7 @@ export default function AdminProjectsScreen() {
 
   return (
     <AdminLayout refreshing={refreshing} onRefresh={handleAdminRefresh}>
-      <View className="px-5 pt-4">
+      <View style={[headerContainer, { paddingHorizontal: 20, paddingTop: 16 }]}>
         <View className="flex-row justify-between items-start">
           <View className="flex-1">
             <Text className="text-[11px] font-semibold tracking-[1.5px]" style={{ color: colors.primary }}>
@@ -267,7 +269,7 @@ export default function AdminProjectsScreen() {
           </TouchableOpacity>
         </View>
       ) : (
-        <View className="px-5 pt-4 pb-8 gap-4">
+        <View style={[listContainer, { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 32, gap: 16 }]}>
           {displayedProjects.map((project) => (
             <ProjectCard
               key={project.id}

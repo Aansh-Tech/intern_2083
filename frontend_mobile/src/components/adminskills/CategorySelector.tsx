@@ -1,5 +1,5 @@
 import { memo, useState, useCallback } from "react";
-import { View, Text, TouchableOpacity, Modal, FlatList } from "react-native";
+import { View, Text, TouchableOpacity, Modal, FlatList, useWindowDimensions } from "react-native";
 import { ChevronDown } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
 import type { SkillCategory } from "../../types/skill";
@@ -12,6 +12,7 @@ interface CategorySelectorProps {
 
 function CategorySelector({ value, onChange }: CategorySelectorProps) {
   const { colors } = useTheme();
+  const { width } = useWindowDimensions();
   const [open, setOpen] = useState(false);
 
   const handleSelect = useCallback(
@@ -21,6 +22,8 @@ function CategorySelector({ value, onChange }: CategorySelectorProps) {
     },
     [onChange]
   );
+
+  const modalWidth = Math.min(width - 48, 320);
 
   return (
     <>
@@ -44,8 +47,9 @@ function CategorySelector({ value, onChange }: CategorySelectorProps) {
           onPress={() => setOpen(false)}
         >
           <View
-            className="w-[280px] rounded-3xl border overflow-hidden"
+            className="rounded-3xl border overflow-hidden"
             style={{
+              width: modalWidth,
               backgroundColor: colors.card,
               borderColor: colors.border,
               shadowColor: "#000000",

@@ -16,6 +16,7 @@ import PostFormModal from "./PostForm";
 import { useComments } from "../../hooks/useComments";
 import api from "../../services/api";
 import { getToken } from "../../utils/token";
+import { useResponsiveContainer } from "../../utils/responsive";
 
 interface BlogControlProps {
   refreshing?: boolean;
@@ -61,6 +62,7 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
 
   const [rawPostsMap, setRawPostsMap] = useState<Record<string, any>>({});
   const mountedRef = useRef(true);
+  const container = useResponsiveContainer();
 
   useEffect(() => {
     mountedRef.current = true;
@@ -279,13 +281,13 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
         refreshControl={
           <RefreshControl refreshing={effectiveRefreshing} onRefresh={handleRefresh} />
         }>
-        <View className="p-4">
+        <View style={[container, { padding: 16 }]}>
           <Text className="text-2xl font-bold" style={{ color: colors.text }}>
             Blog Posts
           </Text>
         </View>
 
-        <View className="px-4 pb-4">
+        <View style={[container, { paddingHorizontal: 16, paddingBottom: 16 }]}>
           <View
             className="flex-row items-center gap-2 px-3 py-2 rounded-lg"
             style={{ backgroundColor: colors.background }}
@@ -302,7 +304,7 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
           </View>
         </View>
 
-        <View className="px-4 pb-4">
+        <View style={[container, { paddingHorizontal: 16, paddingBottom: 16 }]}>
           <TouchableOpacity
             onPress={openCreateModal}
             className="flex-row items-center justify-center gap-2 py-3 rounded-lg"
@@ -325,7 +327,7 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
           </View>
         ) : (
           filteredPosts.map((post) => (
-            <View key={post.id} className="px-4 pb-4">
+            <View key={post.id} style={[container, { paddingHorizontal: 16, paddingBottom: 16 }]}>
               <BlogPostCard
                 post={post}
                 onTogglePublish={() => togglePublish(post)}

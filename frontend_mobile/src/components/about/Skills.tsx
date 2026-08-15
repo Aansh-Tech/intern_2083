@@ -2,6 +2,7 @@ import { View, Text } from "react-native";
 import SectionHeading from "./Heading";
 import { useTheme } from "../../context/useTheme";
 import { useSkills } from "../../context/SkillsContext";
+import { useResponsiveContainer } from "../../utils/responsive";
 import type { SkillCategory } from "../../types/skill";
 
 const CATEGORY_ORDER: SkillCategory[] = ["Frontend", "Backend", "Design", "Other"];
@@ -23,13 +24,14 @@ export default function SkillsSection() {
   const { colors } = useTheme();
   const { skills, loading } = useSkills();
   const skillCategories = groupByCategory(skills);
+  const listContainer = useResponsiveContainer();
 
   return (
     <View>
       <SectionHeading eyebrow="TOOLKIT" title="Skills & Craft" />
 
       {skillCategories.length > 0 ? (
-        <View className="px-5 pt-5 gap-4">
+        <View style={[listContainer, { paddingHorizontal: 20, paddingTop: 20, gap: 16 }]}>
           {skillCategories.map(({ category, skills }) => (
             <View
               key={category}

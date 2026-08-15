@@ -3,12 +3,15 @@ import { View } from "react-native";
 import { Folder, Inbox, Star, Eye } from "lucide-react-native";
 import DashboardStatCard from "./DashboardStatCard";
 import type { DashboardData } from "../../types/dashboard";
+import { useResponsiveContainer } from "../../utils/responsive";
 
 interface StatsGridProps {
   data: DashboardData;
 }
 
 function StatsGrid({ data }: StatsGridProps) {
+  const container = useResponsiveContainer();
+
   const featuredPct = data.totalProjects > 0
     ? Math.round((data.featuredProjects / data.totalProjects) * 100) + "%"
     : "0%";
@@ -21,7 +24,7 @@ function StatsGrid({ data }: StatsGridProps) {
   ] as const;
 
   return (
-    <View className="px-5 pt-2 pb-4">
+    <View style={[container, { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 16 }]}>
       <View className="flex-row gap-3">
         <View className="flex-1 gap-3">
           <DashboardStatCard {...cards[0]} />

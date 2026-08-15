@@ -1,10 +1,11 @@
 import { memo } from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, Image, TouchableOpacity, useWindowDimensions } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { LogOut, Sun, Moon, Bell } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
 import { useProfile } from "../../context/ProfileContext";
 import { useNotifications } from "../../context/NotificationContext";
+import { useResponsiveFontSize, useResponsiveContainer } from "../../utils/responsive";
 
 interface AdminOverviewHeaderProps {
   onSignOut: () => void;
@@ -15,6 +16,10 @@ function AdminOverviewHeader({ onSignOut, onNotificationPress }: AdminOverviewHe
   const { colors, isDark, toggleTheme } = useTheme();
   const { profile, photoTimestamp } = useProfile();
   const { unreadCount } = useNotifications();
+  const { width } = useWindowDimensions();
+  const container = useResponsiveContainer();
+  const nameSize = useResponsiveFontSize(26);
+  const compact = width < 360;
 
   const name = profile.name ?? "";
   const rawAvatar = profile.avatar ?? profile.profile_image ?? null;
@@ -27,37 +32,38 @@ function AdminOverviewHeader({ onSignOut, onNotificationPress }: AdminOverviewHe
     .slice(0, 2);
 
   const badgeText = unreadCount > 99 ? "99+" : String(unreadCount);
+  const avatarSize = compact ? 44 : 52;
+  const avatarTextSize = compact ? 18 : 22;
 
   return (
-    <View className="flex-row items-center justify-between px-5 pt-2">
-      <View className="flex-row items-center gap-4">
+    <View style={[container, { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingTop: 8 }]}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: compact ? 10 : 16, flex: 1 }}>
         {avatarUrl ? (
           <Image
             source={{ uri: avatarUrl }}
-            className="w-[52px] h-[52px] rounded-full"
+            style={{ width: avatarSize, height: avatarSize, borderRadius: avatarSize / 2 }}
           />
         ) : initials ? (
           <LinearGradient
             colors={["#A855F7", "#EC4899"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            className="w-[52px] h-[52px] rounded-full items-center justify-center"
+            style={{ width: avatarSize, height: avatarSize, borderRadius: avatarSize / 2, alignItems: "center", justifyContent: "center" }}
           >
-            <Text className="text-[22px] font-bold text-white">{initials}</Text>
+            <Text style={{ fontSize: avatarTextSize, fontWeight: "bold", color: "#FFFFFF" }}>{initials}</Text>
           </LinearGradient>
         ) : (
           <View
-            className="w-[52px] h-[52px] rounded-full items-center justify-center"
-            style={{ backgroundColor: colors.primary }}
+            style={{ width: avatarSize, height: avatarSize, borderRadius: avatarSize / 2, alignItems: "center", justifyContent: "center", backgroundColor: colors.primary }}
           >
-            <Text className="text-[22px] font-bold" style={{ color: colors.text }}>A</Text>
+            <Text style={{ fontSize: avatarTextSize, fontWeight: "bold", color: colors.text }}>A</Text>
           </View>
         )}
-        <View className="gap-0.5">
+        <View style={{ gap: 2, flexShrink: 1, flex: 1 }}>
           <Text className="text-[11px] font-semibold tracking-[1.5px]" style={{ color: colors.primary }}>
             ADMIN
           </Text>
-          <Text className="text-[26px] font-bold" style={{ color: colors.text }}>
+          <Text style={{ fontSize: nameSize, fontWeight: "bold", color: colors.text }} numberOfLines={1}>
             {name || "Console"}
           </Text>
         </View>

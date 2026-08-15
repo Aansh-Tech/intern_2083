@@ -1,5 +1,6 @@
-import { Text, TouchableOpacity, ScrollView, View } from "react-native";
+import { Text, TouchableOpacity, ScrollView, View, StyleSheet } from "react-native";
 import { useTheme } from "../../context/useTheme";
+import { useResponsiveContainer } from "../../utils/responsive";
 
 export type FilterValue = "all" | "featured" | "completed" | "in-progress";
 
@@ -17,13 +18,14 @@ interface FilterTabsProps {
 
 export default function FilterTabs({ active, onChange }: FilterTabsProps) {
   const { colors } = useTheme();
+  const container = useResponsiveContainer();
 
   return (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
       style={{ flexGrow: 0 }}
-      contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4 }}
+      contentContainerStyle={[styles.content, container]}
     >
       <View className="flex-row gap-1.5">
         {filters.map((filter) => {
@@ -57,3 +59,10 @@ export default function FilterTabs({ active, onChange }: FilterTabsProps) {
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  content: {
+    paddingHorizontal: 20,
+    paddingTop: 4,
+  },
+});

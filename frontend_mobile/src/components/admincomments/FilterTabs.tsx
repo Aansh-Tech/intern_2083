@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { useTheme } from "../../context/useTheme";
+import { useResponsiveContainer } from "../../utils/responsive";
 
 export type FilterValue = "all" | "pending" | "approved" | "spam";
 
@@ -18,9 +19,10 @@ const filters: { label: string; value: FilterValue }[] = [
 
 function FilterTabs({ value, onChange }: FilterTabsProps) {
   const { colors } = useTheme();
+  const container = useResponsiveContainer();
 
   return (
-    <View className="flex-row px-5 gap-2">
+    <View style={[container, { flexDirection: "row", paddingHorizontal: 20, gap: 8 }]}>
       {filters.map((f) => {
         const isActive = value === f.value;
         return (

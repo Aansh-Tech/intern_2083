@@ -1,12 +1,14 @@
 import { memo } from "react";
 import { View, Text } from "react-native";
 import { useTheme } from "../../context/useTheme";
+import { useResponsiveContainer } from "../../utils/responsive";
 
 function WelcomeSection() {
   const { colors } = useTheme();
+  const container = useResponsiveContainer();
 
   return (
-    <View className="px-5 pb-2">
+    <View style={[container, { paddingHorizontal: 20, paddingBottom: 8 }]}>
       <Text className="text-[11px] font-semibold tracking-[1.5px]" style={{ color: colors.primary }}>
         WELCOME BACK
       </Text>

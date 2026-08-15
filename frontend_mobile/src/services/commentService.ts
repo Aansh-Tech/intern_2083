@@ -1,4 +1,5 @@
 import api from "./api";
+import { getToken } from "../utils/token";
 import type { Comment } from "../types/comment";
 
 console.log = () => {};
@@ -50,6 +51,10 @@ const mapComment = (c: any, blogTitle?: string, blogSlug?: string, blogId?: stri
 });
 
 export const getAllComments = async (): Promise<Comment[]> => {
+  const token = await getToken();
+  if (!token) {
+    throw new Error("Not authenticated – no token stored. Skipping /v1/comments request.");
+  }
   console.log("[commentService] getAllComments - fetching /v1/comments");
   try {
     const response = await api.get("/v1/comments");
@@ -67,8 +72,8 @@ export const getAllComments = async (): Promise<Comment[]> => {
   } catch (error: any) {
     console.warn("[commentService] getAllComments - request failed, status:", error.response?.status, "message:", error.message);
     if (error.response?.status === 401) {
-      console.warn("[commentService] Unauthorized – token missing or invalid. Returning empty comments.");
-      return [];
+      console.warn("[commentService] Unauthorized – stored token is missing or invalid. Surfacing error to caller.");
+      throw error;
     }
     console.warn("[commentService] Global comments endpoint failed, using fallback.");
     return getAllCommentsFallback();

@@ -150,9 +150,8 @@ export default function PostFormModal({
       });
       return;
     }
-    // Use MediaTypeOptions – it works and the warning is harmless
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images"],
       allowsEditing: true,
       quality: 0.8,
     });

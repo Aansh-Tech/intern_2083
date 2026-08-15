@@ -1,5 +1,5 @@
 import { useRef, useEffect, memo, useCallback } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Animated } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Animated, useWindowDimensions } from "react-native";
 import { Tabs, useRouter, usePathname } from "expo-router";
 import { Home, Briefcase, BookOpen, User, Mail } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
@@ -30,11 +30,15 @@ const TabBarItem = memo(function TabBarItem({
   active,
   onPress,
   colors,
+  iconContainerSize = 44,
+  tabLabelFontSize = 11,
 }: {
   tab: (typeof tabConfig)[number];
   active: boolean;
   onPress: () => void;
   colors: ReturnType<typeof useTheme>["colors"];
+  iconContainerSize?: number;
+  tabLabelFontSize?: number;
 }) {
   const scaleAnim = useRef(new Animated.Value(active ? 1 : 0.85)).current;
 
@@ -55,14 +59,20 @@ const TabBarItem = memo(function TabBarItem({
     <TouchableOpacity style={styles.tabItem} onPress={onPress} activeOpacity={0.7}>
       <Animated.View
         style={[
-          styles.iconContainer,
+          {
+            width: iconContainerSize,
+            height: iconContainerSize,
+            borderRadius: iconContainerSize / 2,
+            alignItems: "center",
+            justifyContent: "center",
+          },
           active && { backgroundColor: colors.primary + "18" },
           { transform: [{ scale: scaleAnim }] },
         ]}
       >
         <IconComponent size={22} color={iconColor} />
       </Animated.View>
-      <Text style={[styles.tabLabel, { color: labelColor }]}>
+      <Text style={[styles.tabLabel, { color: labelColor, fontSize: tabLabelFontSize }]} numberOfLines={1}>
         {tab.title}
       </Text>
     </TouchableOpacity>
@@ -73,6 +83,10 @@ const CustomTabBar = memo(function CustomTabBar() {
   const router = useRouter();
   const pathname = usePathname();
   const { colors } = useTheme();
+  const { width } = useWindowDimensions();
+  const compact = width < 360;
+  const iconContainerSize = compact ? 36 : 44;
+  const tabLabelFontSize = compact ? 10 : 11;
 
   const currentTab = pathname.split("/").filter(Boolean).pop() || "index";
 
@@ -96,6 +110,8 @@ const CustomTabBar = memo(function CustomTabBar() {
             active={active}
             colors={colors}
             onPress={() => navigate(tab.name)}
+            iconContainerSize={iconContainerSize}
+            tabLabelFontSize={tabLabelFontSize}
           />
         );
       })}
@@ -126,23 +142,19 @@ const styles = StyleSheet.create({
   tabBar: {
     flexDirection: "row",
     justifyContent: "space-around",
-    paddingVertical: 12,
-    paddingHorizontal: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
     borderTopWidth: 1,
   },
   tabItem: {
     alignItems: "center",
-    gap: 4,
-  },
-  iconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
+    gap: 2,
+    paddingHorizontal: 2,
+    flexShrink: 1,
   },
   tabLabel: {
     fontSize: 11,
     fontWeight: "500",
+    textAlign: "center",
   },
 });

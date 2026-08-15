@@ -2,19 +2,22 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { ArrowRight } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useTheme } from "../../context/useTheme";
+import { useResponsiveContainer, useResponsiveFontSize } from "../../utils/responsive";
 
 export default function CTASection() {
   const { colors } = useTheme();
   const router = useRouter();
+  const container = useResponsiveContainer();
+  const buttonTextSize = useResponsiveFontSize(16, 0.88, 1);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, container]}>
       <TouchableOpacity
         style={[styles.button, { backgroundColor: colors.primary }]}
         onPress={() => router.push("/(tabs)/project")}
         activeOpacity={0.8}
       >
-        <Text style={[styles.buttonText, { color: colors.text }]}>View projects</Text>
+        <Text style={[styles.buttonText, { color: colors.text, fontSize: buttonTextSize }]}>View projects</Text>
         <ArrowRight size={18} color={colors.text} />
       </TouchableOpacity>
       <TouchableOpacity
@@ -22,7 +25,7 @@ export default function CTASection() {
         onPress={() => router.push("/(tabs)/contact")}
         activeOpacity={0.8}
       >
-        <Text style={[styles.buttonText, { color: colors.text }]}>Get in touch</Text>
+        <Text style={[styles.buttonText, { color: colors.text, fontSize: buttonTextSize }]}>Get in touch</Text>
       </TouchableOpacity>
     </View>
   );
@@ -47,7 +50,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   buttonText: {
-    fontSize: 16,
     fontWeight: "600",
   },
 });

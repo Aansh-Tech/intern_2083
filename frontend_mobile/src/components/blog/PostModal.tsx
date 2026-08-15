@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet, useWindowDimensions } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { X, Clock, Send } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -7,6 +7,7 @@ import { usePopup } from "../Popup";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useComments } from "../../hooks/useComments";
 import api from "../../services/api";
+import { isTablet } from "../../utils/responsive";
 
 
 console.log = () => {};
@@ -42,9 +43,11 @@ const unwrapItem = (response: any): any => {
 export default function PostModal({ post, visible, onClose }: PostModalProps) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const { width: windowWidth } = useWindowDimensions();
   const { showModal } = usePopup();
   const { postComment, fetchComments, loading: submitting } = useComments();
   const mountedRef = useRef(true);
+  const tablet = isTablet(windowWidth);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -202,7 +205,12 @@ export default function PostModal({ post, visible, onClose }: PostModalProps) {
               style={{
                 flex: 1,
                 marginTop: 32,
+                marginHorizontal: tablet ? 24 : 0,
+                marginBottom: tablet ? 24 : 0,
                 paddingBottom: insets.bottom + 8,
+                maxWidth: tablet ? 600 : undefined,
+                alignSelf: "center",
+                width: tablet ? "100%" : undefined,
               }}
             >
               <View style={styles.sheetShadow}>

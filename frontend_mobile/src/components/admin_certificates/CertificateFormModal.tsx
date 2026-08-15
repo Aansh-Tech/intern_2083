@@ -1,4 +1,4 @@
-import { useState, useCallback, memo } from "react";
+import { useState, useCallback, useEffect, useRef, memo } from "react";
 import { View, Text, TextInput, TouchableOpacity, Image } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Plus, X } from "lucide-react-native";
@@ -30,6 +30,7 @@ function CertificateFormModal({ visible, editTarget, onSave, onClose }: Certific
   const [description, setDescription] = useState("");
   const [issueDate, setIssueDate] = useState("");
   const [imageUri, setImageUri] = useState<string | null>(null);
+  const savingRef = useRef(false);
 
   const resetForm = useCallback(() => {
     if (editTarget) {
@@ -49,6 +50,10 @@ function CertificateFormModal({ visible, editTarget, onSave, onClose }: Certific
     }
   }, [editTarget]);
 
+  useEffect(() => {
+    if (visible) resetForm();
+  }, [visible, resetForm]);
+
   const handlePickImage = useCallback(async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) return;
@@ -67,16 +72,21 @@ function CertificateFormModal({ visible, editTarget, onSave, onClose }: Certific
   }, []);
 
   const handleSave = useCallback(async () => {
-    if (!title.trim()) return;
-
-    await onSave({
-      title: title.trim(),
-      issuer: issuer.trim(),
-      category: category.trim(),
-      description: description.trim(),
-      issueDate: issueDate.trim(),
-      image: imageUri ?? undefined,
-    });
+    if (!title.trim() || !issuer.trim()) return;
+    if (savingRef.current) return;
+    savingRef.current = true;
+    try {
+      await onSave({
+        title: title.trim(),
+        issuer: issuer.trim(),
+        category: category.trim(),
+        description: description.trim(),
+        issueDate: issueDate.trim(),
+        image: imageUri ?? undefined,
+      });
+    } finally {
+      savingRef.current = false;
+    }
   }, [title, issuer, category, description, issueDate, imageUri, onSave]);
 
   const inputStyle = {

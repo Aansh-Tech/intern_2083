@@ -12,6 +12,7 @@ import { useTheme } from "../../context/useTheme";
 import type { ProjectImage } from "../../types/project";
 import { MAX_PROJECT_PHOTOS } from "../../types/project";
 import { dedupeImages } from "../../services/image";
+import { tabletContentWidth } from "../../utils/responsive";
 
 interface ProjectGalleryProps {
   images: ProjectImage[];
@@ -31,7 +32,8 @@ export default function ProjectGallery({
 }: ProjectGalleryProps) {
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
-  const pageWidth = Math.max(width - horizontalPadding, 1);
+  const cappedWidth = Math.min(tabletContentWidth(width), width);
+  const pageWidth = Math.max(cappedWidth - horizontalPadding, 1);
   const [activeIndex, setActiveIndex] = useState(0);
 
   const visibleImages = dedupeImages(images).slice(0, MAX_PROJECT_PHOTOS);

@@ -51,7 +51,7 @@ function ProjectCard({
         <View className="flex-row justify-between items-start">
           <View className="flex-1 gap-1.5">
             <View className="flex-row items-center gap-2">
-              <Text className="text-[16px] font-bold" style={{ color: colors.text }}>
+              <Text className="text-[16px] font-bold" style={{ color: colors.text, flexShrink: 1 }} numberOfLines={1}>
                 {project.title}
               </Text>
               {project.featured && (

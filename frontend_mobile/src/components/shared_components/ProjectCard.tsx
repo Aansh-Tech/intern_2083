@@ -1,9 +1,10 @@
 import { memo, useState, useEffect } from "react";
-import { View, Text, Image, TouchableOpacity, Linking } from "react-native";
+import { View, Text, Image, TouchableOpacity, Linking, useWindowDimensions } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { ArrowUpRight, ExternalLink, FolderKanban } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useTheme } from "../../context/useTheme";
+import { isTablet, tabletContentWidth } from "../../utils/responsive";
 
 export type ProjectCardStatus = "completed" | "in-progress";
 
@@ -45,6 +46,7 @@ function ProjectCard({
 }: ProjectCardProps) {
   const { colors } = useTheme();
   const router = useRouter();
+  const { width } = useWindowDimensions();
   const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
@@ -57,7 +59,14 @@ function ProjectCard({
   return (
     <View
       className="mx-5 rounded-3xl border overflow-hidden"
-      style={{ backgroundColor: colors.card, borderColor: colors.border }}
+      style={[
+        { backgroundColor: colors.card, borderColor: colors.border },
+        isTablet(width) && {
+          width: tabletContentWidth(width) - 40,
+          maxWidth: tabletContentWidth(width) - 40,
+          alignSelf: "center",
+        },
+      ]}
     >
       {(featured || statusLabel) && (
         <View className="absolute top-3 left-3 z-10 flex-row items-center gap-2">

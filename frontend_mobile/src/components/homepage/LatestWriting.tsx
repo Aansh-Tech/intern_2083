@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import BlogCard from "./BlogCard";
 import SectionTitle from "./SectionTitle";
 import { useTheme } from "../../context/useTheme";
 import api from "../../services/api";
+import { useResponsiveContainer } from "../../utils/responsive";
 
 const unwrapList = (response: any): any[] => {
   if (response.data?.data?.data && Array.isArray(response.data.data.data)) {
@@ -32,6 +33,7 @@ export default function LatestWriting() {
   const [blogs, setBlogs] = useState<HomepageBlog[]>([]);
   const [loading, setLoading] = useState(true);
   const mountedRef = useRef(true);
+  const headerContainer = useResponsiveContainer();
 
   useEffect(() => {
     mountedRef.current = true;
@@ -58,7 +60,7 @@ export default function LatestWriting() {
 
   return (
     <View className="pt-14 pb-6">
-      <View className="flex-row justify-between items-start px-5">
+      <View style={[styles.header, headerContainer]}>
         <SectionTitle subtitle="BLOG" title="Latest writing" />
         <TouchableOpacity
           onPress={() => router.push("/(tabs)/blog")}
@@ -96,3 +98,12 @@ export default function LatestWriting() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    paddingHorizontal: 20,
+  },
+});

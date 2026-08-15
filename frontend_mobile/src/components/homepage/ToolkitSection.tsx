@@ -1,23 +1,25 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Code2 } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import SkillBar from "./SkillBar";
 import { useTheme } from "../../context/useTheme";
 import { useSkills } from "../../context/SkillsContext";
+import { useResponsiveContainer } from "../../utils/responsive";
 
 export default function ToolkitSection() {
   const { colors } = useTheme();
   const { skills } = useSkills();
   const router = useRouter();
+  const container = useResponsiveContainer();
 
   return (
-    <View className="px-5 pt-[60px]">
+    <View style={[styles.section, container]}>
       <View
         className="rounded-3xl border p-6"
         style={{ backgroundColor: colors.card, borderColor: colors.border }}
       >
         <View className="flex-row justify-between items-start mb-6">
-          <View className="gap-1">
+          <View className="gap-1 flex-1">
             <Text className="text-xs font-bold tracking-[2px]" style={{ color: colors.primary }}>
               TOOLKIT
             </Text>
@@ -48,3 +50,10 @@ export default function ToolkitSection() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  section: {
+    paddingHorizontal: 20,
+    paddingTop: 60,
+  },
+});

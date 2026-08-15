@@ -9,6 +9,7 @@ import {
 import { X, MessageSquare, Mail } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
 import { useNotifications } from "../../context/NotificationContext";
+import { useResponsiveContainer } from "../../utils/responsive";
 
 function relativeTime(dateStr: string): string {
   const now = Date.now();
@@ -118,6 +119,7 @@ export default function NotificationPanel({
   const { colors } = useTheme();
   const { notifications, markAllAsRead, refreshNotifications } =
     useNotifications();
+  const container = useResponsiveContainer();
 
   useEffect(() => {
     if (visible) {
@@ -140,17 +142,24 @@ export default function NotificationPanel({
       >
         <TouchableOpacity activeOpacity={1} onPress={() => {}}>
           <View
-            className="mx-4 mt-2 rounded-[20px] border p-5"
-            style={{
-              backgroundColor: colors.card,
-              borderColor: colors.border,
-              maxHeight: "60%",
-              shadowColor: "#000000",
-              shadowOpacity: 0.3,
-              shadowRadius: 20,
-              shadowOffset: { width: 0, height: 8 },
-              elevation: 18,
-            }}
+            style={[
+              container,
+              {
+                marginHorizontal: 16,
+                marginTop: 8,
+                borderRadius: 20,
+                borderWidth: 1,
+                padding: 20,
+                backgroundColor: colors.card,
+                borderColor: colors.border,
+                maxHeight: "60%",
+                shadowColor: "#000000",
+                shadowOpacity: 0.3,
+                shadowRadius: 20,
+                shadowOffset: { width: 0, height: 8 },
+                elevation: 18,
+              },
+            ]}
           >
             <View className="flex-row items-center justify-between mb-4">
               <Text

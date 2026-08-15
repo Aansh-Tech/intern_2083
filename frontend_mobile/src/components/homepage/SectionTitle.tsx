@@ -1,5 +1,6 @@
 import { View, Text } from "react-native";
 import { useTheme } from "../../context/useTheme";
+import { useResponsiveContainer } from "../../utils/responsive";
 
 interface SectionTitleProps {
   subtitle?: string;
@@ -8,9 +9,10 @@ interface SectionTitleProps {
 
 export default function SectionTitle({ subtitle, title }: SectionTitleProps) {
   const { colors } = useTheme();
+  const container = useResponsiveContainer();
 
   return (
-    <View className="px-5 gap-1">
+    <View style={container} className="px-5 gap-1">
       {subtitle && (
         <Text className="text-[13px] font-semibold tracking-[2px]" style={{ color: colors.primary }}>
           {subtitle}

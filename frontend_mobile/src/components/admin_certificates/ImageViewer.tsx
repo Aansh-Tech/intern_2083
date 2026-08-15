@@ -1,5 +1,6 @@
 import { memo } from "react";
-import { View, Image, TouchableOpacity, Modal, Dimensions } from "react-native";
+import { View, Image, TouchableOpacity, Modal, useWindowDimensions } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { X } from "lucide-react-native";
 
 interface ImageViewerProps {
@@ -8,17 +9,21 @@ interface ImageViewerProps {
   onClose: () => void;
 }
 
-const { width, height } = Dimensions.get("window");
-
 function ImageViewer({ visible, imageUrl, onClose }: ImageViewerProps) {
+  const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+
   if (!imageUrl) return null;
+
+  const maxImageWidth = Math.min(width - 32, 640);
+  const maxImageHeight = height * 0.6;
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View className="flex-1 justify-center items-center" style={{ backgroundColor: "rgba(0,0,0,0.92)" }}>
         <TouchableOpacity
-          className="absolute top-12 right-5 z-10 w-10 h-10 rounded-full items-center justify-center"
-          style={{ backgroundColor: "rgba(255,255,255,0.15)" }}
+          className="absolute right-5 z-10 w-10 h-10 rounded-full items-center justify-center"
+          style={{ top: insets.top + 8, backgroundColor: "rgba(255,255,255,0.15)" }}
           onPress={onClose}
           activeOpacity={0.7}
         >
@@ -27,7 +32,7 @@ function ImageViewer({ visible, imageUrl, onClose }: ImageViewerProps) {
 
         <Image
           source={{ uri: imageUrl }}
-          style={{ width: width - 32, height: height * 0.6 }}
+          style={{ width: maxImageWidth, height: maxImageHeight }}
           resizeMode="contain"
         />
       </View>
