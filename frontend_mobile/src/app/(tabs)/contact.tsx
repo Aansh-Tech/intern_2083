@@ -1,5 +1,5 @@
 import { useCallback, useState, useRef, useEffect } from "react";
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet, RefreshControl } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet, RefreshControl, Keyboard } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Mail, Phone, MapPin, Send } from "lucide-react-native";
 import { useRouter } from "expo-router";
@@ -9,12 +9,18 @@ import ContactInput from "../../components/contactpage/ContactInput";
 import { useTheme } from "../../context/useTheme";
 import { useInbox } from "../../context/InboxContext";
 import { usePopup } from "../../components/Popup";
+import { useResponsiveContainer, useResponsiveFontSize } from "../../utils/responsive";
 
 export default function ContactScreen() {
   const { colors } = useTheme();
   const { addMessage } = useInbox();
   const { showToast } = usePopup();
   const router = useRouter();
+  const headerContainer = useResponsiveContainer();
+  const infoContainer = useResponsiveContainer();
+  const formContainer = useResponsiveContainer();
+  const titleSize = useResponsiveFontSize(40);
+  const buttonTextSize = useResponsiveFontSize(16, 0.92, 1);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -88,15 +94,16 @@ console.debug = () => {};
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
         <Header />
 
-        <View className="px-5 pt-8 gap-2">
+        <View style={[headerContainer, { paddingHorizontal: 20, paddingTop: 32, gap: 8 }]}>
           <Text className="text-xs font-bold tracking-[2px]" style={{ color: colors.primary }}>
             CONTACT
           </Text>
-          <Text className="text-[40px] font-bold leading-[44px]" style={{ color: colors.text }}>
+          <Text className="font-bold" style={{ color: colors.text, fontSize: titleSize, lineHeight: Math.round(titleSize * 1.1) }}>
             Let's talk
           </Text>
           <Text className="text-base leading-6" style={{ color: colors.secondaryText }}>
@@ -104,7 +111,7 @@ console.debug = () => {};
           </Text>
         </View>
 
-        <View className="flex-column px-5 pt-8 gap-5">
+        <View style={[infoContainer, { paddingHorizontal: 20, paddingTop: 32, gap: 20 }]}>
           <ContactInfoCard
             icon={<Mail size={20} color={colors.primary} />}
             label="EMAIL"
@@ -123,8 +130,20 @@ console.debug = () => {};
         </View>
 
         <View
-          className="mx-5 mt-8 rounded-3xl border p-6 gap-5"
-          style={{ backgroundColor: colors.card, borderColor: colors.border }}
+          style={[
+            formContainer,
+            {
+              marginTop: 32,
+              marginHorizontal: 20,
+              padding: 24,
+              gap: 20,
+              marginBottom: 40,
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+              borderWidth: 1,
+              borderRadius: 24,
+            },
+          ]}
         >
           <ContactInput
             label="Name"
@@ -171,7 +190,7 @@ console.debug = () => {};
               <ActivityIndicator color={colors.text} />
             ) : (
               <>
-                <Text className="text-base font-bold" style={{ color: colors.text }}>Send message</Text>
+                <Text className="font-bold" style={{ color: colors.text, fontSize: buttonTextSize }}>Send message</Text>
                 <Send size={18} color={colors.text} />
               </>
             )}

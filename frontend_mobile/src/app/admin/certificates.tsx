@@ -10,6 +10,7 @@ import { useCertificates } from "../../context/CertificateContext";
 import { useTheme } from "../../context/useTheme";
 import { uploadImage } from "../../services/image";
 import type { Certificate } from "../../types/certificate";
+import { useResponsiveContainer } from "../../utils/responsive";
 
 console.log = () => {};
 console.info = () => {};
@@ -23,6 +24,8 @@ export default function AdminCertificatesScreen() {
   const [showForm, setShowForm] = useState(false);
   const [editTarget, setEditTarget] = useState<Certificate | null>(null);
   const [viewImage, setViewImage] = useState<string | null>(null);
+  const headerContainer = useResponsiveContainer();
+  const gridContainer = useResponsiveContainer();
 
   const handleAdd = useCallback(() => {
     setEditTarget(null);
@@ -71,11 +74,20 @@ export default function AdminCertificatesScreen() {
       setEditTarget(null);
       showToast({ type: "success", message: editTarget ? "Certificate updated" : "Certificate added" });
     } catch (error: any) {
-      console.log("[AdminCertificates] handleSave error:", error.message);
+      console.warn("[AdminCertificates] handleSave error:", error?.message);
+      console.warn("[AdminCertificates] status:", error?.response?.status, "data:", JSON.stringify(error?.response?.data));
+      const validationErrors = error?.response?.data?.errors;
+      let message = "Failed to save certificate or upload image.";
+      if (validationErrors && typeof validationErrors === "object") {
+        const first = Object.values(validationErrors)[0];
+        if (Array.isArray(first) && first.length > 0) {
+          message = String(first[0]);
+        }
+      }
       showModal({
         type: "error",
         title: "Something went wrong",
-        message: "Failed to save certificate or upload image.",
+        message,
         primaryText: "OK",
       });
     }
@@ -116,9 +128,9 @@ export default function AdminCertificatesScreen() {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshCertificates} />}
       >
-        <View className="px-5 pt-4">
+        <View style={[headerContainer, { paddingHorizontal: 20, paddingTop: 16 }]}>
           <View className="flex-row items-center justify-between">
-            <View className="gap-1">
+            <View className="gap-1 flex-1">
               <Text className="text-[11px] font-semibold tracking-[1.5px]" style={{ color: colors.primary }}>
                 CERTIFICATES
               </Text>
@@ -150,7 +162,7 @@ export default function AdminCertificatesScreen() {
             </Text>
           </View>
         ) : (
-          <View className="flex-row flex-wrap px-5 pt-6 pb-8 gap-3.5">
+          <View style={[gridContainer, { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 20, paddingTop: 24, paddingBottom: 32, gap: 14 }]}>
             {certificates.map((cert) => (
               <View key={cert.id} className="flex-1 basis-[47%]">
                 <CertificateCard

@@ -3,6 +3,7 @@ import { View, Text } from "react-native";
 import { Folder, Inbox } from "lucide-react-native";
 import QuickActionCard from "./QuickActionCard";
 import { useTheme } from "../../context/useTheme";
+import { useResponsiveContainer } from "../../utils/responsive";
 
 interface QuickActionsSectionProps {
   onManageProjects: () => void;
@@ -12,15 +13,16 @@ interface QuickActionsSectionProps {
 
 function QuickActionsSection({ onManageProjects, onReviewInbox, unreadCount }: QuickActionsSectionProps) {
   const { colors } = useTheme();
+  const container = useResponsiveContainer();
 
   return (
     <>
-      <View className="px-5 pt-4 pb-3">
+      <View style={[container, { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12 }]}>
         <Text className="text-[11px] font-bold tracking-[1.5px]" style={{ color: colors.primary }}>
           QUICK ACTIONS
         </Text>
       </View>
-      <View className="px-5 gap-3">
+      <View style={[container, { paddingHorizontal: 20, gap: 12 }]}>
         <QuickActionCard
           icon={Folder}
           title="Manage projects"

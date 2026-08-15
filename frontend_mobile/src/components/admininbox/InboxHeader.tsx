@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { View, Text } from "react-native";
 import { useTheme } from "../../context/useTheme";
+import { useResponsiveContainer } from "../../utils/responsive";
 
 interface InboxHeaderProps {
   unreadCount: number;
@@ -8,9 +9,10 @@ interface InboxHeaderProps {
 
 function InboxHeader({ unreadCount }: InboxHeaderProps) {
   const { colors } = useTheme();
+  const container = useResponsiveContainer();
 
   return (
-    <View className="px-5 pt-4">
+    <View style={[container, { paddingHorizontal: 20, paddingTop: 16 }]}>
       <Text className="text-[11px] font-semibold tracking-[1.5px]" style={{ color: colors.primary }}>
         CONTACT
       </Text>

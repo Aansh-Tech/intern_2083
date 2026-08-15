@@ -14,6 +14,7 @@ import {
 import { X } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "../../context/useTheme";
+import { isTablet } from "../../utils/responsive";
 
 interface AppSheetProps {
   visible: boolean;
@@ -42,7 +43,7 @@ export default function AppSheet({
 }: AppSheetProps) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const { height: windowHeight } = useWindowDimensions();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
 
   const sheetMaxHeight =
     maxHeight == null
@@ -50,6 +51,8 @@ export default function AppSheet({
       : typeof maxHeight === "number"
         ? maxHeight
         : Math.round(windowHeight * (parseFloat(maxHeight) / 100));
+
+  const tablet = isTablet(windowWidth);
 
   return (
     <Modal
@@ -75,6 +78,7 @@ export default function AppSheet({
               <View
                 style={[
                   styles.sheetShadow,
+                  tablet && styles.sheetTablet,
                   {
                     backgroundColor: colors.card,
                     shadowColor: "#000000",
@@ -157,6 +161,17 @@ const styles = StyleSheet.create({
   sheetShadow: {
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
+  },
+  sheetTablet: {
+    alignSelf: "center",
+    width: "100%",
+    maxWidth: 560,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+    marginHorizontal: 16,
+    marginBottom: 24,
   },
   sheet: {
     borderTopLeftRadius: 28,

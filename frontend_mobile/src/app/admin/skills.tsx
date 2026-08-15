@@ -9,6 +9,7 @@ import { usePopup } from "../../components/Popup";
 import { useSkills } from "../../context/SkillsContext";
 import { useTheme } from "../../context/useTheme";
 import type { Skill, SkillCategory } from "../../types/skill";
+import { useResponsiveContainer } from "../../utils/responsive";
 
 console.log = () => {};
 console.info = () => {};
@@ -29,6 +30,8 @@ export default function AdminSkillsScreen() {
   const [editPercentage, setEditPercentage] = useState(50);
   const [editError, setEditError] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const headerContainer = useResponsiveContainer();
+  const listContainer = useResponsiveContainer();
 
   const handleAdd = useCallback(
     async (data: { category: SkillCategory; name: string; percentage: number }) => {
@@ -91,7 +94,7 @@ export default function AdminSkillsScreen() {
 
   return (
     <AdminLayout refreshing={refreshing} onRefresh={refreshSkills}>
-      <View className="px-5 pt-4">
+      <View style={[headerContainer, { paddingHorizontal: 20, paddingTop: 16 }]}>
         <Text className="text-[11px] font-semibold tracking-[1.5px]" style={{ color: colors.primary }}>
           SKILLS
         </Text>
@@ -133,7 +136,7 @@ export default function AdminSkillsScreen() {
           </Text>
         </View>
       ) : (
-        <View className="px-5 pt-6 pb-8 gap-4">
+        <View style={[listContainer, { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 32, gap: 16 }]}>
           {categories.map(({ category, skills }) => (
             <SkillSection
               key={category}

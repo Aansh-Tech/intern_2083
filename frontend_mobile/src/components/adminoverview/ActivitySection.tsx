@@ -2,6 +2,7 @@
 import { View, Text } from "react-native";
 import ActivityItem from "./ActivityItem";
 import { useTheme } from "../../context/useTheme";
+import { useResponsiveContainer } from "../../utils/responsive";
 import type { ActivityItem as ActivityItemType } from "../../types/dashboard";
 
 interface ActivitySectionProps {
@@ -11,25 +12,33 @@ interface ActivitySectionProps {
 
 function ActivitySection({ activities, onActivityPress }: ActivitySectionProps) {
   const { colors } = useTheme();
+  const container = useResponsiveContainer();
 
   return (
     <>
-      <View className="px-5 pt-8 pb-3">
+      <View style={[container, { paddingHorizontal: 20, paddingTop: 32, paddingBottom: 12 }]}>
         <Text className="text-[11px] font-bold tracking-[1.5px]" style={{ color: colors.primary }}>
           RECENT ACTIVITY
         </Text>
       </View>
       <View
-        className="mx-5 rounded-3xl border mb-8 px-5"
-        style={{
-          backgroundColor: colors.card,
-          borderColor: colors.border,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 8,
-          elevation: 4,
-        }}
+        style={[
+          container,
+          {
+            marginHorizontal: 20,
+            borderRadius: 24,
+            borderWidth: 1,
+            marginBottom: 32,
+            paddingHorizontal: 20,
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 4,
+          },
+        ]}
       >
         {activities.length === 0 ? (
           <View className="py-6">

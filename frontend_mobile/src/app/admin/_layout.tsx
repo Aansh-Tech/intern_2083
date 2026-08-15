@@ -57,7 +57,7 @@ export default function AdminLayout() {
   const handleSignOut = useCallback(() => {
     showConfirm({
       title: "Sign out?",
-      message: "You will need to sign in again to access the admin console.",
+      message: "Sign out of the admin panel?",
       confirmText: "Sign Out",
       cancelText: "Cancel",
       destructive: true,

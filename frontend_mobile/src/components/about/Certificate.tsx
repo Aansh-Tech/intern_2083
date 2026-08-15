@@ -5,6 +5,7 @@ import SectionHeading from "./Heading";
 import ImageViewer from "../admin_certificates/ImageViewer";
 import { useTheme } from "../../context/useTheme";
 import { useCertificates } from "../../context/CertificateContext";
+import { useResponsiveContainer } from "../../utils/responsive";
 
 console.log = () => {};
 console.info = () => {};
@@ -13,6 +14,7 @@ export default function CertificatesSection() {
   const { colors } = useTheme();
   const { certificates } = useCertificates();
   const [viewImage, setViewImage] = useState<string | null>(null);
+  const gridContainer = useResponsiveContainer();
 
   if (certificates.length > 0) {
     const first = certificates[0];
@@ -29,7 +31,7 @@ export default function CertificatesSection() {
     <View>
       <SectionHeading eyebrow="CREDENTIALS" title="Certificates" />
 
-      <View className="flex-row flex-wrap gap-3.5 px-5 pt-5">
+      <View style={[gridContainer, { flexDirection: "row", flexWrap: "wrap", gap: 14, paddingHorizontal: 20, paddingTop: 20 }]}>
         {certificates.map((cert) => (
           <TouchableOpacity
             key={cert.id}

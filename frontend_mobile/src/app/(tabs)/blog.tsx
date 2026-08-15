@@ -6,6 +6,7 @@ import { usePopup } from "../../components/Popup";
 import Header from "../../components/homepage/Header";
 import PostModal from "../../components/blog/PostModal";
 import api from "../../services/api";
+import { useResponsiveContainer, useResponsiveFontSize } from "../../utils/responsive";
 
 
 console.log = () => {};
@@ -49,6 +50,9 @@ export default function BlogScreen() {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const mountedRef = useRef(true);
+  const headerContainer = useResponsiveContainer();
+  const listContainer = useResponsiveContainer();
+  const titleSize = useResponsiveFontSize(40);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -136,11 +140,11 @@ export default function BlogScreen() {
       >
         <Header />
 
-        <View className="px-5 pt-8 gap-2">
+        <View style={[headerContainer, { paddingHorizontal: 20, paddingTop: 32, gap: 8 }]}>
           <Text className="text-xs font-bold tracking-[2px]" style={{ color: colors.primary }}>
             BLOG
           </Text>
-          <Text className="text-[40px] font-bold leading-[44px]" style={{ color: colors.text }}>
+          <Text className="font-bold" style={{ color: colors.text, fontSize: titleSize, lineHeight: Math.round(titleSize * 1.1) }}>
             Blog
           </Text>
           <Text className="text-base leading-6" style={{ color: colors.secondaryText }}>
@@ -153,7 +157,7 @@ export default function BlogScreen() {
             <Text style={{ color: colors.secondaryText }}>No posts found.</Text>
           </View>
         ) : (
-          <View className="px-5 pb-10 gap-4">
+          <View style={[listContainer, { paddingHorizontal: 20, paddingBottom: 40, gap: 16 }]}>
             {posts.map((post) => (
               <TouchableOpacity
                 key={post.id}

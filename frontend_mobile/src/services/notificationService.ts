@@ -1,5 +1,6 @@
 import * as contactService from "./contact";
 import { getAllComments } from "./commentService";
+import { getToken } from "../utils/token";
 
 export interface AppNotification {
   id: string;
@@ -11,6 +12,11 @@ export interface AppNotification {
 }
 
 export async function buildNotifications(): Promise<AppNotification[]> {
+  const token = await getToken();
+  if (!token) {
+    return [];
+  }
+
   const [contacts, comments] = await Promise.all([
     contactService.getContacts().catch(() => [] as any[]),
     getAllComments().catch(() => []),

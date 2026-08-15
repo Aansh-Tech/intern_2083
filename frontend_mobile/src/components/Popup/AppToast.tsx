@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { View, Text, Animated, Easing, TouchableOpacity, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { usePathname } from "expo-router";
 import { Check, X, Info, TriangleAlert } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
 import type { ToastState, PopupType } from "./popupTypes";
@@ -19,7 +20,15 @@ const ICONS: Record<PopupType, React.ComponentType<{ size: number; color: string
   warning: TriangleAlert,
 };
 
-const TAB_BAR_CLEARANCE = 84;
+const TAB_BAR_CLEARANCE = 78;
+const BASE_CLEARANCE = 20;
+
+function isTabScreen(pathname: string): boolean {
+  if (pathname === "/" || pathname === "") return true;
+  const segments = pathname.split("/").filter(Boolean);
+  if (segments.length === 0) return true;
+  return segments.length === 1 && ["project", "blog", "about", "contact"].includes(segments[0]);
+}
 
 function ToastItem({ toast, onDismiss }: { toast: ToastState; onDismiss: (id: string) => void }) {
   const { colors } = useTheme();
@@ -112,13 +121,15 @@ interface AppToastProps {
 
 export default function AppToast({ toasts, onDismiss }: AppToastProps) {
   const insets = useSafeAreaInsets();
+  const pathname = usePathname();
+  const bottomOffset = isTabScreen(pathname) ? insets.bottom + TAB_BAR_CLEARANCE : insets.bottom + BASE_CLEARANCE;
 
   if (toasts.length === 0) return null;
 
   return (
     <View
       pointerEvents="box-none"
-      style={[styles.container, { bottom: insets.bottom + TAB_BAR_CLEARANCE }]}
+      style={[styles.container, { bottom: bottomOffset }]}
     >
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} onDismiss={onDismiss} />

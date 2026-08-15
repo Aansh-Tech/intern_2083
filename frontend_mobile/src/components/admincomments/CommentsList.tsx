@@ -1,7 +1,8 @@
 import { memo, useCallback } from "react";
-import { FlatList } from "react-native";
+import { FlatList, StyleSheet } from "react-native";
 import CommentCard from "./CommentCard";
 import type { Comment } from "../../types/comment";
+import { useResponsiveContainer } from "../../utils/responsive";
 
 interface CommentsListProps {
   comments: Comment[];
@@ -11,6 +12,8 @@ interface CommentsListProps {
 }
 
 function CommentsList({ comments, onApprove, onReject, onDelete }: CommentsListProps) {
+  const container = useResponsiveContainer();
+
   const renderItem = useCallback(
     ({ item }: { item: Comment }) => (
       <CommentCard
@@ -30,10 +33,19 @@ function CommentsList({ comments, onApprove, onReject, onDelete }: CommentsListP
       data={comments}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
-      contentContainerClassName="px-5 pt-4 pb-8 gap-4"
+      contentContainerStyle={[styles.content, container]}
       scrollEnabled={false}
     />
   );
 }
+
+const styles = StyleSheet.create({
+  content: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 32,
+    gap: 16,
+  },
+});
 
 export default memo(CommentsList);

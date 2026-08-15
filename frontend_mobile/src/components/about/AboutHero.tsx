@@ -6,6 +6,7 @@ import { StorageAccessFramework } from "expo-file-system/legacy";
 import { useTheme } from "../../context/useTheme";
 import { usePopup } from "../Popup";
 import { useProfile } from "../../context/ProfileContext";
+import { useResponsiveContainer, useResponsiveFontSize } from "../../utils/responsive";
 
 const platformIcons: Record<string, string> = {
   github: "logo-github",
@@ -22,6 +23,8 @@ export default function AboutHero() {
   const { colors } = useTheme();
   const { showModal } = usePopup();
   const { profile, photoTimestamp } = useProfile();
+  const container = useResponsiveContainer();
+  const buttonTextSize = useResponsiveFontSize(16, 0.88, 1);
 
   const name = profile.name ?? "Anish Shrestha";
   const role = profile.title ?? profile.subtitle ?? profile.headline ?? "Developer & Designer";
@@ -93,7 +96,7 @@ export default function AboutHero() {
   };
 
   return (
-    <View className="px-5 pt-7 gap-4">
+    <View style={[container, { paddingHorizontal: 20, paddingTop: 28, gap: 16 }]}>
       <Text className="text-[13px] font-semibold tracking-[2px]" style={{ color: colors.primary }}>
         ABOUT
       </Text>
@@ -137,7 +140,7 @@ export default function AboutHero() {
             onPress={() => openLink(resumeUrl)}
           >
             <Ionicons name="eye-outline" size={18} color={colors.text} />
-            <Text className="text-base font-semibold" style={{ color: colors.text }}>
+            <Text className="font-semibold" style={{ color: colors.text, fontSize: buttonTextSize }}>
               View Resume
             </Text>
           </TouchableOpacity>
@@ -148,7 +151,7 @@ export default function AboutHero() {
             onPress={() => downloadResume(resumeUrl)}
           >
             <Ionicons name="download-outline" size={18} color={colors.text} />
-            <Text className="text-base font-semibold" style={{ color: colors.text }}>
+            <Text className="font-semibold" style={{ color: colors.text, fontSize: buttonTextSize }}>
               Download Resume
             </Text>
           </TouchableOpacity>

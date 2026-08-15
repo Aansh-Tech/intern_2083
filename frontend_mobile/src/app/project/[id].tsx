@@ -12,6 +12,7 @@ import ProjectGallery from "../../components/work/ProjectGallery";
 import ProjectCover from "../../components/work/ProjectCover";
 import ImageViewer from "../../components/admin_certificates/ImageViewer";
 import { normalizeProjectImages } from "../../utils/projectImages";
+import { useResponsiveContainer, useResponsiveFontSize } from "../../utils/responsive";
 
 export default function ProjectDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -22,6 +23,8 @@ export default function ProjectDetailsScreen() {
   const [detailProject, setDetailProject] = useState<Project | null>(null);
   const [detailLoading, setDetailLoading] = useState(true);
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+  const container = useResponsiveContainer();
+  const titleSize = useResponsiveFontSize(28);
 
   const project = useMemo(
     () => projects.find((p) => p.id === id),
@@ -98,14 +101,17 @@ export default function ProjectDetailsScreen() {
       <Stack.Screen options={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }} />
       <ScrollView showsVerticalScrollIndicator={false}>
         <View
-          style={{
-            paddingHorizontal: 20,
-            paddingTop: 12,
-            paddingBottom: 8,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
+          style={[
+            container,
+            {
+              paddingHorizontal: 20,
+              paddingTop: 12,
+              paddingBottom: 8,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            },
+          ]}
         >
           <TouchableOpacity
             style={{ width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }}
@@ -127,14 +133,14 @@ export default function ProjectDetailsScreen() {
         </View>
 
         {normalizedImages.length > 0 ? (
-          <View style={{ paddingHorizontal: 20, paddingTop: 8 }}>
+          <View style={[container, { paddingHorizontal: 20, paddingTop: 8 }]}>
             <ProjectGallery
               images={normalizedImages}
               onImagePress={(index) => setViewerIndex(index)}
             />
           </View>
         ) : (
-          <View style={{ paddingTop: 8 }}>
+          <View style={[container, { paddingTop: 8 }]}>
             <ProjectCover
               gradient={project.gradient}
               category={project.category}
@@ -143,7 +149,7 @@ export default function ProjectDetailsScreen() {
           </View>
         )}
 
-        <View style={{ paddingHorizontal: 20, paddingTop: 24, gap: 16 }}>
+        <View style={[container, { paddingHorizontal: 20, paddingTop: 24, gap: 16 }]}>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
             <StatusBadge variant={project.status === "completed" || project.completed ? "completed" : "in-progress"} />
             {project.featured && <StatusBadge variant="featured" />}
@@ -153,7 +159,7 @@ export default function ProjectDetailsScreen() {
             <Text style={{ fontSize: 13, fontWeight: "600", letterSpacing: 1, textTransform: "uppercase", color: colors.primary }}>
               {project.category}
             </Text>
-            <Text style={{ fontSize: 28, fontWeight: "700", color: colors.text }}>
+            <Text style={{ fontSize: titleSize, fontWeight: "700", color: colors.text }}>
               {project.title}
             </Text>
           </View>

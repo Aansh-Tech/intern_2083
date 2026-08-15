@@ -113,15 +113,36 @@ export async function getCertificate(id: string) {
   return mapCertificate(item);
 }
 
-export async function createCertificate(data: {
-  title: string;
+type CertificatePayload = {
+  title?: string;
   issuer?: string;
   category?: string;
   description?: string;
   issue_date?: string;
   image?: string;
-}) {
-  const response = await api.post("/v1/certificates", data);
+};
+
+/**
+ * Maps the mobile form shape ({ title, issuer, category, description,
+ * issueDate, image }) onto the fields the Laravel CertificateController
+ * validates for create + update. Empty optional strings are sent as `null` so
+ * the backend's `nullable|date` / `nullable|string` rules never reject them
+ * (empty string would otherwise fail validation). `issuer` and `title` are
+ * required server-side, so they are passed through as-is.
+ */
+export function buildCertificatePayload(data: CertificatePayload) {
+  return {
+    title: data.title ?? "",
+    issuer: data.issuer ?? "",
+    category: data.category ?? "",
+    description: data.description?.trim() ? data.description.trim() : null,
+    issue_date: data.issue_date?.trim() ? data.issue_date.trim() : null,
+    image: data.image?.trim() ? data.image.trim() : null,
+  };
+}
+
+export async function createCertificate(data: CertificatePayload) {
+  const response = await api.post("/v1/certificates", buildCertificatePayload(data));
 
   const item: BackendCertificate =
     response.data.data ?? response.data;
@@ -129,18 +150,11 @@ export async function createCertificate(data: {
   return mapCertificate(item);
 }
 
-export async function updateCertificate(
-  id: string,
-  data: {
-    title?: string;
-    issuer?: string;
-    category?: string;
-    description?: string;
-    issue_date?: string;
-    image?: string;
-  }
-) {
-  const response = await api.put(`/v1/certificates/${id}`, data);
+export async function updateCertificate(id: string, data: CertificatePayload) {
+  const response = await api.put(
+    `/v1/certificates/${id}`,
+    buildCertificatePayload(data)
+  );
 
   const item: BackendCertificate =
     response.data.data ?? response.data;

@@ -39,7 +39,7 @@ export default function Logo() {
           <Text style={styles.initials}>{initials}</Text>
         </LinearGradient>
       ) : null}
-      <Text style={[styles.logo, { color: colors.text }]}>
+      <Text style={[styles.logo, { color: colors.text }]} numberOfLines={1}>
         {displayName}
       </Text>
     </View>
@@ -51,6 +51,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
+    flexShrink: 1,
   },
   avatar: {
     width: 32,
@@ -68,5 +69,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "700",
     letterSpacing: 1,
+    flexShrink: 1,
   },
 });

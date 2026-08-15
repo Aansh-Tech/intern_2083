@@ -1,7 +1,8 @@
 import { memo, useCallback } from "react";
-import { FlatList } from "react-native";
+import { FlatList, StyleSheet } from "react-native";
 import MessageCard from "./MessageCard";
 import type { InboxMessage } from "../../types/inbox";
+import { useResponsiveContainer } from "../../utils/responsive";
 
 interface InboxListProps {
   messages: InboxMessage[];
@@ -9,6 +10,8 @@ interface InboxListProps {
 }
 
 function InboxList({ messages, onMessagePress }: InboxListProps) {
+  const container = useResponsiveContainer();
+
   const renderItem = useCallback(
     ({ item }: { item: InboxMessage }) => (
       <MessageCard message={item} onPress={onMessagePress} />
@@ -23,10 +26,19 @@ function InboxList({ messages, onMessagePress }: InboxListProps) {
       data={messages}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
-      contentContainerClassName="px-5 pt-4 pb-8 gap-4"
+      contentContainerStyle={[styles.content, container]}
       scrollEnabled={false}
     />
   );
 }
+
+const styles = StyleSheet.create({
+  content: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 32,
+    gap: 16,
+  },
+});
 
 export default memo(InboxList);
