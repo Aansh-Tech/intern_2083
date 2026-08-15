@@ -1,10 +1,11 @@
 import { useState, useCallback, useMemo, useRef } from "react";
-import { View, Text, TouchableOpacity, Alert } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import AdminLayout from "../../components/adminoverview/AdminLayout";
 import ProjectSearch from "../../components/adminprojects/ProjectSearch";
 import ProjectCard from "../../components/adminprojects/ProjectCard";
 import ProjectModal from "../../components/adminprojects/ProjectModal";
+import { usePopup } from "../../components/Popup";
 import { useProject } from "../../context/ProjectContext";
 import { useTheme } from "../../context/useTheme";
 import { uploadProjectImage, deleteImage, dedupeImages } from "../../services/image";
@@ -17,6 +18,7 @@ console.info = () => {};
 console.debug = () => {};
 export default function AdminProjectsScreen() {
   const { colors } = useTheme();
+  const { showModal, showConfirm, showToast } = usePopup();
   const { projects, loading, refreshing, refreshProjects, addProject, editProject, deleteProject, toggleFeatured, toggleCompleted } = useProject();
   console.log(useProject());
 
@@ -27,7 +29,6 @@ export default function AdminProjectsScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [editTarget, setEditTarget] = useState<Project | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
   const savingRef = useRef(false);
   const router = useRouter();
 
@@ -59,7 +60,12 @@ export default function AdminProjectsScreen() {
         data.photos.length > MAX_PROJECT_PHOTOS ||
         newPhotos.length > MAX_PROJECT_PHOTOS
       ) {
-        Alert.alert("Error", "A project can have at most 5 photos.");
+        showModal({
+          type: "warning",
+          title: "Too many photos",
+          message: "A project can have at most 5 photos.",
+          primaryText: "OK",
+        });
         return;
       }
       try {
@@ -88,19 +94,30 @@ export default function AdminProjectsScreen() {
 
         await refreshProjects(true);
         setModalVisible(false);
+        showToast({ type: "success", message: "Project saved successfully" });
       } catch (error: any) {
         console.error("Failed to save project or upload images:", error);
-        Alert.alert("Error", "Failed to save project or upload its images.");
+        showModal({
+          type: "error",
+          title: "Something went wrong",
+          message: "Failed to save project or upload its images.",
+          primaryText: "OK",
+        });
       }
     },
-    [addProject, refreshProjects]
+    [addProject, refreshProjects, showModal, showToast]
   );
 
   const handleEdit = useCallback(
     async (id: string, data: any) => {
       const photos = dedupeImages((data.photos ?? []) as ProjectPhoto[]);
       if (photos.length > MAX_PROJECT_PHOTOS) {
-        Alert.alert("Error", "A project can have at most 5 photos.");
+        showModal({
+          type: "warning",
+          title: "Too many photos",
+          message: "A project can have at most 5 photos.",
+          primaryText: "OK",
+        });
         return;
       }
 
@@ -141,20 +158,46 @@ export default function AdminProjectsScreen() {
 
         await refreshProjects(true);
         setEditTarget(null);
+        showToast({ type: "success", message: "Project saved successfully" });
       } catch (error: any) {
         console.error("Failed to save project or upload its images:", error);
-        Alert.alert("Error", "Failed to save project or its images.");
+        showModal({
+          type: "error",
+          title: "Something went wrong",
+          message: "Failed to save project or its images.",
+          primaryText: "OK",
+        });
       }
     },
-    [editTarget, editProject, refreshProjects]
+    [editTarget, editProject, refreshProjects, showModal, showToast]
   );
 
-  const handleDelete = useCallback(async () => {
-    if (!deleteTarget) return;
-    await deleteProject(deleteTarget.id);
-    await refreshProjects(true);
-    setDeleteTarget(null);
-  }, [deleteTarget, deleteProject, refreshProjects]);
+  const handleDelete = useCallback(
+    async (project: Project) => {
+      showConfirm({
+        title: "Delete project?",
+        message: `Are you sure you want to delete "${project.title}"? This action cannot be undone.`,
+        confirmText: "Delete",
+        cancelText: "Cancel",
+        destructive: true,
+        onConfirm: async () => {
+          try {
+            await deleteProject(project.id);
+            await refreshProjects(true);
+            showToast({ type: "success", message: "Project deleted" });
+          } catch (error) {
+            showModal({
+              type: "error",
+              title: "Something went wrong",
+              message: "Failed to delete the project.",
+              primaryText: "OK",
+            });
+          }
+        },
+      });
+    },
+    [deleteProject, refreshProjects, showConfirm, showModal, showToast]
+  );
 
   const handleModalSave = useCallback(
     (data: {
@@ -233,44 +276,9 @@ export default function AdminProjectsScreen() {
               onEdit={setEditTarget}
               onToggleFeatured={toggleFeatured}
               onToggleCompleted={toggleCompleted}
-              onDelete={setDeleteTarget}
+              onDelete={() => handleDelete(project)}
             />
           ))}
-        </View>
-      )}
-
-      {deleteTarget && (
-        <View
-          className="absolute inset-0 items-center justify-center px-8"
-          style={{ backgroundColor: "rgba(0,0,0,0.6)", zIndex: 100 }}
-        >
-          <View
-            className="w-full rounded-3xl border p-6 items-center"
-            style={{ backgroundColor: colors.card, borderColor: colors.border }}
-          >
-            <Text className="text-[20px] font-bold" style={{ color: colors.text }}>Delete Project</Text>
-            <Text className="text-[14px] text-center mt-2" style={{ color: colors.secondaryText }}>
-              Are you sure you want to delete "{deleteTarget.title}"?
-            </Text>
-            <View className="flex-row gap-3 mt-6 w-full">
-              <TouchableOpacity
-                className="flex-1 h-[50px] rounded-full border items-center justify-center"
-                style={{ borderColor: colors.border }}
-                onPress={() => setDeleteTarget(null)}
-                activeOpacity={0.8}
-              >
-                <Text className="text-[15px] font-semibold" style={{ color: colors.secondaryText }}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                className="flex-1 h-[50px] rounded-full items-center justify-center"
-                style={{ backgroundColor: "#EF4444" }}
-                onPress={handleDelete}
-                activeOpacity={0.8}
-              >
-                <Text className="text-[15px] font-bold" style={{ color: "#FFFFFF" }}>Delete</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
         </View>
       )}
 

@@ -27,7 +27,7 @@ interface ProjectContextType {
   projects: Project[];
   loading: boolean;
   refreshing: boolean;
-  refreshProjects: (admin?: boolean) => Promise<void>;
+  refreshProjects: (admin?: boolean, silent?: boolean) => Promise<void>;
 
   addProject: (data: any) => Promise<any>;
   editProject: (id: string, data: any) => Promise<any>;
@@ -71,14 +71,14 @@ export function ProjectProvider({
   }, []);
 
 
-  const refreshProjects = useCallback(async (admin = false) => {
-  setRefreshing(true);
+  const refreshProjects = useCallback(async (admin = false, silent = false) => {
+  if (!silent) setRefreshing(true);
 
   try {
     await loadProjects(admin);
   } finally {
     if (!mountedRef.current) return;
-    setRefreshing(false);
+    if (!silent) setRefreshing(false);
   }
 }, [loadProjects]);
 

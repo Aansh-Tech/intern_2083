@@ -1,5 +1,5 @@
 import { View } from "react-native";
-import ProjectCard from "./ProjectCard";
+import ProjectCard from "../shared_components/ProjectCard";
 import { useProject } from "../../context/ProjectContext";
 
 export default function FeaturedProjects() {
@@ -17,9 +17,8 @@ export default function FeaturedProjects() {
           title={project.title}
           category={project.category}
           description={project.description}
-          gradient={project.gradient as any}
-          githubLink={project.githubUrl || "https://github.com"}
-          projectLink={project.viewDetailsUrl || "/project"}
+          gradient={project.gradient}
+          githubUrl={project.githubUrl || "https://github.com"}
           featured={project.featured}
           image={project.images?.[0]?.url ?? project.image}
         />

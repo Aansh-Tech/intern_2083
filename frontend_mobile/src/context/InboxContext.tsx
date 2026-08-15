@@ -41,7 +41,7 @@ interface InboxContextType {
   refreshing: boolean;
   unreadCount: number;
 
-  refreshMessages: () => Promise<void>;
+  refreshMessages: (silent?: boolean) => Promise<void>;
 
   addMessage: (data: {
     name: string;
@@ -98,11 +98,11 @@ export function InboxProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const refreshMessages = useCallback(async () => {
-    setRefreshing(true);
+  const refreshMessages = useCallback(async (silent = false) => {
+    if (!silent) setRefreshing(true);
     await loadMessages();
     if (!mountedRef.current) return;
-    setRefreshing(false);
+    if (!silent) setRefreshing(false);
   }, [loadMessages]);
 
   useEffect(() => {

@@ -3,6 +3,7 @@ import {
   View,
   Image,
   ScrollView,
+  TouchableOpacity,
   useWindowDimensions,
   NativeScrollEvent,
   NativeSyntheticEvent,
@@ -16,12 +17,17 @@ interface ProjectGalleryProps {
   images: ProjectImage[];
   height?: number;
   horizontalPadding?: number;
+  onImagePress?: (index: number) => void;
 }
+
+const imageKey = (img: ProjectImage & { key?: string }): string =>
+  img.key || (img.id !== undefined && img.id !== null ? String(img.id) : "") || img.url;
 
 export default function ProjectGallery({
   images,
   height = 220,
   horizontalPadding = 40,
+  onImagePress,
 }: ProjectGalleryProps) {
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
@@ -34,11 +40,16 @@ export default function ProjectGallery({
 
   if (visibleImages.length === 1) {
     return (
-      <Image
-        source={{ uri: visibleImages[0].url }}
-        style={{ width: "100%", height, borderRadius: 16 }}
-        resizeMode="cover"
-      />
+      <TouchableOpacity
+        activeOpacity={onImagePress ? 0.9 : 1}
+        onPress={onImagePress ? () => onImagePress(0) : undefined}
+      >
+        <Image
+          source={{ uri: visibleImages[0].url }}
+          style={{ width: "100%", height, borderRadius: 20 }}
+          resizeMode="cover"
+        />
+      </TouchableOpacity>
     );
   }
 
@@ -56,20 +67,25 @@ export default function ProjectGallery({
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
-        {visibleImages.map((img) => (
-          <Image
-            key={img.id}
-            source={{ uri: img.url }}
-            style={{ width: pageWidth, height, borderRadius: 16 }}
-            resizeMode="cover"
-          />
+        {visibleImages.map((img, index) => (
+          <TouchableOpacity
+            key={imageKey(img)}
+            activeOpacity={onImagePress ? 0.9 : 1}
+            onPress={onImagePress ? () => onImagePress(index) : undefined}
+          >
+            <Image
+              source={{ uri: img.url }}
+              style={{ width: pageWidth, height, borderRadius: 20 }}
+              resizeMode="cover"
+            />
+          </TouchableOpacity>
         ))}
       </ScrollView>
 
       <View style={{ flexDirection: "row", justifyContent: "center", gap: 6, marginTop: 10 }}>
         {visibleImages.map((img, index) => (
           <View
-            key={img.id}
+            key={imageKey(img)}
             style={{
               width: 6,
               height: 6,

@@ -45,7 +45,15 @@ function CategorySelector({ value, onChange }: CategorySelectorProps) {
         >
           <View
             className="w-[280px] rounded-3xl border overflow-hidden"
-            style={{ backgroundColor: colors.card, borderColor: colors.border }}
+            style={{
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+              shadowColor: "#000000",
+              shadowOpacity: 0.3,
+              shadowRadius: 18,
+              shadowOffset: { width: 0, height: 10 },
+              elevation: 18,
+            }}
           >
             <FlatList
               data={skillCategories}

@@ -3,11 +3,10 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Modal,
-  ScrollView,
   Linking,
 } from "react-native";
 import Avatar from "./Avatar";
+import AppSheet from "../shared_components/AppSheet";
 import { useTheme } from "../../context/useTheme";
 import type { InboxMessage } from "../../types/inbox";
 
@@ -59,107 +58,94 @@ export default function MessageModal({
   if (!message) return null;
 
   return (
-    <Modal
+    <AppSheet
       visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <View
-        className="flex-1 justify-end"
-        style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-      >
-        <TouchableOpacity className="flex-1" activeOpacity={1} onPress={onClose} />
-        <View
-          className="rounded-t-[28px] border-t px-5 pt-6 pb-8 max-h-[85%]"
-          style={{ backgroundColor: colors.card, borderColor: colors.border }}
-        >
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <View className="items-center mb-5">
-              <Avatar name={message.name} size={56} />
-            </View>
-
+      onClose={onClose}
+      title="Message"
+      footer={
+        <View className="flex-row gap-3">
+          <TouchableOpacity
+            className="flex-1 h-[50px] rounded-full border items-center justify-center"
+            style={{ borderColor: colors.border }}
+            onPress={handleReply}
+            activeOpacity={0.7}
+          >
             <Text
-              className="text-[20px] font-bold text-center"
-              style={{ color: colors.text }}
-            >
-              {message.name}
-            </Text>
-            <Text
-              className="text-[14px] text-center mt-0.5"
+              className="text-[15px] font-semibold"
               style={{ color: colors.secondaryText }}
             >
-              {message.email}
+              Reply
             </Text>
-
-            <View className="flex-row items-center justify-between mt-5">
-              <Text
-                className="text-[15px] font-semibold flex-1"
-                style={{ color: colors.text }}
-              >
-                {message.subject}
-              </Text>
-              <Text
-                className="text-[12px] ml-2"
-                style={{ color: colors.secondaryText }}
-              >
-                {formatFullDate(message.date)}
-              </Text>
-            </View>
-
-            <View
-              className="rounded-2xl border p-4 mt-4"
-              style={{ backgroundColor: colors.background, borderColor: colors.border }}
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="flex-1 h-[50px] rounded-full items-center justify-center"
+            style={{ backgroundColor: colors.primary }}
+            onPress={handleDone}
+            activeOpacity={0.7}
+          >
+            <Text
+              className="text-[15px] font-bold"
+              style={{ color: colors.text }}
             >
-              <Text
-                className="text-[14px] leading-[22px]"
-                style={{ color: colors.text }}
-              >
-                {message.message}
-              </Text>
-            </View>
-          </ScrollView>
-
-          <View className="flex-row gap-3 mt-5">
-            <TouchableOpacity
-              className="flex-1 h-[50px] rounded-full border items-center justify-center"
-              style={{ borderColor: colors.border }}
-              onPress={handleReply}
-              activeOpacity={0.7}
-            >
-              <Text
-                className="text-[15px] font-semibold"
-                style={{ color: colors.secondaryText }}
-              >
-                Reply
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className="flex-1 h-[50px] rounded-full items-center justify-center"
-              style={{ backgroundColor: colors.primary }}
-              onPress={handleDone}
-              activeOpacity={0.7}
-            >
-              <Text
-                className="text-[15px] font-bold"
-                style={{ color: colors.text }}
-              >
-                Done
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className="h-[50px] w-[50px] rounded-full items-center justify-center"
-              style={{ backgroundColor: "#EF4444" }}
-              onPress={handleDelete}
-              activeOpacity={0.7}
-            >
-              <Text className="text-[15px] font-bold" style={{ color: "#FFFFFF" }}>
-                X
-              </Text>
-            </TouchableOpacity>
-          </View>
+              Done
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="h-[50px] w-[50px] rounded-full items-center justify-center"
+            style={{ backgroundColor: "#EF4444" }}
+            onPress={handleDelete}
+            activeOpacity={0.7}
+          >
+            <Text className="text-[15px] font-bold" style={{ color: "#FFFFFF" }}>
+              X
+            </Text>
+          </TouchableOpacity>
         </View>
+      }
+    >
+      <View className="items-center mb-5">
+        <Avatar name={message.name} size={56} />
       </View>
-    </Modal>
+
+        <Text
+          className="text-[20px] font-bold text-center"
+          style={{ color: colors.text }}
+        >
+          {message.name}
+        </Text>
+        <Text
+          className="text-[14px] text-center mt-0.5"
+          style={{ color: colors.secondaryText }}
+        >
+          {message.email}
+        </Text>
+
+        <View className="flex-row items-center justify-between mt-5">
+          <Text
+            className="text-[15px] font-semibold flex-1"
+            style={{ color: colors.text }}
+          >
+            {message.subject}
+          </Text>
+          <Text
+            className="text-[12px] ml-2"
+            style={{ color: colors.secondaryText }}
+          >
+            {formatFullDate(message.date)}
+          </Text>
+        </View>
+
+        <View
+          className="rounded-2xl border p-4 mt-4"
+          style={{ backgroundColor: colors.background, borderColor: colors.border }}
+        >
+          <Text
+            className="text-[14px] leading-[22px]"
+            style={{ color: colors.text }}
+          >
+            {message.message}
+          </Text>
+        </View>
+    </AppSheet>
   );
 }

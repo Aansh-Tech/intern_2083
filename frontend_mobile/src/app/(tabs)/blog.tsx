@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { View, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Text, Image, RefreshControl, StyleSheet } from "react-native";
+import { View, ScrollView, TouchableOpacity, ActivityIndicator, Text, Image, RefreshControl, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../context/useTheme";
+import { usePopup } from "../../components/Popup";
 import Header from "../../components/homepage/Header";
 import PostModal from "../../components/blog/PostModal";
 import api from "../../services/api";
@@ -41,6 +42,7 @@ const unwrapList = (response: any): any[] => {
 
 export default function BlogScreen() {
   const { colors } = useTheme();
+  const { showModal } = usePopup();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -88,7 +90,12 @@ export default function BlogScreen() {
     } catch (error) {
       if (!mountedRef.current) return;
       console.error('Failed to fetch posts:', error);
-      Alert.alert('Error', 'Could not load blog posts.');
+      showModal({
+        type: "error",
+        title: "Something went wrong",
+        message: "Could not load blog posts.",
+        primaryText: "OK",
+      });
       setPosts([]);
     } finally {
       if (!mountedRef.current) return;

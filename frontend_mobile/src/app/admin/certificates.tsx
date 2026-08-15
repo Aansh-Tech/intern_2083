@@ -1,11 +1,11 @@
 import { useState, useCallback } from "react";
-import { View, Text, ScrollView, RefreshControl, TouchableOpacity, Alert } from "react-native";
+import { View, Text, ScrollView, RefreshControl, TouchableOpacity } from "react-native";
 import { Plus } from "lucide-react-native";
 import AdminLayout from "../../components/adminoverview/AdminLayout";
 import CertificateCard from "../../components/admin_certificates/CertificateCard";
 import CertificateFormModal from "../../components/admin_certificates/CertificateFormModal";
-import DeleteModal from "../../components/admin_certificates/DeleteModal";
 import ImageViewer from "../../components/admin_certificates/ImageViewer";
+import { usePopup } from "../../components/Popup";
 import { useCertificates } from "../../context/CertificateContext";
 import { useTheme } from "../../context/useTheme";
 import { uploadImage } from "../../services/image";
@@ -17,11 +17,11 @@ console.debug = () => {};
 
 export default function AdminCertificatesScreen() {
   const { colors } = useTheme();
+  const { showModal, showConfirm, showToast } = usePopup();
   const { certificates, loading, refreshing, refreshCertificates, addCertificate, editCertificate, deleteCertificate } = useCertificates();
 
   const [showForm, setShowForm] = useState(false);
   const [editTarget, setEditTarget] = useState<Certificate | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<Certificate | null>(null);
   const [viewImage, setViewImage] = useState<string | null>(null);
 
   const handleAdd = useCallback(() => {
@@ -69,22 +69,42 @@ export default function AdminCertificatesScreen() {
       }
       setShowForm(false);
       setEditTarget(null);
+      showToast({ type: "success", message: editTarget ? "Certificate updated" : "Certificate added" });
     } catch (error: any) {
       console.log("[AdminCertificates] handleSave error:", error.message);
-      Alert.alert("Error", "Failed to save certificate or upload image.");
+      showModal({
+        type: "error",
+        title: "Something went wrong",
+        message: "Failed to save certificate or upload image.",
+        primaryText: "OK",
+      });
     }
-  }, [editTarget, addCertificate, editCertificate, refreshCertificates]);
+  }, [editTarget, addCertificate, editCertificate, refreshCertificates, showModal, showToast]);
 
   const handleDeleteRequest = useCallback((id: string) => {
     const cert = certificates.find((c) => c.id === id);
-    if (cert) setDeleteTarget(cert);
-  }, [certificates]);
-
-  const handleDeleteConfirm = useCallback(async () => {
-    if (!deleteTarget) return;
-    await deleteCertificate(deleteTarget.id);
-    setDeleteTarget(null);
-  }, [deleteTarget, deleteCertificate]);
+    if (!cert) return;
+    showConfirm({
+      title: "Delete certificate?",
+      message: `Are you sure you want to delete "${cert.title}"? This action cannot be undone.`,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      destructive: true,
+      onConfirm: async () => {
+        try {
+          await deleteCertificate(cert.id);
+          showToast({ type: "success", message: "Certificate deleted" });
+        } catch (error) {
+          showModal({
+            type: "error",
+            title: "Something went wrong",
+            message: "Failed to delete the certificate.",
+            primaryText: "OK",
+          });
+        }
+      },
+    });
+  }, [certificates, deleteCertificate, showConfirm, showModal, showToast]);
 
   const handleViewImage = useCallback((cert: Certificate) => {
     if (cert.image) setViewImage(cert.image);
@@ -150,13 +170,6 @@ export default function AdminCertificatesScreen() {
         editTarget={editTarget}
         onSave={handleSave}
         onClose={() => { setShowForm(false); setEditTarget(null); }}
-      />
-
-      <DeleteModal 
-        visible={!!deleteTarget}
-        title={deleteTarget?.title ?? ""}
-        onCancel={() => setDeleteTarget(null)}
-        onConfirm={handleDeleteConfirm}
       />
 
       <ImageViewer

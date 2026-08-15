@@ -18,7 +18,7 @@ interface SkillsContextType {
   skills: Skill[];
   loading: boolean;
   refreshing: boolean;
-  refreshSkills: () => Promise<void>;
+  refreshSkills: (silent?: boolean) => Promise<void>;
   addSkill: (data: {
     category: SkillCategory;
     name: string;
@@ -68,14 +68,14 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
     console.log("[SkillsContext] loadSkills() complete, loading=false");
   }, []);
 
-  const refreshSkills = useCallback(async () => {
+  const refreshSkills = useCallback(async (silent = false) => {
     console.log("[SkillsContext] refreshSkills() called. Current skills:", skillsRef.current.length);
-    setRefreshing(true);
+    if (!silent) setRefreshing(true);
     try {
       await loadSkills();
     } finally {
       if (!mountedRef.current) return;
-      setRefreshing(false);
+      if (!silent) setRefreshing(false);
       console.log("[SkillsContext] refreshSkills() complete, skills count:", skillsRef.current.length);
     }
   }, [loadSkills]);

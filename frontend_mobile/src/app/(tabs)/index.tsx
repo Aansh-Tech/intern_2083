@@ -46,16 +46,16 @@ export default function HomeScreen() {
   }, [refreshProjects, refreshSkills, refreshProfile]);
 
   useEffect(() => {
-    refreshSkills();
-    refreshProfile();
-    refreshProjects();
+    refreshSkills(true);
+    refreshProfile(true);
+    refreshProjects(false, true);
   }, [refreshSkills, refreshProfile, refreshProjects]);
 
   useFocusEffect(
     useCallback(() => {
-      refreshSkills();
-      refreshProfile();
-      refreshProjects();
+      refreshSkills(true);
+      refreshProfile(true);
+      refreshProjects(false, true);
     }, [refreshSkills, refreshProfile, refreshProjects])
   );
 

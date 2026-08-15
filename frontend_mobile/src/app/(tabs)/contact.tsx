@@ -8,10 +8,12 @@ import ContactInfoCard from "../../components/contactpage/ContactInfoCard";
 import ContactInput from "../../components/contactpage/ContactInput";
 import { useTheme } from "../../context/useTheme";
 import { useInbox } from "../../context/InboxContext";
+import { usePopup } from "../../components/Popup";
 
 export default function ContactScreen() {
   const { colors } = useTheme();
   const { addMessage } = useInbox();
+  const { showToast } = usePopup();
   const router = useRouter();
 
   const [name, setName] = useState("");
@@ -19,7 +21,6 @@ export default function ContactScreen() {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; email?: string; subject?: string; message?: string }>({});
   const mountedRef = useRef(true);
 
@@ -48,16 +49,31 @@ console.debug = () => {};
   const handleSubmit = useCallback(async () => {
     if (!validate()) return;
     setLoading(true);
-    await addMessage({ name, email, subject, message });
-    if (!mountedRef.current) return;
-    setName("");
-    setEmail("");
-    setSubject("");
-    setMessage("");
-    setLoading(false);
-    setSuccess(true);
-    setTimeout(() => { if (mountedRef.current) setSuccess(false); }, 3000);
-  }, [validate, name, email, subject, message, addMessage]);
+    try {
+      await addMessage({ name, email, subject, message });
+      if (!mountedRef.current) return;
+      setName("");
+      setEmail("");
+      setSubject("");
+      setMessage("");
+      setLoading(false);
+      showToast({
+        type: "success",
+        message: "Message sent successfully!",
+        variant: "filled",
+        duration: 2800,
+      });
+    } catch {
+      if (!mountedRef.current) return;
+      setLoading(false);
+      showToast({
+        type: "error",
+        message: "Something went wrong. Please try again.",
+        variant: "filled",
+        duration: 2800,
+      });
+    }
+  }, [validate, name, email, subject, message, addMessage, showToast]);
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -160,17 +176,6 @@ console.debug = () => {};
               </>
             )}
           </TouchableOpacity>
-
-          {success && (
-            <View
-              className="rounded-2xl items-center py-3 px-4"
-              style={{ backgroundColor: "#065F46" }}
-            >
-              <Text className="text-[14px] font-semibold" style={{ color: "#FFFFFF" }}>
-                Message sent successfully!
-              </Text>
-            </View>
-          )}
         </View>
 
         <View style={{ height: 40 }} />
