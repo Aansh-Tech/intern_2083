@@ -4,17 +4,12 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Modal,
-  ScrollView,
-  Pressable,
   Switch,
-  KeyboardAvoidingView,
-  Platform,
   Image,
-  ActivityIndicator,
 } from "react-native";
 import { X, Plus } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
+import AppSheet from "../shared_components/AppSheet";
 import type { Project, ProjectPhoto } from "../../types/project";
 import { MAX_PROJECT_PHOTOS } from "../../types/project";
 import { dedupeImages } from "../../services/image";
@@ -167,138 +162,121 @@ function ProjectModal({ visible, project, onClose, onSave }: ProjectModalProps) 
   }, [title, category, description, githubUrl, viewDetailsUrl, photos, featured, completed, onSave]);
 
   return (
-    <Modal transparent visible={visible} animationType="slide" onRequestClose={onClose}>
-      <KeyboardAvoidingView
-        className="flex-1"
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <Pressable className="flex-1" style={{ backgroundColor: "rgba(0,0,0,0.6)" }} onPress={onClose}>
-          <Pressable
-            className="flex-1 mt-16 rounded-t-3xl"
-            style={{ backgroundColor: colors.background }}
-            onPress={() => {}}
+    <AppSheet
+      visible={visible}
+      onClose={onClose}
+      title={isEdit ? "Edit Project" : "Add Project"}
+      footer={
+        <View className="flex-row gap-3">
+          <TouchableOpacity
+            className="flex-1 h-[50px] rounded-full border items-center justify-center"
+            style={{ borderColor: colors.border }}
+            onPress={onClose}
+            activeOpacity={0.8}
           >
-            <View className="flex-row justify-between items-center px-5 pt-5 pb-2">
-              <Text className="text-[20px] font-bold" style={{ color: colors.text }}>
-                {isEdit ? "Edit Project" : "Add Project"}
-              </Text>
-              <TouchableOpacity onPress={onClose} activeOpacity={0.7}>
-                <X size={22} color={colors.secondaryText} />
-              </TouchableOpacity>
-            </View>
+            <Text className="text-[15px] font-semibold" style={{ color: colors.secondaryText }}>Cancel</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="flex-1 h-[50px] rounded-full items-center justify-center"
+            style={{ backgroundColor: colors.primary }}
+            onPress={handleSave}
+            activeOpacity={0.8}
+          >
+            <Text className="text-[15px] font-bold" style={{ color: colors.text }}>
+              {isEdit ? "Update" : "Save"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      }
+    >
+      <Field label="Project Name *" error={errors.title}>
+        <Input value={title} onChangeText={handleSlugGenerate} placeholder="Enter project name" />
+      </Field>
+      <Field label="Category *" error={errors.category}>
+        <Input value={category} onChangeText={setCategory} placeholder="SaaS / Analytics" />
+      </Field>
+      <Field label="Slug">
+        <Input value={slug} onChangeText={setSlug} placeholder="auto-generated" />
+      </Field>
+      <Field label="Description *" error={errors.description}>
+        <Input
+          value={description}
+          onChangeText={setDescription}
+          placeholder="Describe the project..."
+          multiline
+        />
+      </Field>
+      <Field label="GitHub URL">
+        <Input value={githubUrl} onChangeText={setGithubUrl} placeholder="https://github.com/..." />
+      </Field>
+      <Field label="Live URL">
+        <Input value={viewDetailsUrl} onChangeText={setViewDetailsUrl} placeholder="https://..." />
+      </Field>
 
-            <ScrollView className="px-5 pb-10" showsVerticalScrollIndicator={false}>
-              <Field label="Project Name *" error={errors.title}>
-                <Input value={title} onChangeText={handleSlugGenerate} placeholder="Enter project name" />
-              </Field>
-              <Field label="Category *" error={errors.category}>
-                <Input value={category} onChangeText={setCategory} placeholder="SaaS / Analytics" />
-              </Field>
-              <Field label="Slug">
-                <Input value={slug} onChangeText={setSlug} placeholder="auto-generated" />
-              </Field>
-              <Field label="Description *" error={errors.description}>
-                <Input
-                  value={description}
-                  onChangeText={setDescription}
-                  placeholder="Describe the project..."
-                  multiline
+      <View className="gap-2 mb-4">
+        <View className="flex-row justify-between items-center mb-1.5">
+          <Text className="text-[12px] font-semibold" style={{ color: colors.secondaryText }}>
+            Photos
+          </Text>
+          <Text className="text-[12px] font-semibold" style={{ color: colors.secondaryText }}>
+            {photos.length} / {MAX_PROJECT_PHOTOS} photos
+          </Text>
+        </View>
+
+        {photos.length > 0 && (
+          <View className="flex-row flex-wrap gap-3">
+            {photos.map((photo) => (
+              <View key={photo.uid} className="relative">
+                <Image
+                  source={{ uri: photo.uri }}
+                  className="w-[96px] h-[96px] rounded-2xl"
+                  resizeMode="cover"
                 />
-              </Field>
-              <Field label="GitHub URL">
-                <Input value={githubUrl} onChangeText={setGithubUrl} placeholder="https://github.com/..." />
-              </Field>
-              <Field label="Live URL">
-                <Input value={viewDetailsUrl} onChangeText={setViewDetailsUrl} placeholder="https://..." />
-              </Field>
-              <View className="gap-2 mb-4">
-                <View className="flex-row justify-between items-center mb-1.5">
-                  <Text className="text-[12px] font-semibold" style={{ color: colors.secondaryText }}>
-                    Photos
-                  </Text>
-                  <Text className="text-[12px] font-semibold" style={{ color: colors.secondaryText }}>
-                    {photos.length} / {MAX_PROJECT_PHOTOS} photos
-                  </Text>
-                </View>
-
-                {photos.length > 0 && (
-                  <View className="flex-row flex-wrap gap-3">
-                    {photos.map((photo) => (
-                      <View key={photo.uid} className="relative">
-                        <Image
-                          source={{ uri: photo.uri }}
-                          className="w-[96px] h-[96px] rounded-2xl"
-                          resizeMode="cover"
-                        />
-                        <TouchableOpacity
-                          className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full items-center justify-center"
-                          style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
-                          onPress={() => removePhoto(photo.uid)}
-                          activeOpacity={0.7}
-                        >
-                          <X size={14} color="#FFFFFF" />
-                        </TouchableOpacity>
-                      </View>
-                    ))}
-                  </View>
-                )}
-
-                {photos.length < MAX_PROJECT_PHOTOS && (
-                  <TouchableOpacity
-                    className="h-[56px] flex-row items-center justify-center gap-2 rounded-2xl border"
-                    style={{ backgroundColor: colors.background, borderColor: colors.border }}
-                    onPress={pickImages}
-                    activeOpacity={0.7}
-                  >
-                    <Plus size={18} color={colors.primary} />
-                    <Text className="text-[14px] font-semibold" style={{ color: colors.primary }}>
-                      {photos.length === 0 ? "Select Images" : "Add Photo"}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-              <Field label="Featured">
-                <Switch
-                  value={featured}
-                  onValueChange={setFeatured}
-                  trackColor={{ false: colors.border, true: colors.primary + "80" }}
-                  thumbColor={featured ? colors.primary : colors.secondaryText}
-                />
-              </Field>
-              <Field label="Completed">
-                <Switch
-                  value={completed}
-                  onValueChange={setCompleted}
-                  trackColor={{ false: colors.border, true: colors.primary + "80" }}
-                  thumbColor={completed ? colors.primary : colors.secondaryText}
-                />
-              </Field>
-
-              <View className="flex-row gap-3 mt-6 mb-10">
                 <TouchableOpacity
-                  className="flex-1 h-[50px] rounded-full border items-center justify-center"
-                  style={{ borderColor: colors.border }}
-                  onPress={onClose}
-                  activeOpacity={0.8}
+                  className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full items-center justify-center"
+                  style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+                  onPress={() => removePhoto(photo.uid)}
+                  activeOpacity={0.7}
                 >
-                  <Text className="text-[15px] font-semibold" style={{ color: colors.secondaryText }}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  className="flex-1 h-[50px] rounded-full items-center justify-center"
-                  style={{ backgroundColor: colors.primary }}
-                  onPress={handleSave}
-                  activeOpacity={0.8}
-                >
-                  <Text className="text-[15px] font-bold" style={{ color: colors.text }}>
-                    {isEdit ? "Update" : "Save"}
-                  </Text>
+                  <X size={14} color="#FFFFFF" />
                 </TouchableOpacity>
               </View>
-            </ScrollView>
-          </Pressable>
-        </Pressable>
-      </KeyboardAvoidingView>
-    </Modal>
+            ))}
+          </View>
+        )}
+
+        {photos.length < MAX_PROJECT_PHOTOS && (
+          <TouchableOpacity
+            className="h-[56px] flex-row items-center justify-center gap-2 rounded-2xl border"
+            style={{ backgroundColor: colors.background, borderColor: colors.border }}
+            onPress={pickImages}
+            activeOpacity={0.7}
+          >
+            <Plus size={18} color={colors.primary} />
+            <Text className="text-[14px] font-semibold" style={{ color: colors.primary }}>
+              {photos.length === 0 ? "Select Images" : "Add Photo"}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <Field label="Featured">
+        <Switch
+          value={featured}
+          onValueChange={setFeatured}
+          trackColor={{ false: colors.border, true: colors.primary + "80" }}
+          thumbColor={featured ? colors.primary : colors.secondaryText}
+        />
+      </Field>
+      <Field label="Completed">
+        <Switch
+          value={completed}
+          onValueChange={setCompleted}
+          trackColor={{ false: colors.border, true: colors.primary + "80" }}
+          thumbColor={completed ? colors.primary : colors.secondaryText}
+        />
+      </Field>
+    </AppSheet>
   );
 }
 
@@ -329,7 +307,7 @@ function Input({
     <TextInput
       className="rounded-[14px] border px-4 py-3 text-[15px]"
       style={{
-        backgroundColor: colors.card,
+        backgroundColor: colors.background,
         borderColor: colors.border,
         color: colors.text,
         minHeight: multiline ? 90 : 48,

@@ -6,8 +6,8 @@ const variantStyles: Record<
   BadgeVariant,
   { bg: string; text: string; label: string }
 > = {
-  completed: { bg: "#E0E7FF", text: "#3730A3", label: "COMPLETED" },
-  featured: { bg: "#DDD6FE", text: "#5B21B6", label: "FEATURED" },
+  completed: { bg: "#DDE7FF", text: "#2B3E8C", label: "COMPLETED" },
+  featured: { bg: "#E4DCFB", text: "#4C1D95", label: "FEATURED" },
   "in-progress": { bg: "#FCE7F3", text: "#9D174D", label: "IN PROGRESS" },
 };
 
@@ -20,11 +20,11 @@ export default function StatusBadge({ variant }: StatusBadgeProps) {
 
   return (
     <View
-      className="px-3 py-[5px] rounded-full self-start"
+      className="px-2.5 py-1 rounded-full self-start"
       style={{ backgroundColor: bg }}
     >
       <Text
-        className="text-[11px] font-bold tracking-[0.5px]"
+        className="text-[10px] font-bold tracking-[0.5px]"
         style={{ color: text }}
       >
         {label}

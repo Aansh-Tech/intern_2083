@@ -19,8 +19,9 @@ interface ProfileContextType {
   socialLinks: SocialLink[];
   loading: boolean;
   refreshing: boolean;
-  refreshProfile: () => Promise<void>;
+  refreshProfile: (silent?: boolean) => Promise<void>;
   photoTimestamp: number;
+  applyAvatar: (url: string | null) => void;
 }
 
 const ProfileContext = createContext<ProfileContextType | null>(null);
@@ -58,15 +59,28 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const refreshProfile = useCallback(async () => {
-    setRefreshing(true);
+  const refreshProfile = useCallback(async (silent = false) => {
+    if (!silent) setRefreshing(true);
     try {
       await loadProfile();
     } finally {
       if (!mountedRef.current) return;
-      setRefreshing(false);
+      if (!silent) setRefreshing(false);
     }
   }, [loadProfile]);
+
+  const applyAvatar = useCallback((url: string | null) => {
+    if (prevAvatarRef.current !== url) {
+      setPhotoTimestamp(Date.now());
+    }
+    prevAvatarRef.current = url;
+    setProfile((prev) => ({
+      ...prev,
+      avatar: url ?? undefined,
+      profile_image: url ?? undefined,
+      profile_photo: url ?? undefined,
+    }));
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -89,6 +103,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         refreshing,
         refreshProfile,
         photoTimestamp,
+        applyAvatar,
       }}
     >
       {children}

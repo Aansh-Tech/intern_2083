@@ -5,15 +5,14 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Modal,
-  ScrollView,
-  Alert,
   Switch,
   Image,
   ActivityIndicator,
 } from "react-native";
 import { X, Save, Upload } from "lucide-react-native";
+import AppSheet from "../shared_components/AppSheet";
 import { useTheme } from "../../context/useTheme";
+import { usePopup } from "../Popup";
 import { BlogPostItem } from "./BlogCard";
 import * as ImagePicker from "expo-image-picker";
 import api from "../../services/api";
@@ -48,6 +47,7 @@ export default function PostFormModal({
   onSubmit,
 }: PostFormModalProps) {
   const { colors } = useTheme();
+  const { showModal } = usePopup();
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -142,7 +142,12 @@ export default function PostFormModal({
   const pickImage = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert("Permission required", "Please allow access to your media library.");
+      showModal({
+        type: "warning",
+        title: "Permission required",
+        message: "Please allow access to your media library.",
+        primaryText: "OK",
+      });
       return;
     }
     // Use MediaTypeOptions – it works and the warning is harmless
@@ -214,7 +219,12 @@ export default function PostFormModal({
       } else if (error.message === "Network Error") {
         message = "Network error – please check your internet connection and try again.";
       }
-      Alert.alert("Error", message);
+      showModal({
+        type: "error",
+        title: "Upload failed",
+        message,
+        primaryText: "OK",
+      });
       return null;
     }
   };
@@ -238,11 +248,21 @@ export default function PostFormModal({
 
   const handleSubmit = async () => {
     if (!title.trim()) {
-      Alert.alert("Error", "Title is required.");
+      showModal({
+        type: "error",
+        title: "Missing title",
+        message: "A post title is required.",
+        primaryText: "OK",
+      });
       return;
     }
     if (!content.trim()) {
-      Alert.alert("Error", "Content is required.");
+      showModal({
+        type: "error",
+        title: "Missing content",
+        message: "Post content is required.",
+        primaryText: "OK",
+      });
       return;
     }
 
@@ -330,46 +350,32 @@ export default function PostFormModal({
     } catch (error) {
       if (!mountedRef.current) return;
       console.error("Submit failed", error);
-      Alert.alert("Error", "Failed to save post.");
+      showModal({
+        type: "error",
+        title: "Something went wrong",
+        message: "Failed to save post.",
+        primaryText: "OK",
+      });
     }
   };
 
   const fieldStyle = {
-    backgroundColor: "rgba(255,255,255,0.04)",
+    backgroundColor: colors.background,
     borderColor: colors.border,
     color: colors.text,
   };
 
   return (
-    <Modal
+    <AppSheet
       visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={onClose}
+      onClose={onClose}
+      title={mode === "create" ? "New post" : "Edit post"}
     >
-      <View className="flex-1" style={{ backgroundColor: colors.background }}>
-        <View
-          className="flex-row items-center justify-between border-b px-5 py-4"
-          style={{ borderColor: colors.border }}
-        >
-          <Text className="text-[18px] font-bold" style={{ color: colors.text }}>
-            {mode === "create" ? "New post" : "Edit post"}
+      <View className="gap-5">
+        <View className="gap-2">
+          <Text className="text-[14px]" style={{ color: colors.secondaryText }}>
+            Title *
           </Text>
-          <TouchableOpacity
-            className="h-9 w-9 items-center justify-center rounded-full"
-            style={{ backgroundColor: colors.card }}
-            activeOpacity={0.7}
-            onPress={onClose}
-          >
-            <X size={18} color={colors.text} />
-          </TouchableOpacity>
-        </View>
-
-        <ScrollView contentContainerClassName="gap-5 p-5">
-          <View className="gap-2">
-            <Text className="text-[14px]" style={{ color: colors.secondaryText }}>
-              Title *
-            </Text>
             <TextInput
               value={title}
               onChangeText={handleChangeTitle}
@@ -578,8 +584,7 @@ export default function PostFormModal({
               {mode === "create" ? "Create post" : "Save changes"}
             </Text>
           </TouchableOpacity>
-        </ScrollView>
-      </View>
-    </Modal>
+        </View>
+    </AppSheet>
   );
 }

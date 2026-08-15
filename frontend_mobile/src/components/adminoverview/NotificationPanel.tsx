@@ -142,9 +142,14 @@ export default function NotificationPanel({
           <View
             className="mx-4 mt-2 rounded-[20px] border p-5"
             style={{
-              backgroundColor: colors.background,
+              backgroundColor: colors.card,
               borderColor: colors.border,
               maxHeight: "60%",
+              shadowColor: "#000000",
+              shadowOpacity: 0.3,
+              shadowRadius: 20,
+              shadowOffset: { width: 0, height: 8 },
+              elevation: 18,
             }}
           >
             <View className="flex-row items-center justify-between mb-4">

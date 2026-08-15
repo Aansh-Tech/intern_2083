@@ -17,7 +17,7 @@ interface CertificateContextType {
   certificates: Certificate[];
   loading: boolean;
   refreshing: boolean;
-  refreshCertificates: () => Promise<void>;
+  refreshCertificates: (silent?: boolean) => Promise<void>;
   addCertificate: (data: {
     title: string;
     issuer?: string;
@@ -62,13 +62,13 @@ export function CertificateProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const refreshCertificates = useCallback(async () => {
-    setRefreshing(true);
+  const refreshCertificates = useCallback(async (silent = false) => {
+    if (!silent) setRefreshing(true);
     try {
       await loadCertificates();
     } finally {
       if (!mountedRef.current) return;
-      setRefreshing(false);
+      if (!silent) setRefreshing(false);
     }
   }, [loadCertificates]);
 

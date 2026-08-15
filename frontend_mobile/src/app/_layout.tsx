@@ -3,6 +3,7 @@ import { Platform, StatusBar } from "react-native";
 import { Stack } from "expo-router";
 import * as NavigationBar from "expo-navigation-bar";
 import { ThemeProvider } from "../context/ThemeProvider";
+import { PopupProvider } from "../components/Popup";
 import { ProfileProvider } from "../context/ProfileContext";
 import { ProjectProvider } from "../context/ProjectContext";
 import { InboxProvider } from "../context/InboxContext";
@@ -53,6 +54,7 @@ function RootLayoutInner() {
 export default function RootLayout() {
   return (
     <ThemeProvider>
+      <PopupProvider>
       <ProfileProvider>
         <CertificateProvider>
         <ProjectProvider>
@@ -68,6 +70,7 @@ export default function RootLayout() {
         </ProjectProvider>
         </CertificateProvider>
       </ProfileProvider>
+      </PopupProvider>
     </ThemeProvider>
   );
 }

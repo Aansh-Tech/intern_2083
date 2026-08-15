@@ -1,7 +1,9 @@
-import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, Alert, ActivityIndicator, Image } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { X, Clock, Send } from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "../../context/useTheme";
+import { usePopup } from "../Popup";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useComments } from "../../hooks/useComments";
 import api from "../../services/api";
@@ -39,6 +41,8 @@ const unwrapItem = (response: any): any => {
 
 export default function PostModal({ post, visible, onClose }: PostModalProps) {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
+  const { showModal } = usePopup();
   const { postComment, fetchComments, loading: submitting } = useComments();
   const mountedRef = useRef(true);
 
@@ -135,7 +139,12 @@ export default function PostModal({ post, visible, onClose }: PostModalProps) {
 
   const handleSubmitComment = async () => {
     if (!name.trim() || !email.trim() || !content.trim()) {
-      Alert.alert("Error", "All fields are required.");
+      showModal({
+        type: "error",
+        title: "Missing information",
+        message: "All fields are required.",
+        primaryText: "OK",
+      });
       return;
     }
 
@@ -155,29 +164,57 @@ export default function PostModal({ post, visible, onClose }: PostModalProps) {
       setName("");
       setEmail("");
       setContent("");
-      Alert.alert("Thank you!", "Your comment is pending review.");
+      showModal({
+        type: "success",
+        title: "Thank you!",
+        message: "Your comment is pending review.",
+        primaryText: "OK",
+      });
       if (currentSlug) {
         await loadComments(currentSlug);
         console.log("[PostModal] Comments refreshed from backend after submission.");
       }
     } catch (err: any) {
-      Alert.alert("Error", err.message || "Could not submit comment.");
+      showModal({
+        type: "error",
+        title: "Something went wrong",
+        message: err?.message || "Could not submit comment.",
+        primaryText: "OK",
+      });
     }
   };
 
   return (
     <Modal
       visible={visible}
+      transparent
       animationType="slide"
-      presentationStyle="pageSheet"
       onRequestClose={onClose}
+      statusBarTranslucent={Platform.OS === "android"}
     >
-      <View className="flex-1" style={{ backgroundColor: colors.background }}>
-        {loadingDetail ? (
-          <View className="flex-1 justify-center items-center">
-            <ActivityIndicator size="large" color={colors.primary} />
-          </View>
-        ) : (
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <Pressable style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)" }} onPress={onClose}>
+          <Pressable style={{ flex: 1 }} onPress={() => {}}>
+            <View
+              style={{
+                flex: 1,
+                marginTop: 32,
+                paddingBottom: insets.bottom + 8,
+              }}
+            >
+              <View style={styles.sheetShadow}>
+                <View style={[styles.sheet, { backgroundColor: colors.card }]}>
+                  <View style={styles.grabberWrap}>
+                    <View style={[styles.grabber, { backgroundColor: colors.border }]} />
+                  </View>
+                  {loadingDetail ? (
+                    <View className="flex-1 justify-center items-center">
+                      <ActivityIndicator size="large" color={colors.primary} />
+                    </View>
+                  ) : (
           <ScrollView showsVerticalScrollIndicator={false}>
             <LinearGradient
               colors={displayPost.gradient}
@@ -321,8 +358,43 @@ export default function PostModal({ post, visible, onClose }: PostModalProps) {
               </View>
             </View>
           </ScrollView>
-        )}
-      </View>
+            )}
+              </View>
+            </View>
+            </View>
+          </Pressable>
+        </Pressable>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
+
+const styles = StyleSheet.create({
+  sheetShadow: {
+    flex: 1,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    backgroundColor: "transparent",
+    shadowColor: "#000000",
+    shadowOpacity: 0.4,
+    shadowRadius: 28,
+    shadowOffset: { width: 0, height: -6 },
+    elevation: 28,
+  },
+  sheet: {
+    flex: 1,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    overflow: "hidden",
+  },
+  grabberWrap: {
+    alignItems: "center",
+    paddingTop: 10,
+    paddingBottom: 2,
+  },
+  grabber: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+  },
+});

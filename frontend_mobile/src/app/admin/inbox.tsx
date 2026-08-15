@@ -23,7 +23,7 @@ export default function AdminInboxScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      refreshMessages();
+      refreshMessages(true);
     }, [refreshMessages])
   );
 

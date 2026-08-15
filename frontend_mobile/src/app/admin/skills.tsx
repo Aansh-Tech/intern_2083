@@ -4,8 +4,8 @@ import { Plus } from "lucide-react-native";
 import AdminLayout from "../../components/adminoverview/AdminLayout";
 import SkillForm from "../../components/adminskills/SkillForm";
 import SkillSection from "../../components/adminskills/SkillSection";
-import DeleteSkillModal from "../../components/adminskills/DeleteSkillModal";
 import SkillFormModal from "../../components/adminskills/SkillFormModal";
+import { usePopup } from "../../components/Popup";
 import { useSkills } from "../../context/SkillsContext";
 import { useTheme } from "../../context/useTheme";
 import type { Skill, SkillCategory } from "../../types/skill";
@@ -15,6 +15,7 @@ console.info = () => {};
 console.debug = () => {};
 export default function AdminSkillsScreen() {
   const { colors } = useTheme();
+  const { showModal, showConfirm, showToast } = usePopup();
   const { skills, getSkillsByCategory, addSkill, updateSkill, deleteSkill, loading, refreshing, refreshSkills } = useSkills();
   const categories = getSkillsByCategory();
   console.log("[AdminSkills] Render - loading:", loading, "skills:", skills.length, "categories:", categories.length);
@@ -22,7 +23,6 @@ export default function AdminSkillsScreen() {
     console.log("[AdminSkills] categories:", JSON.stringify(categories.map(c => ({ cat: c.category, count: c.skills.length, names: c.skills.map(s => s.name) }))));
   }
 
-  const [deleteTarget, setDeleteTarget] = useState<Skill | null>(null);
   const [editTarget, setEditTarget] = useState<Skill | null>(null);
   const [editCategory, setEditCategory] = useState<SkillCategory>("Frontend");
   const [editName, setEditName] = useState("");
@@ -32,21 +32,39 @@ export default function AdminSkillsScreen() {
 
   const handleAdd = useCallback(
     async (data: { category: SkillCategory; name: string; percentage: number }) => {
-      return await addSkill(data);
+      const err = await addSkill(data);
+      if (!err) {
+        showToast({ type: "success", message: "Skill added" });
+      }
+      return err;
     },
-    [addSkill]
+    [addSkill, showToast]
   );
 
   const handleDeleteRequest = useCallback((id: string) => {
     const skill = categories.flatMap((c) => c.skills).find((s) => s.id === id);
-    if (skill) setDeleteTarget(skill);
-  }, [categories]);
-
-  const handleDeleteConfirm = useCallback(async () => {
-    if (!deleteTarget) return;
-    await deleteSkill(deleteTarget.id);
-    setDeleteTarget(null);
-  }, [deleteTarget, deleteSkill]);
+    if (!skill) return;
+    showConfirm({
+      title: "Delete skill?",
+      message: `Are you sure you want to delete "${skill.name}"? This action cannot be undone.`,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      destructive: true,
+      onConfirm: async () => {
+        try {
+          await deleteSkill(skill.id);
+          showToast({ type: "success", message: "Skill deleted" });
+        } catch (error) {
+          showModal({
+            type: "error",
+            title: "Something went wrong",
+            message: "Failed to delete the skill.",
+            primaryText: "OK",
+          });
+        }
+      },
+    });
+  }, [categories, deleteSkill, showConfirm, showModal, showToast]);
 
   const handleEdit = useCallback((skill: Skill) => {
     setEditTarget(skill);
@@ -67,8 +85,9 @@ export default function AdminSkillsScreen() {
       setEditError(err);
     } else {
       setEditTarget(null);
+      showToast({ type: "success", message: "Skill updated" });
     }
-  }, [editTarget, editCategory, editName, editPercentage, updateSkill]);
+  }, [editTarget, editCategory, editName, editPercentage, updateSkill, showToast]);
 
   return (
     <AdminLayout refreshing={refreshing} onRefresh={refreshSkills}>
@@ -126,13 +145,6 @@ export default function AdminSkillsScreen() {
           ))}
         </View>
       )}
-
-      <DeleteSkillModal
-        visible={!!deleteTarget}
-        skillName={deleteTarget?.name ?? ""}
-        onCancel={() => setDeleteTarget(null)}
-        onConfirm={handleDeleteConfirm}
-      />
 
       <SkillFormModal
         visible={!!editTarget}

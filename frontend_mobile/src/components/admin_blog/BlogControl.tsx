@@ -6,11 +6,11 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Alert,
   RefreshControl,
 } from "react-native";
 import { Plus, Search } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
+import { usePopup } from "../Popup";
 import BlogPostCard, { BlogPostItem } from "./BlogCard";
 import PostFormModal from "./PostForm";
 import { useComments } from "../../hooks/useComments";
@@ -46,6 +46,7 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
 
   const effectiveRefreshing = refreshingProp || refreshing;
   const { colors } = useTheme();
+  const { showModal, showConfirm, showToast } = usePopup();
   const [posts, setPosts] = useState<BlogPostItem[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [query, setQuery] = useState("");
@@ -107,7 +108,12 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
     } catch (error) {
       if (!mountedRef.current) return;
       console.error('Failed to fetch posts:', error);
-      Alert.alert('Error', 'Could not load blog posts.');
+      showModal({
+        type: "error",
+        title: "Something went wrong",
+        message: "Could not load blog posts.",
+        primaryText: "OK",
+      });
       setPosts([]);
     } finally {
       if (mountedRef.current) setLoadingPosts(false);
@@ -159,6 +165,7 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
     setModalVisible(false);
     setEditingPost(null);
     setEditingRawData(null);
+    showToast({ type: "success", message: "Post saved successfully" });
   };
 
   const togglePublish = async (post: BlogPostItem) => {
@@ -174,30 +181,46 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
           p.id === post.id ? { ...p, status: newStatus } : p
         )
       );
+      showToast({
+        type: "success",
+        message: newStatus === "published" ? "Post published" : "Post moved to draft",
+      });
     } catch (error) {
-      Alert.alert("Error", "Failed to update post status");
+      showModal({
+        type: "error",
+        title: "Something went wrong",
+        message: "Failed to update post status.",
+        primaryText: "OK",
+      });
     }
   };
 
-  const deletePost = async (post: BlogPostItem) => {
-    Alert.alert("Delete Post", "Are you sure?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        onPress: async () => {
-          try {
-            const token = await getToken();
-            await api.delete(`/v1/admin/blog-posts/${post.id}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            if (!mountedRef.current) return;
-            setPosts(posts.filter((p) => p.id !== post.id));
-          } catch (error) {
-            Alert.alert("Error", "Failed to delete post");
-          }
-        },
+  const deletePost = (post: BlogPostItem) => {
+    showConfirm({
+      title: "Delete post?",
+      message: `Are you sure you want to delete "${post.title}"? This action cannot be undone.`,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      destructive: true,
+      onConfirm: async () => {
+        try {
+          const token = await getToken();
+          await api.delete(`/v1/admin/blog-posts/${post.id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (!mountedRef.current) return;
+          setPosts(posts.filter((p) => p.id !== post.id));
+          showToast({ type: "success", message: "Post deleted" });
+        } catch (error) {
+          showModal({
+            type: "error",
+            title: "Something went wrong",
+            message: "Failed to delete post.",
+            primaryText: "OK",
+          });
+        }
       },
-    ]);
+    });
   };
 
   const filteredPosts = useMemo(() => {
@@ -223,7 +246,12 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
         [post.id]: Array.isArray(comments) ? comments : [],
       }));
     } catch (err: any) {
-      Alert.alert("Error", err.message || "Could not load comments");
+      showModal({
+        type: "error",
+        title: "Something went wrong",
+        message: err?.message || "Could not load comments.",
+        primaryText: "OK",
+      });
     }
   };
 
@@ -236,7 +264,12 @@ export default function BlogControl({ refreshing: refreshingProp, onRefresh }: B
         [postId]: (prev[postId] || []).filter((c) => c.id !== commentId),
       }));
     } catch (err: any) {
-      Alert.alert("Error", err.message || "Failed to delete comment");
+      showModal({
+        type: "error",
+        title: "Something went wrong",
+        message: err?.message || "Failed to delete comment.",
+        primaryText: "OK",
+      });
     }
   };
 

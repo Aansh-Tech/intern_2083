@@ -1,9 +1,10 @@
-import { View, Text, TouchableOpacity, Linking, Image, Alert, Platform } from "react-native";
+import { View, Text, TouchableOpacity, Linking, Image, Platform } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { File, Paths } from "expo-file-system";
 import { StorageAccessFramework } from "expo-file-system/legacy";
 import { useTheme } from "../../context/useTheme";
+import { usePopup } from "../Popup";
 import { useProfile } from "../../context/ProfileContext";
 
 const platformIcons: Record<string, string> = {
@@ -19,6 +20,7 @@ const platformIcons: Record<string, string> = {
 
 export default function AboutHero() {
   const { colors } = useTheme();
+  const { showModal } = usePopup();
   const { profile, photoTimestamp } = useProfile();
 
   const name = profile.name ?? "Anish Shrestha";
@@ -55,7 +57,12 @@ export default function AboutHero() {
           "Choose a folder to save the resume"
         );
         if (!safPermission.granted) {
-          Alert.alert("Permission Denied", "Please grant permission to save the file.");
+          showModal({
+            type: "warning",
+            title: "Permission Denied",
+            message: "Please grant permission to save the file.",
+            primaryText: "OK",
+          });
           return;
         }
         const safUri = await StorageAccessFramework.createFileAsync(
@@ -69,9 +76,19 @@ export default function AboutHero() {
         });
       }
 
-      Alert.alert("Success", "Resume downloaded successfully.");
+      showModal({
+        type: "success",
+        title: "Resume downloaded",
+        message: "Your resume has been saved to your device.",
+        primaryText: "OK",
+      });
     } catch (error: any) {
-      Alert.alert("Download Failed", error?.message ?? "Unable to download the resume. Please try again.");
+      showModal({
+        type: "error",
+        title: "Download failed",
+        message: error?.message ?? "Unable to download the resume. Please try again.",
+        primaryText: "OK",
+      });
     }
   };
 

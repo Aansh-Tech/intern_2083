@@ -90,7 +90,7 @@ interface DashboardContextType {
   dashboard: DashboardData;
   loading: boolean;
   refreshing: boolean;
-  refreshDashboard: () => Promise<void>;
+  refreshDashboard: (silent?: boolean) => Promise<void>;
 }
 
 const DashboardContext = createContext<DashboardContextType | null>(null);
@@ -123,20 +123,20 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const refreshDashboard = useCallback(async () => {
+  const refreshDashboard = useCallback(async (silent = false) => {
     console.log("[DashboardContext] refreshDashboard() called. busyRef.current:", busyRef.current);
     if (busyRef.current) {
       console.log("[DashboardContext] refreshDashboard() — already busy, returning early");
       return;
     }
     busyRef.current = true;
-    setRefreshing(true);
+    if (!silent) setRefreshing(true);
     console.log("[DashboardContext] refreshDashboard() — starting parallel refresh...");
     try {
       await Promise.all([
-        refreshProjects(),
-        refreshMessages(),
-        refreshSkills(),
+        refreshProjects(false, silent),
+        refreshMessages(silent),
+        refreshSkills(silent),
         refreshComments(),
         fetchBlogCount(),
       ]);
@@ -147,7 +147,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       console.log("[DashboardContext] error.stack:", error.stack);
     } finally {
       if (!mountedRef.current) return;
-      setRefreshing(false);
+      if (!silent) setRefreshing(false);
       busyRef.current = false;
       console.log("[DashboardContext] refreshDashboard() — finally: refreshing=false, busy=false");
     }

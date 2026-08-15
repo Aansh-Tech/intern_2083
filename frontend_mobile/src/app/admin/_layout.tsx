@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useRouter, usePathname } from "expo-router";
 import { isLoggedIn, logout } from "../../utils/adminAuth";
 import { useTheme } from "../../context/useTheme";
+import { usePopup } from "../../components/Popup";
 import { NotificationProvider } from "../../context/NotificationContext";
 import AdminOverviewHeader from "../../components/adminoverview/AdminOverviewHeader";
 import AdminOverviewTabs from "../../components/adminoverview/AdminOverviewTabs";
@@ -16,6 +17,7 @@ console.debug = () => {};
 
 export default function AdminLayout() {
   const { colors, theme } = useTheme();
+  const { showConfirm } = usePopup();
   const router = useRouter();
   const pathname = usePathname();
   const [checking, setChecking] = useState(true);
@@ -52,10 +54,19 @@ export default function AdminLayout() {
     console.log("[AdminLayout] checkAuth complete");
   }
 
-  const handleSignOut = useCallback(async () => {
-    await logout();
-    router.replace("/");
-  }, [router]);
+  const handleSignOut = useCallback(() => {
+    showConfirm({
+      title: "Sign out?",
+      message: "You will need to sign in again to access the admin console.",
+      confirmText: "Sign Out",
+      cancelText: "Cancel",
+      destructive: true,
+      onConfirm: async () => {
+        await logout();
+        router.replace("/");
+      },
+    });
+  }, [router, showConfirm]);
 
   const handleTabChange = useCallback(
     (tab: string) => {

@@ -1,9 +1,10 @@
 import { memo, useCallback } from "react";
-import { View, Text, TouchableOpacity, Alert } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { Check, Ban, Trash2 } from "lucide-react-native";
 import Avatar from "./Avatar";
 import StatusBadge from "./StatusBadge";
 import { useTheme } from "../../context/useTheme";
+import { usePopup } from "../Popup";
 import type { Comment } from "../../types/comment";
 
 interface CommentCardProps {
@@ -36,6 +37,7 @@ function formatRelativeDate(iso: string): string {
 
 function CommentCard({ comment, onApprove, onReject, onDelete }: CommentCardProps) {
   const { colors } = useTheme();
+  const { showModal, showConfirm } = usePopup();
 
   // ---- Safe fallback values ----
   const name = comment?.name ?? "Anonymous";
@@ -50,40 +52,51 @@ function CommentCard({ comment, onApprove, onReject, onDelete }: CommentCardProp
     try {
       await onApprove(id);
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to approve comment.");
+      showModal({
+        type: "error",
+        title: "Something went wrong",
+        message: error?.message || "Failed to approve comment.",
+        primaryText: "OK",
+      });
     }
-  }, [id, onApprove]);
+  }, [id, onApprove, showModal]);
 
   const handleReject = useCallback(async () => {
     if (!id) return;
     try {
       await onReject(id);
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to reject comment.");
+      showModal({
+        type: "error",
+        title: "Something went wrong",
+        message: error?.message || "Failed to reject comment.",
+        primaryText: "OK",
+      });
     }
-  }, [id, onReject]);
+  }, [id, onReject, showModal]);
 
   const handleDelete = useCallback(() => {
     if (!id) return;
-    Alert.alert(
-      "Delete Comment",
-      "Are you sure you want to delete this comment?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await onDelete(id);
-            } catch (error: any) {
-              Alert.alert("Error", error.message || "Failed to delete comment.");
-            }
-          },
-        },
-      ]
-    );
-  }, [id, onDelete]);
+    showConfirm({
+      title: "Delete comment?",
+      message: "Are you sure you want to delete this comment? This action cannot be undone.",
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      destructive: true,
+      onConfirm: async () => {
+        try {
+          await onDelete(id);
+        } catch (error: any) {
+          showModal({
+            type: "error",
+            title: "Something went wrong",
+            message: error?.message || "Failed to delete comment.",
+            primaryText: "OK",
+          });
+        }
+      },
+    });
+  }, [id, onDelete, showConfirm, showModal]);
 
   return (
     <View

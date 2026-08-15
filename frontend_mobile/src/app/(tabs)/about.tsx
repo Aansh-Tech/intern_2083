@@ -29,16 +29,16 @@ export default function AboutScreen() {
   }, [refreshProfile, refreshSkills, refreshCertificates]);
 
   useEffect(() => {
-    refreshProfile();
-    refreshSkills();
-    refreshCertificates();
+    refreshProfile(true);
+    refreshSkills(true);
+    refreshCertificates(true);
   }, [refreshProfile, refreshSkills, refreshCertificates]);
 
   useFocusEffect(
     useCallback(() => {
-      refreshProfile();
-      refreshSkills();
-      refreshCertificates();
+      refreshProfile(true);
+      refreshSkills(true);
+      refreshCertificates(true);
     }, [refreshProfile, refreshSkills, refreshCertificates])
   );
 

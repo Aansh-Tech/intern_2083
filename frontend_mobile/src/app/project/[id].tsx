@@ -7,9 +7,11 @@ import { useTheme } from "../../context/useTheme";
 import { useProject } from "../../context/ProjectContext";
 import * as projectService from "../../services/project";
 import type { Project } from "../../types/project";
-import { MAX_PROJECT_PHOTOS } from "../../types/project";
 import StatusBadge from "../../components/work/StatusBadge";
 import ProjectGallery from "../../components/work/ProjectGallery";
+import ProjectCover from "../../components/work/ProjectCover";
+import ImageViewer from "../../components/admin_certificates/ImageViewer";
+import { normalizeProjectImages } from "../../utils/projectImages";
 
 export default function ProjectDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -19,6 +21,7 @@ export default function ProjectDetailsScreen() {
   const { projects, loading } = useProject();
   const [detailProject, setDetailProject] = useState<Project | null>(null);
   const [detailLoading, setDetailLoading] = useState(true);
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
 
   const project = useMemo(
     () => projects.find((p) => p.id === id),
@@ -48,14 +51,11 @@ export default function ProjectDetailsScreen() {
 
   const isDetailValid = detailProject && detailProject.id === project?.id;
   const source = isDetailValid ? detailProject : project;
-  const projectImage = source?.images?.[0]?.url ?? source?.image ?? null;
-  const projectImages = (
-    source?.images && source.images.length > 0
-      ? source.images
-      : projectImage
-      ? [{ id: "image", url: projectImage }]
-      : []
-  ).slice(0, MAX_PROJECT_PHOTOS);
+
+  const normalizedImages = useMemo(
+    () => normalizeProjectImages(source),
+    [source]
+  );
 
   if (loading) {
     return (
@@ -97,25 +97,49 @@ export default function ProjectDetailsScreen() {
     <View style={{ flex: 1, backgroundColor: colors.background, paddingTop: insets.top }}>
       <Stack.Screen options={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }} />
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8 }}>
+        <View
+          style={{
+            paddingHorizontal: 20,
+            paddingTop: 12,
+            paddingBottom: 8,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <TouchableOpacity
-            style={{ width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", backgroundColor: colors.card }}
+            style={{ width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }}
             activeOpacity={0.7}
             onPress={() => router.back()}
           >
             <ArrowLeft size={22} color={colors.text} />
           </TouchableOpacity>
+
+          {project.viewDetailsUrl && (
+            <TouchableOpacity
+              style={{ width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }}
+              activeOpacity={0.7}
+              onPress={() => Linking.openURL(project.viewDetailsUrl!)}
+            >
+              <ExternalLink size={20} color={colors.primary} />
+            </TouchableOpacity>
+          )}
         </View>
 
-        {projectImage ? (
-          <View style={{ paddingHorizontal: 20 }}>
-            <ProjectGallery images={projectImages} />
+        {normalizedImages.length > 0 ? (
+          <View style={{ paddingHorizontal: 20, paddingTop: 8 }}>
+            <ProjectGallery
+              images={normalizedImages}
+              onImagePress={(index) => setViewerIndex(index)}
+            />
           </View>
         ) : (
-          <View
-            style={{ marginHorizontal: 20, height: 220, borderRadius: 16, alignItems: "center", justifyContent: "center", backgroundColor: colors.card }}
-          >
-            <Text style={{ fontSize: 14, color: colors.secondaryText }}>No image</Text>
+          <View style={{ paddingTop: 8 }}>
+            <ProjectCover
+              gradient={project.gradient}
+              category={project.category}
+              style={{ marginHorizontal: 20, height: 200, borderRadius: 20 }}
+            />
           </View>
         )}
 
@@ -126,7 +150,7 @@ export default function ProjectDetailsScreen() {
           </View>
 
           <View style={{ gap: 4 }}>
-            <Text style={{ fontSize: 13, fontWeight: "600", letterSpacing: 1, textTransform: "uppercase", color: colors.secondaryText }}>
+            <Text style={{ fontSize: 13, fontWeight: "600", letterSpacing: 1, textTransform: "uppercase", color: colors.primary }}>
               {project.category}
             </Text>
             <Text style={{ fontSize: 28, fontWeight: "700", color: colors.text }}>
@@ -144,7 +168,7 @@ export default function ProjectDetailsScreen() {
                 Technologies
               </Text>
               <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-                {project.technologies.map((tech) => (
+                {[...new Set(project.technologies)].map((tech) => (
                   <View
                     key={tech}
                     style={{ paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }}
@@ -192,6 +216,12 @@ export default function ProjectDetailsScreen() {
           )}
         </View>
       </ScrollView>
+
+      <ImageViewer
+        visible={viewerIndex !== null}
+        imageUrl={viewerIndex !== null ? normalizedImages[viewerIndex]?.url ?? null : null}
+        onClose={() => setViewerIndex(null)}
+      />
     </View>
   );
 }

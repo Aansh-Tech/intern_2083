@@ -24,7 +24,7 @@ export default function AdminOverviewScreen() {
     }
     didRefresh.current = true;
     //console.log("[AdminOverview] Calling refreshDashboard() for first time...");
-    refreshDashboard().then(() => {
+    refreshDashboard(true).then(() => {
       //console.log("[AdminOverview] refreshDashboard() resolved.");
     }).catch((error: any) => {
       //console.log("[AdminOverview] refreshDashboard() REJECTED");

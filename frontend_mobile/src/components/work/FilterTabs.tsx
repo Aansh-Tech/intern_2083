@@ -22,9 +22,10 @@ export default function FilterTabs({ active, onChange }: FilterTabsProps) {
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      className="flex-grow-0"
+      style={{ flexGrow: 0 }}
+      contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4 }}
     >
-      <View className="flex-row px-5 pt-6 gap-2.5">
+      <View className="flex-row gap-1.5">
         {filters.map((filter) => {
           const isActive = active === filter.value;
 
@@ -33,15 +34,19 @@ export default function FilterTabs({ active, onChange }: FilterTabsProps) {
               key={filter.value}
               onPress={() => onChange(filter.value)}
               activeOpacity={0.7}
-              className="px-[18px] py-2.5 rounded-full border"
               style={{
-                backgroundColor: isActive ? colors.primary : colors.card,
-                borderColor: isActive ? colors.primary : colors.border,
+                paddingHorizontal: 14,
+                paddingVertical: 7,
+                borderRadius: 999,
+                backgroundColor: isActive ? colors.primary + "1F" : "transparent",
               }}
             >
               <Text
-                className="text-sm font-semibold"
-                style={{ color: isActive ? colors.text : colors.secondaryText }}
+                style={{
+                  fontSize: 13,
+                  fontWeight: isActive ? "700" : "500",
+                  color: isActive ? colors.primary : colors.secondaryText,
+                }}
               >
                 {filter.label}
               </Text>

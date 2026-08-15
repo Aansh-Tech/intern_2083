@@ -1,14 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { View, Text, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { Save, FileText, Upload, Plus, Pencil, Trash2, X } from "lucide-react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import * as DocumentPicker from "expo-document-picker";
+import * as ImagePicker from "expo-image-picker";
 import { useTheme } from "../../context/useTheme";
+import { usePopup } from "../Popup";
 import { useProfile } from "../../context/ProfileContext";
 import { saveAbout } from "../../services/aboutService";
 import type { SocialLinkInput } from "../../services/aboutService";
-import { uploadImage } from "../../services/image";
-import AvatarUploader from "./PhotoUpload";
+import { uploadImage, uploadProjectImage, deleteImage, resolveImageUrl } from "../../services/image";
+import ProfileAvatar from "./ProfileAvatar";
 import IdentityForm from "./IdForm";
 
 function detectPlatform(url: string): string {
@@ -36,7 +38,8 @@ const PLATFORM_ICONS: Record<string, string> = {
 
 export default function AboutControl() {
   const { colors } = useTheme();
-  const { profile, refreshProfile } = useProfile();
+  const { showModal, showConfirm, showToast } = usePopup();
+  const { profile, refreshProfile, applyAvatar, loading } = useProfile();
   const mountedRef = useRef(true);
   const previousSocialLinksRef = useRef<SocialLinkInput[]>([]);
 
@@ -48,10 +51,12 @@ export default function AboutControl() {
   }, []);
 
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
-  const [name, setName] = useState("");
+  const [avatarAttachmentId, setAvatarAttachmentId] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [role, setRole] = useState("");
   const [bio, setBio] = useState("");
   const [saving, setSaving] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
 
   const [resumeUri, setResumeUri] = useState<string | null>(null);
   const [resumeName, setResumeName] = useState<string | null>(null);
@@ -68,15 +73,12 @@ export default function AboutControl() {
   };
 
   useEffect(() => {
-    if (profile.name) setName(profile.name);
+    if (hydrated || loading) return;
     if (profile.title || profile.subtitle || profile.headline) {
       setRole(profile.title ?? profile.subtitle ?? profile.headline ?? "");
     }
     if (profile.bio || profile.description) {
       setBio(profile.bio ?? profile.description ?? "");
-    }
-    if (profile.avatar || profile.profile_image) {
-      setAvatarUri(profile.avatar ?? profile.profile_image ?? null);
     }
 
     if (profile.resume_url) {
@@ -92,7 +94,15 @@ export default function AboutControl() {
       setSocialLinks(loaded);
       previousSocialLinksRef.current = loaded;
     }
-  }, [profile]);
+    setHydrated(true);
+  }, [profile, hydrated, loading]);
+
+  useEffect(() => {
+    const fromProfile = profile.avatar ?? profile.profile_image ?? null;
+    if (typeof fromProfile === "string" && fromProfile.trim()) {
+      setAvatarUri(fromProfile);
+    }
+  }, [profile.avatar, profile.profile_image]);
 
   const pickResume = async () => {
     const result = await DocumentPicker.getDocumentAsync({ type: "application/pdf" });
@@ -101,6 +111,81 @@ export default function AboutControl() {
       setResumeName(result.assets[0].name);
     }
   };
+
+  const pickAndUploadAvatar = useCallback(async () => {
+    if (uploadingAvatar || !profile.id) return;
+
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) return;
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (result.canceled || !result.assets?.[0]?.uri) return;
+
+    setUploadingAvatar(true);
+    try {
+      const uploaded = await uploadProjectImage(
+        result.assets[0].uri,
+        "profile",
+        profile.id,
+        { type: "avatar", isPrimary: true }
+      );
+      setAvatarUri(uploaded.url);
+      setAvatarAttachmentId(uploaded.id || null);
+      applyAvatar(uploaded.url);
+      if (!mountedRef.current) return;
+      showToast({ type: "success", message: "Profile picture updated" });
+    } catch {
+      if (!mountedRef.current) return;
+      showToast({ type: "error", message: "Could not update profile picture" });
+    } finally {
+      if (mountedRef.current) setUploadingAvatar(false);
+    }
+  }, [uploadingAvatar, profile.id, applyAvatar, showToast]);
+
+  const removeAvatar = useCallback(async () => {
+    try {
+      const imagesArr = Array.isArray(profile.images) ? profile.images : [];
+      const currentUrl = avatarUri;
+      const avatarAttachments = (imagesArr as any[]).filter(
+        (img: any) =>
+          img?.type === "avatar" ||
+          (img?.image?.url && resolveImageUrl(img.image.url) === currentUrl)
+      );
+      const targetIds = new Set<string>();
+      avatarAttachments.forEach((img: any) => {
+        if (img?.id) targetIds.add(String(img.id));
+      });
+      if (avatarAttachmentId) targetIds.add(avatarAttachmentId);
+
+      await Promise.all([...targetIds].map((id) => deleteImage(id)));
+
+      setAvatarUri(null);
+      setAvatarAttachmentId(null);
+      applyAvatar(null);
+      if (!mountedRef.current) return;
+      showToast({ type: "success", message: "Profile picture removed" });
+    } catch {
+      if (!mountedRef.current) return;
+      showToast({ type: "error", message: "Could not remove profile picture" });
+    }
+  }, [avatarUri, avatarAttachmentId, profile.images, applyAvatar, showToast]);
+
+  const confirmRemoveAvatar = useCallback(() => {
+    showConfirm({
+      title: "Remove profile picture?",
+      message: "Are you sure you want to remove your profile picture?",
+      confirmText: "Remove",
+      cancelText: "Cancel",
+      destructive: true,
+      onConfirm: removeAvatar,
+    });
+  }, [showConfirm, removeAvatar]);
 
   const openAddForm = useCallback(() => {
     setEditIndex(null);
@@ -123,17 +208,21 @@ export default function AboutControl() {
         next[editIndex] = { id: next[editIndex].id, platform: displayPlatform, url: formUrl };
         return next;
       });
+      showToast({ type: "success", message: "Social link updated" });
     } else {
       setSocialLinks((prev) => [...prev, { platform: displayPlatform, url: formUrl }]);
+      showToast({ type: "success", message: "Social link added" });
     }
     setShowForm(false);
-  }, [formUrl, editIndex]);
+  }, [formUrl, editIndex, showToast]);
 
   const handleDelete = useCallback((index: number) => {
     setSocialLinks((prev) => prev.filter((_, i) => i !== index));
-  }, []);
+    showToast({ type: "success", message: "Social link removed" });
+  }, [showToast]);
 
   const handleSave = async () => {
+    if (saving) return;
     setSaving(true);
     try {
       let resolvedPhoto = avatarUri;
@@ -155,10 +244,22 @@ export default function AboutControl() {
       await refreshProfile();
       if (!mountedRef.current) return;
 
-      Alert.alert("Saved", "Your About page has been updated.");
+      showModal({
+        type: "success",
+        title: "Saved successfully",
+        message: "Your About page has been updated.",
+        primaryText: "OK",
+      });
     } catch {
       if (!mountedRef.current) return;
-      Alert.alert("Error", "Failed to save. Please try again.");
+      showModal({
+        type: "error",
+        title: "Something went wrong",
+        message: "Failed to save. Please try again.",
+        primaryText: "Try Again",
+        secondaryText: "Cancel",
+        onPrimary: () => handleSave(),
+      });
     } finally {
       if (mountedRef.current) setSaving(false);
     }
@@ -190,10 +291,16 @@ export default function AboutControl() {
         </TouchableOpacity>
       </View>
 
-      <AvatarUploader
+      <ProfileAvatar
         avatarUri={avatarUri}
-        initial={name?.charAt(0) || "A"}
-        onAvatarChange={setAvatarUri}
+        hasProfilePicture={
+          typeof avatarUri === "string" && avatarUri.trim().length > 0
+        }
+        name={profile.name ?? "Anish Shrestha"}
+        role={profile.title ?? profile.subtitle ?? profile.headline ?? ""}
+        uploading={uploadingAvatar}
+        onChooseGallery={pickAndUploadAvatar}
+        onRemove={confirmRemoveAvatar}
       />
 
       <IdentityForm
