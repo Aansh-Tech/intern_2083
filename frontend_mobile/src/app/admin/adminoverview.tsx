@@ -7,9 +7,6 @@ import QuickActionsSection from "../../components/adminoverview/QuickActionsSect
 import ActivitySection from "../../components/adminoverview/ActivitySection";
 import { useDashboard } from "../../context/DashboardContext";
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 
 export default function AdminOverviewScreen() {
   const router = useRouter();
@@ -17,19 +14,12 @@ export default function AdminOverviewScreen() {
   const didRefresh = useRef(false);
 
   useEffect(() => {
-    //console.log("[AdminOverview] useEffect fired. didRefresh.current:", didRefresh.current);
     if (didRefresh.current) {
-     // console.log("[AdminOverview] Already refreshed, skipping.");
       return;
     }
     didRefresh.current = true;
-    //console.log("[AdminOverview] Calling refreshDashboard() for first time...");
     refreshDashboard(true).then(() => {
-      //console.log("[AdminOverview] refreshDashboard() resolved.");
     }).catch((error: any) => {
-      //console.log("[AdminOverview] refreshDashboard() REJECTED");
-      //console.log("[AdminOverview] error.message:", error.message);
-      //console.log("[AdminOverview] error.stack:", error.stack);
     });
   }, [refreshDashboard]);
 

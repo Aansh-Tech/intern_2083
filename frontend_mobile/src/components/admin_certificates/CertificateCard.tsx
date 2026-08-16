@@ -5,9 +5,6 @@ import { useTheme } from "../../context/useTheme";
 import type { Certificate } from "../../types/certificate";
 
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 interface CertificateCardProps {
   certificate: Certificate;
   onDelete: (id: string) => void;
@@ -21,8 +18,6 @@ function CertificateCard({ certificate, onDelete, onEdit, onViewImage }: Certifi
   const handleDelete = useCallback(() => onDelete(certificate.id), [onDelete, certificate.id]);
   const handleEdit = useCallback(() => onEdit(certificate), [onEdit, certificate]);
   const handleViewImage = useCallback(() => onViewImage(certificate), [onViewImage, certificate]);
-
-  console.log("[CertificateCard] image URL:", certificate.image?.substring(0, 80), "title:", certificate.title);
 
   return (
     <TouchableOpacity

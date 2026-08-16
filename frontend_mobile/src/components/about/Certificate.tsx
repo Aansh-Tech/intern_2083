@@ -7,21 +7,11 @@ import { useTheme } from "../../context/useTheme";
 import { useCertificates } from "../../context/CertificateContext";
 import { useResponsiveContainer } from "../../utils/responsive";
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 export default function CertificatesSection() {
   const { colors } = useTheme();
   const { certificates } = useCertificates();
   const [viewImage, setViewImage] = useState<string | null>(null);
   const gridContainer = useResponsiveContainer();
-
-  if (certificates.length > 0) {
-    const first = certificates[0];
-    console.log("[CertificatesSection] First cert image:", first.image?.substring(0, 80), "title:", first.title);
-  } else {
-    console.log("[CertificatesSection] No certificates loaded");
-  }
 
   const openImage = useCallback((url: string) => {
     setViewImage(url);

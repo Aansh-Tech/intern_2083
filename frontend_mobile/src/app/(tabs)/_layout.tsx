@@ -5,9 +5,6 @@ import { Home, Briefcase, BookOpen, User, Mail } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
 import "../../../global.css";
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 
 const iconMap = {
   home: Home,

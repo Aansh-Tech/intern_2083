@@ -4,9 +4,6 @@ import { getAllComments, approveComment, rejectComment, deleteComment } from "..
 import { getToken } from "../utils/token";
 
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 interface CommentContextType {
   comments: Comment[];
   loading: boolean;
@@ -61,9 +58,7 @@ export const CommentProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const handleApprove = useCallback(async (id: string) => {
     try {
-      console.log("[AdminComments] Approving comment:", id);
       await approveComment(id);
-      console.log("[AdminComments] Comment approved. Refreshing comments...");
       await fetchComments();
     } catch (error) {
       console.error("Approve error:", error);
@@ -73,9 +68,7 @@ export const CommentProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const handleReject = useCallback(async (id: string) => {
     try {
-      console.log("[AdminComments] Rejecting comment:", id);
       await rejectComment(id);
-      console.log("[AdminComments] Comment rejected. Refreshing comments...");
       await fetchComments();
     } catch (error) {
       console.error("Reject error:", error);
@@ -85,9 +78,7 @@ export const CommentProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const handleDelete = useCallback(async (id: string) => {
     try {
-      console.log("[AdminComments] Deleting comment:", id);
       await deleteComment(id);
-      console.log("[AdminComments] Comment deleted. Refreshing comments...");
       await fetchComments();
     } catch (error) {
       console.error("Delete error:", error);

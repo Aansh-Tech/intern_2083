@@ -11,18 +11,11 @@ import { useTheme } from "../../context/useTheme";
 import type { Skill, SkillCategory } from "../../types/skill";
 import { useResponsiveContainer } from "../../utils/responsive";
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 export default function AdminSkillsScreen() {
   const { colors } = useTheme();
   const { showModal, showConfirm, showToast } = usePopup();
   const { skills, getSkillsByCategory, addSkill, updateSkill, deleteSkill, loading, refreshing, refreshSkills } = useSkills();
   const categories = getSkillsByCategory();
-  console.log("[AdminSkills] Render - loading:", loading, "skills:", skills.length, "categories:", categories.length);
-  if (categories.length > 0) {
-    console.log("[AdminSkills] categories:", JSON.stringify(categories.map(c => ({ cat: c.category, count: c.skills.length, names: c.skills.map(s => s.name) }))));
-  }
 
   const [editTarget, setEditTarget] = useState<Skill | null>(null);
   const [editCategory, setEditCategory] = useState<SkillCategory>("Frontend");

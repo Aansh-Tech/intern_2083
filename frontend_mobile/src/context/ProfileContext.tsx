@@ -11,9 +11,6 @@ import type { ProfileData } from "../types/profile";
 import type { SocialLink } from "../types/socialLink";
 import { getAbout, getSocialLinks } from "../services/aboutService";
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 interface ProfileContextType {
   profile: ProfileData;
   socialLinks: SocialLink[];

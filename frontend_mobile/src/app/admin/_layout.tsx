@@ -11,9 +11,6 @@ import AdminOverviewTabs from "../../components/adminoverview/AdminOverviewTabs"
 import NotificationPanel from "../../components/adminoverview/NotificationPanel";
 
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 
 export default function AdminLayout() {
   const { colors, theme } = useTheme();
@@ -29,7 +26,6 @@ export default function AdminLayout() {
 
   useEffect(() => {
     mountedRef.current = true;
-    console.log("[AdminLayout] checkAuth running...");
     checkAuth();
     return () => {
       mountedRef.current = false;
@@ -37,21 +33,17 @@ export default function AdminLayout() {
   }, []);
 
   async function checkAuth() {
-    console.log("[AdminLayout] isLoggedIn() called...");
     let loggedIn = false;
     try {
       loggedIn = await isLoggedIn();
     } catch (error: any) {
-      console.log("[AdminLayout] isLoggedIn() threw:", error.message, error.stack);
+      // ignore
     }
     if (!mountedRef.current) return;
-    console.log("[AdminLayout] isLoggedIn result:", loggedIn, "isLoginPage:", isLoginPage);
     if (!loggedIn && !isLoginPage) {
-      console.log("[AdminLayout] Redirecting to /admin (login page)");
       router.replace("/admin" as any);
     }
     setChecking(false);
-    console.log("[AdminLayout] checkAuth complete");
   }
 
   const handleSignOut = useCallback(() => {

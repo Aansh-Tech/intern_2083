@@ -3,9 +3,6 @@ import { resolveImageUrl, dedupeImages } from "./image";
 import type { ProjectImage } from "../types/project";
 import { MAX_PROJECT_PHOTOS } from "../types/project";
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 
 function mapProjectImages(images: any[] | undefined): ProjectImage[] {
   if (!images || !Array.isArray(images)) return [];
@@ -34,7 +31,9 @@ export async function getProjects(admin = false) {
 
   const response = await api.get(endpoint);
 
-  return response.data.data.map((project: any) => {
+  const list = response.data?.data;
+
+  return list.map((project: any) => {
     const images = mapProjectImages(project.images);
 
     return {
@@ -157,19 +156,11 @@ export function buildProjectPayload(data: any) {
 export async function createProject(data: any) {
   const payload = buildProjectPayload(data);
 
-  console.log("Sending:", payload);
-
   try {
     const response = await api.post("/v1/projects", payload);
 
-    console.log("SUCCESS:", response.status);
-    console.log("DATA:", response.data);
-
     return response.data.data;
   } catch (error: any) {
-    console.log("STATUS:", error.response?.status);
-    console.log("ERROR:", error.response?.data);
-
     throw error;
   }
 }

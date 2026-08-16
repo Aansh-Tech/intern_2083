@@ -4,9 +4,6 @@ import { useRouter } from "expo-router";
 import { Check } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 
 export default function ResetPasswordSuccessScreen() {
   const { colors } = useTheme();
