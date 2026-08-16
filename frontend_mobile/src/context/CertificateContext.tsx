@@ -10,9 +10,6 @@ import {
 import type { Certificate } from "../types/certificate";
 import * as certificateService from "../services/certificate";
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 interface CertificateContextType {
   certificates: Certificate[];
   loading: boolean;

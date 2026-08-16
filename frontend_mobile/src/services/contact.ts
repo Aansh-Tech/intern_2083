@@ -11,9 +11,6 @@ import api from "./api";
 
 //   return response.data.data;
 // }
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 export async function submitContact(data: {
   name: string;
   email: string;
@@ -21,19 +18,10 @@ export async function submitContact(data: {
   message: string;
 }) {
   try {
-    console.log("POST:", "/v1/contact");
-    console.log("Payload:", data);
-
     const response = await api.post("/v1/contact", data);
-
-    console.log("Response:", response.data);
 
     return response.data.data;
   } catch (error: any) {
-    console.log("Error message:", error.message);
-    console.log("Status:", error.response?.status);
-    console.log("Response:", error.response?.data);
-
     throw error;
   }
 } 

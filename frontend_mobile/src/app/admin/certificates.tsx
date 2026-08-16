@@ -12,9 +12,6 @@ import { uploadImage } from "../../services/image";
 import type { Certificate } from "../../types/certificate";
 import { useResponsiveContainer } from "../../utils/responsive";
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 
 export default function AdminCertificatesScreen() {
   const { colors } = useTheme();
@@ -50,23 +47,17 @@ export default function AdminCertificatesScreen() {
         // Editing: upload image with existing cert ID, then update
         let image = data.image;
         if (image && !image.startsWith("http")) {
-          console.log("[AdminCertificates] uploading image for existing cert:", editTarget.id);
           const resultUrl = await uploadImage(image, "certificate", editTarget.id, { isPrimary: true });
           if (resultUrl) image = resultUrl;
-          console.log("[AdminCertificates] image upload result:", image);
         }
         await editCertificate(editTarget.id, { ...data, image });
       } else {
         // Creating: create certificate FIRST, then upload image with new ID
         const imageUri = data.image && !data.image.startsWith("http") ? data.image : undefined;
-        console.log("[AdminCertificates] creating certificate...");
         const certId = await addCertificate({ ...data, image: imageUri ? undefined : data.image });
-        console.log("[AdminCertificates] certificate created, id:", certId);
 
         if (imageUri && certId) {
-          console.log("[AdminCertificates] uploading image for new cert:", certId);
           await uploadImage(imageUri, "certificate", certId, { isPrimary: true });
-          console.log("[AdminCertificates] image uploaded, refreshing...");
           await refreshCertificates();
         }
       }
@@ -74,8 +65,6 @@ export default function AdminCertificatesScreen() {
       setEditTarget(null);
       showToast({ type: "success", message: editTarget ? "Certificate updated" : "Certificate added" });
     } catch (error: any) {
-      console.warn("[AdminCertificates] handleSave error:", error?.message);
-      console.warn("[AdminCertificates] status:", error?.response?.status, "data:", JSON.stringify(error?.response?.data));
       const validationErrors = error?.response?.data?.errors;
       let message = "Failed to save certificate or upload image.";
       if (validationErrors && typeof validationErrors === "object") {

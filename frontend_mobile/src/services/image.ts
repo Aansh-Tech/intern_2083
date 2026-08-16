@@ -1,8 +1,5 @@
 import api from "./api";
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 
 const API_BASE_URL = (process.env.EXPO_PUBLIC_API_BASE_URL ?? "").replace(/\/+$/, "");
 const SERVER_ROOT = API_BASE_URL.replace(/\/api$/i, "");
@@ -44,13 +41,6 @@ async function performUpload(
   imageableId: number | string,
   options?: UploadImageOptions
 ): Promise<{ id: string; url: string }> {
-  console.log("[imageService] performUpload()", {
-    uri: uri?.substring(0, 80),
-    imageableType,
-    imageableId,
-    options,
-  });
-
   const formData = new FormData();
   const filename = uri.split("/").pop() ?? "upload.jpg";
   const ext = filename.split(".").pop()?.toLowerCase() ?? "jpg";
@@ -78,27 +68,13 @@ async function performUpload(
     formData.append("display_order", String(options.displayOrder));
   }
 
-  const fullUrl = `${api.defaults.baseURL}/v1/images`;
-  console.log("[imageService] POST", fullUrl);
-  console.log("[imageService] FormData fields:", {
-    image: { uri, name: filename, type: mimeType },
-    imageable_type: imageableType,
-    imageable_id: String(imageableId),
-    type: options?.type ?? "(not set)",
-    is_primary: options?.isPrimary !== false ? "1" : "0",
-    display_order: options?.displayOrder ?? "(not set)",
-  });
-
   try {
     const response = await api.post("/v1/images", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    console.log("[imageService] response status:", response.status);
-    console.log("[imageService] response.data:", JSON.stringify(response.data).substring(0, 500));
 
     const result = response.data.data ?? response.data;
     const parsed = parseUploadResult(result);
-    console.log("[imageService] extracted URL:", parsed.url);
     return parsed;
   } catch (error: any) {
     const status = error?.response?.status;

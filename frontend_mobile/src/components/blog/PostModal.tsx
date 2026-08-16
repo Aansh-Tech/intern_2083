@@ -10,9 +10,6 @@ import api from "../../services/api";
 import { isTablet } from "../../utils/responsive";
 
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 interface Post {
   id: string;
   slug: string;
@@ -106,18 +103,14 @@ export default function PostModal({ post, visible, onClose }: PostModalProps) {
   };
 
   const loadComments = useCallback(async (slug: string) => {
-    console.log("[PostModal] Loading comments for slug:", slug);
     setLoadingComments(true);
     try {
       const data = await fetchComments(slug);
       if (!mountedRef.current) return;
-      console.log("[PostModal] Fetched comments:", data.length);
-      console.log("[PostModal] Comment statuses:", data.map((c: any) => c.status));
       const approved = data.filter((c: any) => {
         const s = String(c.status).toLowerCase();
         return s === "approved" || s === "1" || s === "active";
       });
-      console.log("[PostModal] Approved comments:", approved.length);
       setComments(approved);
     } catch (error) {
       if (!mountedRef.current) return;
@@ -132,7 +125,6 @@ export default function PostModal({ post, visible, onClose }: PostModalProps) {
 
   useEffect(() => {
     if (visible && displaySlug) {
-      console.log("[PostModal] Effect triggered - loading comments for slug:", displaySlug);
       loadComments(displaySlug);
     }
   }, [visible, displaySlug, loadComments]);
@@ -155,7 +147,6 @@ export default function PostModal({ post, visible, onClose }: PostModalProps) {
     const currentSlug = displayPost.slug;
 
     try {
-      console.log("[PostModal] Submitting comment for blog_post_id:", blogPostId);
       await postComment({
         blog_post_id: blogPostId,
         name: name.trim(),
@@ -163,7 +154,6 @@ export default function PostModal({ post, visible, onClose }: PostModalProps) {
         content: content.trim(),
       });
       if (!mountedRef.current) return;
-      console.log("[PostModal] Comment submitted successfully. Refreshing comments from backend...");
       setName("");
       setEmail("");
       setContent("");
@@ -175,7 +165,6 @@ export default function PostModal({ post, visible, onClose }: PostModalProps) {
       });
       if (currentSlug) {
         await loadComments(currentSlug);
-        console.log("[PostModal] Comments refreshed from backend after submission.");
       }
     } catch (err: any) {
       showModal({

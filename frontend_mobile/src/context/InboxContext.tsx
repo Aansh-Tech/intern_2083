@@ -14,9 +14,6 @@ import type { InboxMessage } from "../types/inbox";
 import * as contactService from "../services/contact";
 
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 const READ_IDS_KEY = "@inbox_read_ids";
 
 async function loadReadIds(): Promise<Set<string>> {
@@ -72,14 +69,10 @@ export function InboxProvider({ children }: { children: ReactNode }) {
 
   const loadMessages = useCallback(async () => {
     try {
-      console.log("Fetching inbox messages...");
-
       const [data, readIds] = await Promise.all([
         contactService.getContacts(),
         loadReadIds(),
       ]);
-
-      console.log("Inbox:", data);
 
       const formatted: InboxMessage[] = data.map((item: any) => ({
         id: String(item.id),
@@ -108,15 +101,13 @@ export function InboxProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
     (async () => {
-      console.log("[InboxContext] init effect running...");
       try {
         await loadMessages();
       } catch (error) {
-        console.log("[InboxContext] loadMessages on init threw:", error);
+        // ignore
       }
       if (!mounted) return;
       setLoading(false);
-      console.log("[InboxContext] init complete, loading=false");
     })();
     return () => {
       mounted = false;

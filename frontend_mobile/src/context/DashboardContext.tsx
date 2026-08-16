@@ -17,9 +17,6 @@ import { useComment } from "./CommentContext";
 import * as dashboardService from "../services/dashboard";
 
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 function formatTimeAgo(dateStr: string): string {
   const now = Date.now();
   const then = new Date(dateStr).getTime();
@@ -124,14 +121,11 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshDashboard = useCallback(async (silent = false) => {
-    console.log("[DashboardContext] refreshDashboard() called. busyRef.current:", busyRef.current);
     if (busyRef.current) {
-      console.log("[DashboardContext] refreshDashboard() — already busy, returning early");
       return;
     }
     busyRef.current = true;
     if (!silent) setRefreshing(true);
-    console.log("[DashboardContext] refreshDashboard() — starting parallel refresh...");
     try {
       await Promise.all([
         refreshProjects(false, silent),
@@ -140,16 +134,12 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
         refreshComments(),
         fetchBlogCount(),
       ]);
-      console.log("[DashboardContext] refreshDashboard() — all parallel refreshes completed");
     } catch (error: any) {
-      console.log("[DashboardContext] refreshDashboard() FAILED");
-      console.log("[DashboardContext] error.message:", error.message);
-      console.log("[DashboardContext] error.stack:", error.stack);
+      // ignore
     } finally {
       if (!mountedRef.current) return;
       if (!silent) setRefreshing(false);
       busyRef.current = false;
-      console.log("[DashboardContext] refreshDashboard() — finally: refreshing=false, busy=false");
     }
   }, [refreshProjects, refreshMessages, refreshSkills, refreshComments, fetchBlogCount]);
 

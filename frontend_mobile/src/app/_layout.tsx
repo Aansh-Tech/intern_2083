@@ -14,16 +14,8 @@ import { CertificateProvider } from "../context/CertificateContext";
 import { useTheme } from "../context/useTheme";
 import "../../global.css";
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 function RootLayoutInner() {
   const { isDark, colors } = useTheme();
-
-  useEffect(() => {
-    console.log("[RootLayout] Inner mounted. All context providers active.");
-    return () => console.log("[RootLayout] Inner unmounted.");
-  }, []);
 
   useEffect(() => {
     if (Platform.OS === "android") {

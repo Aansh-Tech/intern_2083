@@ -1,30 +1,14 @@
 import * as authService from "../services/auth";
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
-
-let loginCallCount = 0;
 
 export async function login(
   email: string,
   password: string):
   Promise<boolean> {
-  loginCallCount++;
-  console.log("[adminAuth] login() called (call #" + loginCallCount + ") with email:", email);
   try {
-    console.log("[adminAuth] Calling authService.login()...");
-    const result = await authService.login(email, password);
-    console.log("[adminAuth] authService.login() succeeded. result:", result);
-    console.log("[adminAuth] Returning true");
+    await authService.login(email, password);
     return true;
   } catch (error: any) {
-    console.log("[adminAuth] authService.login() FAILED");
-    console.log("[adminAuth] error.message:", error.message);
-    console.log("[adminAuth] error.response?.status:", error.response?.status);
-    console.log("[adminAuth] error.response?.data:", JSON.stringify(error.response?.data));
-    console.log("[adminAuth] error.stack:", error.stack);
-    console.log("[adminAuth] Returning false");
     return false;
   }
 }
@@ -33,7 +17,7 @@ export async function logout(): Promise<void> {
   try {
     await authService.logout();
   } catch (error) {
-    console.log(error);
+    // ignore
   }
 }
 

@@ -17,9 +17,6 @@ import { submitPasswordReset } from "../../services/auth";
 import { parsePasswordResetUrl } from "../../utils/passwordResetLink";
 import { useTheme } from "../../context/useTheme";
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 
 const LINK_ERROR_MESSAGES: Record<string, string> = {
   invalid: "Invalid reset link. Please copy the complete reset link from your email.",

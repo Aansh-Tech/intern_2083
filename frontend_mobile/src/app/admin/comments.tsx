@@ -12,9 +12,6 @@ import { useComment } from "../../context/CommentContext";
 import { useTheme } from "../../context/useTheme";
 
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 
 export default function AdminCommentsScreen() {
   const { colors } = useTheme();
@@ -23,7 +20,6 @@ export default function AdminCommentsScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      console.log("[AdminComments] Page focused – refreshing comments");
       refreshComments();
     }, [refreshComments])
   );

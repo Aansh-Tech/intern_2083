@@ -12,9 +12,6 @@ import type { Project } from "../types/project";
 import * as projectService from "../services/project";
 
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 //import { getToken } from "../utils/token";
 
 // interface ProjectContextType {
@@ -60,9 +57,7 @@ export function ProjectProvider({
 
   const loadProjects = useCallback(async (admin = false) => {
     try {
-      console.log("Fetching projects from Laravel...");
       const data = await projectService.getProjects(admin);
-      console.log("Projects from API:", data);
       if (!mountedRef.current) return;
       setProjects(data);
     } catch (error) {
@@ -82,52 +77,16 @@ export function ProjectProvider({
   }
 }, [loadProjects]);
 
-  // const refreshProjects = useCallback(async () => {
-  //   setRefreshing(true);
-  //   await loadProjects();
-  //   setRefreshing(false);
-  // }, [loadProjects]);
-
-  // useEffect(() => {
-  //   (async () => {
-  //     await loadProjects();
-  //     setLoading(false);
-  //   })();
-  // }, [loadProjects]);
-
-  // useEffect(() => {
-  // const init = async () => {
-  //   console.log("[ProjectContext] init effect running, checking token...");
-  //   //const token = await getToken();
-  //   console.log("[ProjectContext] token present:", !!token);
-
-  //  // if (token) {
-  //     console.log("[ProjectContext] loading projects on init...");
-  //     try {
-  //      // await loadProjects();
-  //     } catch (error) {
-  //       console.log("[ProjectContext] loadProjects on init threw:", error);
-  //     }
-  //   }
-
-  //   setLoading(false);
-  //   console.log("[ProjectContext] init complete, loading=false");
-  // };
-
-
   useEffect(() => {
   let mounted = true;
   const init = async () => {
-    console.log("[ProjectContext] Loading public projects...");
-
     try {
       await loadProjects();
     } catch (error) {
-      console.log("[ProjectContext] Failed to load projects:", error);
+      // ignore
     } finally {
       if (!mounted) return;
       setLoading(false);
-      console.log("[ProjectContext] init complete");
     }
   };
 

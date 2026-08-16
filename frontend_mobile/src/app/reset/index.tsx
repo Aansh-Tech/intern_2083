@@ -15,9 +15,6 @@ import InputField from "../../components/admin/InputField";
 import { requestPasswordReset } from "../../services/auth";
 import { useTheme } from "../../context/useTheme";
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 
 export default function ForgotPasswordScreen() {
   const { colors } = useTheme();

@@ -9,9 +9,6 @@ import api from "../../services/api";
 import { useResponsiveContainer, useResponsiveFontSize } from "../../utils/responsive";
 
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 
 interface Post {
   id: string;

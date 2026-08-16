@@ -30,9 +30,6 @@ export default function ContactScreen() {
   const [errors, setErrors] = useState<{ name?: string; email?: string; subject?: string; message?: string }>({});
   const mountedRef = useRef(true);
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 
   useEffect(() => {
     mountedRef.current = true;

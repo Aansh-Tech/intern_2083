@@ -10,9 +10,6 @@ import {
 import type { Skill, SkillCategory } from "../types/skill";
 import * as skillService from "../services/skill";
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 
 interface SkillsContextType {
   skills: Skill[];
@@ -51,63 +48,46 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const loadSkills = useCallback(async () => {
-    console.log("[SkillsContext] loadSkills() called. Current skills count:", skillsRef.current.length);
     try {
       const data = await skillService.getSkills();
       if (!mountedRef.current) return;
-      console.log("[SkillsContext] getSkills returned", data.length, "skills");
       setSkills(data);
-      console.log("[SkillsContext] setSkills() called with", data.length, "items");
     } catch (error: any) {
-      console.log("[SkillsContext] loadSkills() CAUGHT ERROR");
-      console.log("[SkillsContext] error.message:", error.message);
-      console.log("[SkillsContext] error.stack:", error.stack);
+      // ignore
     }
     if (!mountedRef.current) return;
     setLoading(false);
-    console.log("[SkillsContext] loadSkills() complete, loading=false");
   }, []);
 
   const refreshSkills = useCallback(async (silent = false) => {
-    console.log("[SkillsContext] refreshSkills() called. Current skills:", skillsRef.current.length);
     if (!silent) setRefreshing(true);
     try {
       await loadSkills();
     } finally {
       if (!mountedRef.current) return;
       if (!silent) setRefreshing(false);
-      console.log("[SkillsContext] refreshSkills() complete, skills count:", skillsRef.current.length);
     }
   }, [loadSkills]);
 
   useEffect(() => {
-    console.log("[SkillsContext] useEffect() firing, calling loadSkills()");
     loadSkills();
   }, [loadSkills]);
 
   const addSkill = useCallback(
     async (data: { category: SkillCategory; name: string; percentage: number }): Promise<string | null> => {
-      console.log("[SkillsContext] addSkill() called with:", JSON.stringify(data));
       const nameTrimmed = data.name.trim();
       if (!nameTrimmed) return "Skill name cannot be empty";
       if (data.percentage < 0 || data.percentage > 100) return "Percentage must be between 0 and 100";
 
       try {
-        console.log("[SkillsContext] Calling skillService.createSkill()...");
         await skillService.createSkill({
           name: nameTrimmed,
           category: mapCategoryToBackend(data.category),
           proficiency: data.percentage,
         });
-        console.log("[SkillsContext] skillService.createSkill() succeeded, calling refreshSkills()...");
         await refreshSkills();
-        console.log("[SkillsContext] refreshSkills() completed after add");
         return null;
       } catch (error: any) {
-        console.log("[SkillsContext] addSkill CAUGHT ERROR");
-        console.log("[SkillsContext] error.message:", error.message);
-        console.log("[SkillsContext] error.response?.status:", error.response?.status);
-        console.log("[SkillsContext] error.response?.data:", JSON.stringify(error.response?.data));
         if (error?.response?.status === 422) {
           const msgs = error.response.data?.message ?? "Validation error";
           return typeof msgs === "string" ? msgs : "Validation error";

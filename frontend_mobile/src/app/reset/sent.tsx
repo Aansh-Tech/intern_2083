@@ -4,9 +4,6 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { MailCheck } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 
 export default function ResetLinkSentScreen() {
   const { colors } = useTheme();

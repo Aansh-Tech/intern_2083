@@ -19,9 +19,6 @@ import api from "../../services/api";
 import { getToken } from "../../utils/token";
 import { resolveImageUrl } from "../../services/image";
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 const slugify = (text: string) =>
   text
     .toLowerCase()
@@ -195,13 +192,11 @@ export default function PostFormModal({
         timeout: 60000,
       });
 
-      console.log("Image upload success:", response.data);
       if (!mountedRef.current) return null;
       setUploading(false);
       const result = response.data.data || response.data;
       const rawUrl = result.path || result.url || result.image || "";
       const resolved = rawUrl ? resolveImageUrl(rawUrl) : null;
-      console.log("Image upload resolved URL:", resolved);
       return resolved;
     } catch (error: any) {
       if (!mountedRef.current) return null;
@@ -265,12 +260,9 @@ export default function PostFormModal({
       return;
     }
 
-    console.log("publishedAt state:", publishedAt);
-
     const safeDate = (value: any): string | null => {
       if (!value) return null;
       const date = new Date(value);
-      console.log("Converted date:", date);
       if (isNaN(date.getTime())) return null;
       return date.toISOString();
     };
@@ -286,8 +278,6 @@ export default function PostFormModal({
       published_at: safeDate(publishedAt),
       allow_comments: allowComments,
     };
-
-    console.log("Payload:", postData);
 
     try {
       let savedPost: BlogPostItem;

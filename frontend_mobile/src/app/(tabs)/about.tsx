@@ -12,9 +12,6 @@ import { useSkills } from "../../context/SkillsContext";
 import { useCertificates } from "../../context/CertificateContext";
 
 
-console.log = () => {};
-console.info = () => {};
-console.debug = () => {};
 
 export default function AboutScreen() {
   const { colors } = useTheme();
