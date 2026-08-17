@@ -140,11 +140,11 @@ export default function ProjectDetailsScreen() {
             />
           </View>
         ) : (
-          <View style={[container, { paddingTop: 8 }]}>
+          <View style={[container, { paddingTop: 8, paddingHorizontal: 20 }]}>
             <ProjectCover
               gradient={project.gradient}
               category={project.category}
-              style={{ marginHorizontal: 20, height: 200, borderRadius: 20 }}
+              style={{ height: 200, borderRadius: 20 }}
             />
           </View>
         )}

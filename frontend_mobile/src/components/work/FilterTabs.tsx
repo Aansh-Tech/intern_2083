@@ -27,7 +27,7 @@ export default function FilterTabs({ active, onChange }: FilterTabsProps) {
       style={{ flexGrow: 0 }}
       contentContainerStyle={[styles.content, container]}
     >
-      <View className="flex-row gap-1.5">
+      <View className="flex-row gap-1.5" style={styles.row}>
         {filters.map((filter) => {
           const isActive = active === filter.value;
 
@@ -36,14 +36,18 @@ export default function FilterTabs({ active, onChange }: FilterTabsProps) {
               key={filter.value}
               onPress={() => onChange(filter.value)}
               activeOpacity={0.7}
-              style={{
-                paddingHorizontal: 14,
-                paddingVertical: 7,
-                borderRadius: 999,
-                backgroundColor: isActive ? colors.primary + "1F" : "transparent",
-              }}
+              style={[
+                styles.tab,
+                {
+                  paddingHorizontal: 14,
+                  paddingVertical: 7,
+                  borderRadius: 999,
+                  backgroundColor: isActive ? colors.primary + "1F" : "transparent",
+                },
+              ]}
             >
               <Text
+                numberOfLines={1}
                 style={{
                   fontSize: 13,
                   fontWeight: isActive ? "700" : "500",
@@ -64,5 +68,12 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
     paddingTop: 4,
+  },
+  row: {
+    flexGrow: 1,
+  },
+  tab: {
+    flexGrow: 1,
+    flexShrink: 0,
   },
 });

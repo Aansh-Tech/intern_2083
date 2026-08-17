@@ -3,6 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { MailCheck } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
+import { useResponsiveMaxWidth } from "../../utils/responsive";
 
 
 export default function ResetLinkSentScreen() {
@@ -10,6 +11,7 @@ export default function ResetLinkSentScreen() {
   const router = useRouter();
   const { email } = useLocalSearchParams<{ email?: string }>();
   const emailValue = typeof email === "string" ? email : "";
+  const cardMaxWidth = useResponsiveMaxWidth(480);
 
   const handleContinue = () => {
     router.replace({
@@ -31,10 +33,10 @@ export default function ResetLinkSentScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={{ width: "100%", maxWidth: 420, alignSelf: "center", marginTop: 10 }}>
+        <View style={{ width: "100%", maxWidth: cardMaxWidth, alignSelf: "center", marginTop: 10 }}>
           <View
-            className="w-full max-w-[420px] rounded-[24px] border border-solid px-6 py-6"
-            style={{ backgroundColor: colors.card, borderColor: colors.border }}
+            className="w-full rounded-[24px] border border-solid px-6 py-6"
+            style={{ width: "100%", maxWidth: cardMaxWidth, backgroundColor: colors.card, borderColor: colors.border }}
           >
             <View className="flex-row items-center gap-4 w-full mb-6">
               <View

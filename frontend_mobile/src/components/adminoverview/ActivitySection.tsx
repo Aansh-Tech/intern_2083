@@ -21,25 +21,23 @@ function ActivitySection({ activities, onActivityPress }: ActivitySectionProps) 
           RECENT ACTIVITY
         </Text>
       </View>
-      <View
-        style={[
-          container,
-          {
-            marginHorizontal: 20,
-            borderRadius: 24,
-            borderWidth: 1,
-            marginBottom: 32,
-            paddingHorizontal: 20,
-            backgroundColor: colors.card,
-            borderColor: colors.border,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 8,
-            elevation: 4,
-          },
-        ]}
-      >
+      <View style={[container, { paddingHorizontal: 20, marginBottom: 32 }]}>
+        <View
+          style={[
+            {
+              borderRadius: 24,
+              borderWidth: 1,
+              paddingHorizontal: 20,
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 8,
+              elevation: 4,
+            },
+          ]}
+        >
         {activities.length === 0 ? (
           <View className="py-6">
             <Text className="text-[13px] text-center" style={{ color: colors.secondaryText }}>No recent activity</Text>
@@ -55,6 +53,7 @@ function ActivitySection({ activities, onActivityPress }: ActivitySectionProps) 
             />
           ))
         )}
+        </View>
       </View>
     </>
   );

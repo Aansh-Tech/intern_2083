@@ -1,10 +1,9 @@
 import { memo, useState, useEffect } from "react";
-import { View, Text, Image, TouchableOpacity, Linking, useWindowDimensions } from "react-native";
+import { View, Text, Image, TouchableOpacity, Linking } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { ArrowUpRight, ExternalLink, FolderKanban } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useTheme } from "../../context/useTheme";
-import { isTablet, tabletContentWidth } from "../../utils/responsive";
 
 export type ProjectCardStatus = "completed" | "in-progress";
 
@@ -46,7 +45,6 @@ function ProjectCard({
 }: ProjectCardProps) {
   const { colors } = useTheme();
   const router = useRouter();
-  const { width } = useWindowDimensions();
   const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
@@ -58,14 +56,9 @@ function ProjectCard({
 
   return (
     <View
-      className="mx-5 rounded-3xl border overflow-hidden"
+      className="rounded-3xl border overflow-hidden"
       style={[
-        { backgroundColor: colors.card, borderColor: colors.border },
-        isTablet(width) && {
-          width: tabletContentWidth(width) - 40,
-          maxWidth: tabletContentWidth(width) - 40,
-          alignSelf: "center",
-        },
+        { backgroundColor: colors.card, borderColor: colors.border, width: "100%" },
       ]}
     >
       {(featured || statusLabel) && (
@@ -105,7 +98,7 @@ function ProjectCard({
       {showImage ? (
         <Image
           source={{ uri: image }}
-          style={{ width: "100%", height: 160 }}
+          style={{ width: "100%", aspectRatio: 16 / 9 }}
           resizeMode="cover"
           onError={() => setImageError(true)}
         />
@@ -114,7 +107,7 @@ function ProjectCard({
           colors={gradient as any}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={{ height: 160 }}
+          style={{ aspectRatio: 16 / 9 }}
         >
           <View className="absolute -right-8 -bottom-10 opacity-[0.15]" pointerEvents="none">
             <FolderKanban size={150} color="#FFFFFF" strokeWidth={1.5} />

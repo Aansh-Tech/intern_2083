@@ -9,10 +9,12 @@ export default function Header() {
 
   return (
     <View style={[styles.header, { backgroundColor: colors.header, borderBottomColor: colors.border, borderBottomWidth: 1 }]}>
-      <Logo />
-      <View style={styles.actions}>
-        <ThemeButton />
-        <AdminButton />
+      <View style={styles.content}>
+        <Logo />
+        <View style={styles.actions}>
+          <ThemeButton />
+          <AdminButton />
+        </View>
       </View>
     </View>
   );
@@ -20,11 +22,15 @@ export default function Header() {
 
 const styles = StyleSheet.create({
   header: {
+    width: "100%",
+  },
+  content: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 16,
+    width: "100%",
   },
   actions: {
     flexDirection: "row",

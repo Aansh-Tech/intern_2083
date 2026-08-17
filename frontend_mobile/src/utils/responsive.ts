@@ -1,15 +1,29 @@
-import { useWindowDimensions } from "react-native";
+import { useWindowDimensions, type DimensionValue } from "react-native";
 
+/** Below this width the layout behaves as a phone. */
 export const TABLET_BREAKPOINT = 600;
-export const MAX_CONTENT_WIDTH = 720;
+
+/** Tablet landscape / small desktop: grids may add columns. */
+export const TABLET_LANDSCAPE_BREAKPOINT = 1024;
+
+/**
+ * Hard readability cap for very wide screens. Content grows fluidly with the
+ * viewport up to this cap, so tablet landscape fills the available width
+ * instead of staying stuck in a narrow centered column.
+ */
+export const MAX_CONTENT_WIDTH = 1200;
 
 export function isTablet(width: number): boolean {
   return width >= TABLET_BREAKPOINT;
 }
 
+export function isTabletLandscape(width: number): boolean {
+  return width >= TABLET_LANDSCAPE_BREAKPOINT;
+}
+
 /**
- * Content width for tablet layouts: keeps cards/sections readable
- * instead of stretching edge-to-edge across the whole screen.
+ * Content width for tablet/desktop layouts: grows with the viewport up to the
+ * readability cap instead of being pinned to a small fixed width.
  */
 export function tabletContentWidth(width: number): number {
   return Math.min(width, MAX_CONTENT_WIDTH);
@@ -43,22 +57,19 @@ export function useResponsiveFontSize(base: number, minScale = 0.8, maxScale = 1
 }
 
 /**
- * Returns the correct horizontal content margin/padding for a given
- * screen width so tablet layouts are centred and phones keep their gutter.
+ * Returns the horizontal content gutter. On phones every surface already
+ * applies its own padding; on tablets `useResponsiveContainer` centers the
+ * content, so the gutter stays constant and this must never be combined with
+ * a capped container (that would collapse the content width).
  */
 export function useResponsiveHorizontalPadding(): number {
-  const { width } = useWindowDimensions();
-  if (width >= TABLET_BREAKPOINT) {
-    return Math.max(20, Math.round((width - MAX_CONTENT_WIDTH) / 2));
-  }
   return 20;
 }
 
 /**
- * Returns a self-centring, capped style object for content containers
- * so they never stretch edge-to-edge on tablets. On phones it is a no-op,
- * so the caller's own horizontal padding/margin is respected and the
- * container keeps its natural full-width stretch.
+ * Returns a self-centring, fluid style object for content containers.
+ * On phones it is a no-op so the caller's own padding is respected; on
+ * tablets the container fills the available width up to the readability cap.
  */
 export function useResponsiveContainer(): Record<string, number | string> {
   const { width } = useWindowDimensions();
@@ -69,5 +80,42 @@ export function useResponsiveContainer(): Record<string, number | string> {
     width: "100%",
     maxWidth: tabletContentWidth(width),
     alignSelf: "center",
+  };
+}
+
+/**
+ * Returns a fluid max width for self-contained cards (auth/reset screens)
+ * that should stay readable but not feel tiny on tablets.
+ */
+export function useResponsiveMaxWidth(cap = 480): number {
+  const { width } = useWindowDimensions();
+  return Math.min(width - 40, cap);
+}
+
+/**
+ * Mimics CSS `repeat(auto-fit, minmax(...))` for React Native grids:
+ * phones keep `smallScreenColumns`, tablets fill the available content width
+ * with columns that are at least `minCardWidth` wide.
+ *
+ * Example: project cards on a 1024px tablet landscape →
+ * `Math.floor((1024 - 40) / 360) = 2` columns; on 1280px → 3 columns.
+ */
+export function useResponsiveColumns(minCardWidth: number, smallScreenColumns = 1): number {
+  const { width } = useWindowDimensions();
+  if (width < TABLET_BREAKPOINT) {
+    return smallScreenColumns;
+  }
+  const available = Math.min(width, MAX_CONTENT_WIDTH) - 40;
+  return Math.max(smallScreenColumns, Math.floor(available / minCardWidth));
+}
+
+/**
+ * Grid cell sizing so items fill a row of `columns` evenly with a consistent
+ * gutter. Pair with a wrapping row that owns `paddingHorizontal`.
+ */
+export function gridCellStyle(columns: number, gutter: number): { width: DimensionValue; paddingHorizontal: number } {
+  return {
+    width: `${100 / columns}%` as DimensionValue,
+    paddingHorizontal: gutter / 2,
   };
 }

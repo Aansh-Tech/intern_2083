@@ -10,7 +10,7 @@ import { useCertificates } from "../../context/CertificateContext";
 import { useTheme } from "../../context/useTheme";
 import { uploadImage } from "../../services/image";
 import type { Certificate } from "../../types/certificate";
-import { useResponsiveContainer } from "../../utils/responsive";
+import { useResponsiveContainer, useResponsiveColumns, gridCellStyle } from "../../utils/responsive";
 
 
 export default function AdminCertificatesScreen() {
@@ -23,6 +23,7 @@ export default function AdminCertificatesScreen() {
   const [viewImage, setViewImage] = useState<string | null>(null);
   const headerContainer = useResponsiveContainer();
   const gridContainer = useResponsiveContainer();
+  const columns = useResponsiveColumns(240, 2);
 
   const handleAdd = useCallback(() => {
     setEditTarget(null);
@@ -151,9 +152,9 @@ export default function AdminCertificatesScreen() {
             </Text>
           </View>
         ) : (
-          <View style={[gridContainer, { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 20, paddingTop: 24, paddingBottom: 32, gap: 14 }]}>
+          <View style={[gridContainer, { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 20, paddingTop: 24, paddingBottom: 32, rowGap: 14 }]}>
             {certificates.map((cert) => (
-              <View key={cert.id} className="flex-1 basis-[47%]">
+              <View key={cert.id} style={gridCellStyle(columns, 14)}>
                 <CertificateCard
                   certificate={cert}
                   onDelete={handleDeleteRequest}

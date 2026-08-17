@@ -193,11 +193,10 @@ export default function PostModal({ post, visible, onClose }: PostModalProps) {
             <View
               style={{
                 flex: 1,
-                marginTop: 32,
-                marginHorizontal: tablet ? 24 : 0,
+                marginTop: tablet ? 32 : 0,
                 marginBottom: tablet ? 24 : 0,
                 paddingBottom: insets.bottom + 8,
-                maxWidth: tablet ? 600 : undefined,
+                maxWidth: tablet ? Math.min(windowWidth - 48, 600) : undefined,
                 alignSelf: "center",
                 width: tablet ? "100%" : undefined,
               }}

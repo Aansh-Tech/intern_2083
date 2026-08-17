@@ -12,6 +12,7 @@
       "distribution": "internal",
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "http://10.20.30.155:8000/api"
+        
       },
       "android": {
         "buildType": "apk"

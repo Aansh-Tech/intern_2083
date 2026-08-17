@@ -45,7 +45,7 @@ export default function ProjectScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshProjects} />}
       >
         <Header />
-        <View className="pb-10" style={{ paddingBottom: insets.bottom + 96 }}>
+        <View className="pb-10" style={{ paddingBottom: insets.bottom + 48 }}>
           <PageHeader />
           {projects.length === 0 ? (
             <View className="items-center px-10 pt-14 pb-16">

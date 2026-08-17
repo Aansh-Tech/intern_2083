@@ -5,13 +5,14 @@ import SectionHeading from "./Heading";
 import ImageViewer from "../admin_certificates/ImageViewer";
 import { useTheme } from "../../context/useTheme";
 import { useCertificates } from "../../context/CertificateContext";
-import { useResponsiveContainer } from "../../utils/responsive";
+import { useResponsiveContainer, useResponsiveColumns, gridCellStyle } from "../../utils/responsive";
 
 export default function CertificatesSection() {
   const { colors } = useTheme();
   const { certificates } = useCertificates();
   const [viewImage, setViewImage] = useState<string | null>(null);
   const gridContainer = useResponsiveContainer();
+  const columns = useResponsiveColumns(240, 2);
 
   const openImage = useCallback((url: string) => {
     setViewImage(url);
@@ -21,14 +22,14 @@ export default function CertificatesSection() {
     <View>
       <SectionHeading eyebrow="CREDENTIALS" title="Certificates" />
 
-      <View style={[gridContainer, { flexDirection: "row", flexWrap: "wrap", gap: 14, paddingHorizontal: 20, paddingTop: 20 }]}>
+      <View style={[gridContainer, { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 20, paddingTop: 20, rowGap: 14 }]}>
         {certificates.map((cert) => (
+          <View key={cert.id} style={gridCellStyle(columns, 14)}>
           <TouchableOpacity
-            key={cert.id}
             style={[
-              { backgroundColor: colors.card, borderColor: colors.border },
+              { backgroundColor: colors.card, borderColor: colors.border, width: "100%" },
             ]}
-            className="flex-1 basis-[47%] rounded-2xl border p-[18px] gap-3"
+            className="rounded-2xl border p-[18px] gap-3"
             activeOpacity={0.7}
             onPress={() => cert.image ? openImage(cert.image) : undefined}
           >
@@ -86,6 +87,7 @@ export default function CertificatesSection() {
               </TouchableOpacity>
             ) : null}
           </TouchableOpacity>
+          </View>
         ))}
       </View>
 

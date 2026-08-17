@@ -9,7 +9,7 @@ import { usePopup } from "../../components/Popup";
 import { useSkills } from "../../context/SkillsContext";
 import { useTheme } from "../../context/useTheme";
 import type { Skill, SkillCategory } from "../../types/skill";
-import { useResponsiveContainer } from "../../utils/responsive";
+import { useResponsiveContainer, useResponsiveColumns, gridCellStyle } from "../../utils/responsive";
 
 export default function AdminSkillsScreen() {
   const { colors } = useTheme();
@@ -25,6 +25,7 @@ export default function AdminSkillsScreen() {
   const [showAddForm, setShowAddForm] = useState(false);
   const headerContainer = useResponsiveContainer();
   const listContainer = useResponsiveContainer();
+  const columns = useResponsiveColumns(340, 1);
 
   const handleAdd = useCallback(
     async (data: { category: SkillCategory; name: string; percentage: number }) => {
@@ -101,7 +102,7 @@ export default function AdminSkillsScreen() {
 
       <View className="pt-6">
         {!showAddForm ? (
-          <View className="mx-5">
+          <View style={[listContainer, { paddingHorizontal: 20 }]}>
             <TouchableOpacity
               className="flex-row items-center justify-center gap-2 h-14 rounded-3xl border-2 border-dashed"
               style={{ borderColor: colors.border }}
@@ -129,15 +130,16 @@ export default function AdminSkillsScreen() {
           </Text>
         </View>
       ) : (
-        <View style={[listContainer, { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 32, gap: 16 }]}>
+        <View style={[listContainer, { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 32, flexDirection: "row", flexWrap: "wrap", rowGap: 16 }]}>
           {categories.map(({ category, skills }) => (
-            <SkillSection
-              key={category}
-              category={category}
-              skills={skills}
-              onDelete={handleDeleteRequest}
-              onEdit={handleEdit}
-            />
+            <View key={category} style={gridCellStyle(columns, 16)}>
+              <SkillSection
+                category={category}
+                skills={skills}
+                onDelete={handleDeleteRequest}
+                onEdit={handleEdit}
+              />
+            </View>
           ))}
         </View>
       )}

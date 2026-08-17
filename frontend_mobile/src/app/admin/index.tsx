@@ -17,11 +17,13 @@ import InputField from "../../components/admin/InputField";
 import PasswordField from "../../components/admin/PasswordField";
 import { login } from "../../utils/adminAuth";
 import { useTheme } from "../../context/useTheme";
+import { useResponsiveMaxWidth } from "../../utils/responsive";
 
 
 export default function AdminLoginScreen() {
   const { colors } = useTheme();
   const router = useRouter();
+  const cardMaxWidth = useResponsiveMaxWidth(480);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -89,11 +91,11 @@ export default function AdminLoginScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={{ width: "100%", maxWidth: 420, alignSelf: "center", marginBottom: 22 }}>
+          <View style={{ width: "100%", maxWidth: cardMaxWidth, alignSelf: "center", marginBottom: 22 }}>
             <AdminHeader />
           </View>
 
-          <View style={{ width: "100%", maxWidth: 420, alignSelf: "center", marginTop: 10 }}>
+          <View style={{ width: "100%", maxWidth: cardMaxWidth, alignSelf: "center", marginTop: 10 }}>
             <LoginCard>
               <InputField
                 label="Email"
@@ -144,7 +146,7 @@ export default function AdminLoginScreen() {
             </LoginCard>
           </View>
 
-          <View style={{ width: "100%", maxWidth: 420, alignSelf: "center", paddingHorizontal: 12, marginTop: -60 }} pointerEvents="none">
+          <View style={{ width: "100%", maxWidth: cardMaxWidth, alignSelf: "center", paddingHorizontal: 12, marginTop: -60 }} pointerEvents="none">
             <Text
               className="text-center text-[13px] leading-[18]"
               style={{ color: colors.secondaryText }}

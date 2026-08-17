@@ -12,7 +12,7 @@ import { uploadProjectImage, deleteImage, dedupeImages } from "../../services/im
 import { buildProjectPayload } from "../../services/project";
 import type { Project, ProjectPhoto } from "../../types/project";
 import { MAX_PROJECT_PHOTOS } from "../../types/project";
-import { useResponsiveContainer } from "../../utils/responsive";
+import { useResponsiveContainer, useResponsiveColumns, gridCellStyle } from "../../utils/responsive";
 
 export default function AdminProjectsScreen() {
   const { colors } = useTheme();
@@ -30,6 +30,7 @@ export default function AdminProjectsScreen() {
   const router = useRouter();
   const headerContainer = useResponsiveContainer();
   const listContainer = useResponsiveContainer();
+  const columns = useResponsiveColumns(360, 1);
 
   const displayedProjects = useMemo(() => {
     if (!searchQuery.trim()) return projects;
@@ -266,17 +267,18 @@ export default function AdminProjectsScreen() {
           </TouchableOpacity>
         </View>
       ) : (
-        <View style={[listContainer, { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 32, gap: 16 }]}>
+        <View style={[listContainer, { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 32, flexDirection: "row", flexWrap: "wrap", rowGap: 16 }]}>
           {displayedProjects.map((project) => (
-            <ProjectCard
-              key={project.id}
-              project={project}
-              onPress={() => router.push(`/project/${project.id}`)}
-              onEdit={setEditTarget}
-              onToggleFeatured={toggleFeatured}
-              onToggleCompleted={toggleCompleted}
-              onDelete={() => handleDelete(project)}
-            />
+            <View key={project.id} style={gridCellStyle(columns, 16)}>
+              <ProjectCard
+                project={project}
+                onPress={() => router.push(`/project/${project.id}`)}
+                onEdit={setEditTarget}
+                onToggleFeatured={toggleFeatured}
+                onToggleCompleted={toggleCompleted}
+                onDelete={() => handleDelete(project)}
+              />
+            </View>
           ))}
         </View>
       )}

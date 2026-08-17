@@ -53,6 +53,17 @@ export default function AppSheet({
         : Math.round(windowHeight * (parseFloat(maxHeight) / 100));
 
   const tablet = isTablet(windowWidth);
+  const sheetTabletStyle = tablet
+    ? {
+        alignSelf: "center",
+        width: Math.min(windowWidth - 48, 720),
+        borderTopLeftRadius: 28,
+        borderTopRightRadius: 28,
+        borderBottomLeftRadius: 28,
+        borderBottomRightRadius: 28,
+        marginBottom: 24,
+      }
+    : null;
 
   return (
     <Modal
@@ -79,6 +90,7 @@ export default function AppSheet({
                 style={[
                   styles.sheetShadow,
                   tablet && styles.sheetTablet,
+                  sheetTabletStyle,
                   {
                     backgroundColor: colors.card,
                     shadowColor: "#000000",
@@ -163,15 +175,10 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 28,
   },
   sheetTablet: {
-    alignSelf: "center",
-    width: "100%",
-    maxWidth: 560,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
-    marginHorizontal: 16,
-    marginBottom: 24,
   },
   sheet: {
     borderTopLeftRadius: 28,

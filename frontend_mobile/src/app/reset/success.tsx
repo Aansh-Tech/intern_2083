@@ -3,11 +3,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Check } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
+import { useResponsiveMaxWidth } from "../../utils/responsive";
 
 
 export default function ResetPasswordSuccessScreen() {
   const { colors } = useTheme();
   const router = useRouter();
+  const cardMaxWidth = useResponsiveMaxWidth(480);
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
@@ -22,10 +24,10 @@ export default function ResetPasswordSuccessScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={{ width: "100%", maxWidth: 420, alignSelf: "center", marginTop: 10 }}>
+        <View style={{ width: "100%", maxWidth: cardMaxWidth, alignSelf: "center", marginTop: 10 }}>
           <View
-            className="w-full max-w-[420px] rounded-[24px] border border-solid px-6 py-6"
-            style={{ backgroundColor: colors.card, borderColor: colors.border }}
+            className="w-full rounded-[24px] border border-solid px-6 py-6"
+            style={{ width: "100%", maxWidth: cardMaxWidth, backgroundColor: colors.card, borderColor: colors.border }}
           >
             <View className="flex-row items-center gap-4 w-full mb-6">
               <View

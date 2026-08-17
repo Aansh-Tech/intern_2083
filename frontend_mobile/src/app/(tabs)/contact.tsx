@@ -9,7 +9,7 @@ import ContactInput from "../../components/contactpage/ContactInput";
 import { useTheme } from "../../context/useTheme";
 import { useInbox } from "../../context/InboxContext";
 import { usePopup } from "../../components/Popup";
-import { useResponsiveContainer, useResponsiveFontSize } from "../../utils/responsive";
+import { useResponsiveContainer, useResponsiveFontSize, useResponsiveColumns, gridCellStyle } from "../../utils/responsive";
 
 export default function ContactScreen() {
   const { colors } = useTheme();
@@ -19,6 +19,7 @@ export default function ContactScreen() {
   const headerContainer = useResponsiveContainer();
   const infoContainer = useResponsiveContainer();
   const formContainer = useResponsiveContainer();
+  const infoColumns = useResponsiveColumns(300, 1);
   const titleSize = useResponsiveFontSize(40);
   const buttonTextSize = useResponsiveFontSize(16, 0.92, 1);
 
@@ -108,40 +109,43 @@ export default function ContactScreen() {
           </Text>
         </View>
 
-        <View style={[infoContainer, { paddingHorizontal: 20, paddingTop: 32, gap: 20 }]}>
-          <ContactInfoCard
-            icon={<Mail size={20} color={colors.primary} />}
-            label="EMAIL"
-            value="anishshrestha@gmail.com"
-          />
-          <ContactInfoCard
-            icon={<Phone size={20} color={colors.primary} />}
-            label="PHONE"
-            value="+977 9812345678"
-          />
-          <ContactInfoCard
-            icon={<MapPin size={20} color={colors.primary} />}
-            label="BASED IN"
-            value="Dharan, Nepal"
-          />
+        <View style={[infoContainer, { paddingHorizontal: 20, paddingTop: 32, flexDirection: "row", flexWrap: "wrap", rowGap: 20 }]}>
+          <View style={gridCellStyle(infoColumns, 20)}>
+            <ContactInfoCard
+              icon={<Mail size={20} color={colors.primary} />}
+              label="EMAIL"
+              value="anishshrestha@gmail.com"
+            />
+          </View>
+          <View style={gridCellStyle(infoColumns, 20)}>
+            <ContactInfoCard
+              icon={<Phone size={20} color={colors.primary} />}
+              label="PHONE"
+              value="+977 9812345678"
+            />
+          </View>
+          <View style={gridCellStyle(infoColumns, 20)}>
+            <ContactInfoCard
+              icon={<MapPin size={20} color={colors.primary} />}
+              label="BASED IN"
+              value="Dharan, Nepal"
+            />
+          </View>
         </View>
 
-        <View
-          style={[
-            formContainer,
-            {
-              marginTop: 32,
-              marginHorizontal: 20,
-              padding: 24,
-              gap: 20,
-              marginBottom: 40,
-              backgroundColor: colors.card,
-              borderColor: colors.border,
-              borderWidth: 1,
-              borderRadius: 24,
-            },
-          ]}
-        >
+        <View style={[formContainer, { paddingHorizontal: 20, marginTop: 32, marginBottom: 40 }]}>
+          <View
+            style={[
+              {
+                padding: 24,
+                gap: 20,
+                backgroundColor: colors.card,
+                borderColor: colors.border,
+                borderWidth: 1,
+                borderRadius: 24,
+              },
+            ]}
+          >
           <ContactInput
             label="Name"
             value={name}
@@ -192,6 +196,7 @@ export default function ContactScreen() {
               </>
             )}
           </TouchableOpacity>
+          </View>
         </View>
 
         <View style={{ height: 40 }} />

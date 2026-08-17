@@ -14,11 +14,13 @@ import { ChevronLeft } from "lucide-react-native";
 import InputField from "../../components/admin/InputField";
 import { requestPasswordReset } from "../../services/auth";
 import { useTheme } from "../../context/useTheme";
+import { useResponsiveMaxWidth } from "../../utils/responsive";
 
 
 export default function ForgotPasswordScreen() {
   const { colors } = useTheme();
   const router = useRouter();
+  const cardMaxWidth = useResponsiveMaxWidth(480);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; auth?: string }>({});
@@ -86,7 +88,7 @@ export default function ForgotPasswordScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={{ width: "100%", maxWidth: 420, alignSelf: "center", marginBottom: 22 }}>
+          <View style={{ width: "100%", maxWidth: cardMaxWidth, alignSelf: "center", marginBottom: 22 }}>
             <TouchableOpacity
               className="flex-row items-center gap-[5px] h-12 px-4 rounded-full border self-start"
               style={{ backgroundColor: colors.card, borderColor: colors.border }}
@@ -100,10 +102,10 @@ export default function ForgotPasswordScreen() {
             </TouchableOpacity>
           </View>
 
-          <View style={{ width: "100%", maxWidth: 420, alignSelf: "center", marginTop: 10 }}>
+          <View style={{ width: "100%", maxWidth: cardMaxWidth, alignSelf: "center", marginTop: 10 }}>
             <View
-              className="w-full max-w-[420px] rounded-[24px] border border-solid px-6 py-6"
-              style={{ backgroundColor: colors.card, borderColor: colors.border }}
+              className="w-full rounded-[24px] border border-solid px-6 py-6"
+              style={{ width: "100%", maxWidth: cardMaxWidth, backgroundColor: colors.card, borderColor: colors.border }}
             >
               <Text className="text-[12px] font-semibold uppercase tracking-[2px] mb-1" style={{ color: colors.primary }}>
                 Account Recovery

@@ -8,6 +8,7 @@ import {
   Easing,
   Platform,
   StyleSheet,
+  useWindowDimensions,
 } from "react-native";
 import { Check, X, Info, TriangleAlert } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
@@ -41,6 +42,8 @@ interface AppModalProps {
 
 export default function AppModal({ modal, onDismiss }: AppModalProps) {
   const { colors } = useTheme();
+  const { width: windowWidth } = useWindowDimensions();
+  const modalWidth = Math.min(windowWidth - 48, 400);
   const [visible, setVisible] = useState(false);
   const [internal, setInternal] = useState<ModalState | null>(null);
   const visibleRef = useRef(false);
@@ -177,8 +180,10 @@ export default function AppModal({ modal, onDismiss }: AppModalProps) {
         />
 
         <Animated.View
-          className="w-full max-w-[340px] rounded-[24px] border items-center px-6 pb-6 pt-7"
+          className="w-full rounded-[24px] border items-center px-6 pb-6 pt-7"
           style={{
+            width: modalWidth,
+            maxWidth: modalWidth,
             backgroundColor: colors.card,
             borderColor: colors.border,
             opacity: contentOpacity,

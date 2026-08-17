@@ -2,7 +2,7 @@ import { View, Text } from "react-native";
 import SectionHeading from "./Heading";
 import { useTheme } from "../../context/useTheme";
 import { useSkills } from "../../context/SkillsContext";
-import { useResponsiveContainer } from "../../utils/responsive";
+import { useResponsiveContainer, useResponsiveColumns, gridCellStyle } from "../../utils/responsive";
 import type { SkillCategory } from "../../types/skill";
 
 const CATEGORY_ORDER: SkillCategory[] = ["Frontend", "Backend", "Design", "Other"];
@@ -25,21 +25,22 @@ export default function SkillsSection() {
   const { skills, loading } = useSkills();
   const skillCategories = groupByCategory(skills);
   const listContainer = useResponsiveContainer();
+  const columns = useResponsiveColumns(340, 1);
 
   return (
     <View>
       <SectionHeading eyebrow="TOOLKIT" title="Skills & Craft" />
 
       {skillCategories.length > 0 ? (
-        <View style={[listContainer, { paddingHorizontal: 20, paddingTop: 20, gap: 16 }]}>
+        <View style={[listContainer, { paddingHorizontal: 20, paddingTop: 20, flexDirection: "row", flexWrap: "wrap", rowGap: 16 }]}>
           {skillCategories.map(({ category, skills }) => (
-            <View
-              key={category}
-              style={[
-                { backgroundColor: colors.card, borderColor: colors.border },
-              ]}
-              className="rounded-2xl border p-5 gap-4"
-            >
+            <View key={category} style={gridCellStyle(columns, 16)}>
+              <View
+                style={[
+                  { backgroundColor: colors.card, borderColor: colors.border },
+                ]}
+                className="rounded-2xl border p-5 gap-4"
+              >
               <Text
                 className="text-xs font-bold tracking-[1.5px]"
                 style={{ color: colors.secondaryText }}
@@ -79,11 +80,12 @@ export default function SkillsSection() {
                   </View>
                 ))}
               </View>
+              </View>
             </View>
           ))}
         </View>
       ) : (
-        <View className="px-5 pt-5">
+        <View style={[listContainer, { paddingHorizontal: 20, paddingTop: 20 }]}>
           <Text className="text-sm" style={{ color: colors.secondaryText }}>
             {loading ? "Loading skills..." : "No skills to display yet."}
           </Text>

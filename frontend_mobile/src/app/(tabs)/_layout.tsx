@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Animated, useWindowDimensions
 import { Tabs, useRouter, usePathname } from "expo-router";
 import { Home, Briefcase, BookOpen, User, Mail } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import "../../../global.css";
 
 
@@ -81,6 +82,7 @@ const CustomTabBar = memo(function CustomTabBar() {
   const pathname = usePathname();
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const compact = width < 360;
   const iconContainerSize = compact ? 36 : 44;
   const tabLabelFontSize = compact ? 10 : 11;
@@ -97,21 +99,27 @@ const CustomTabBar = memo(function CustomTabBar() {
   );
 
   return (
-    <View style={[styles.tabBar, { backgroundColor: colors.header, borderTopColor: colors.border }]}>
-      {tabConfig.map((tab) => {
-        const active = currentTab === tab.name;
-        return (
-          <TabBarItem
-            key={tab.name}
-            tab={tab}
-            active={active}
-            colors={colors}
-            onPress={() => navigate(tab.name)}
-            iconContainerSize={iconContainerSize}
-            tabLabelFontSize={tabLabelFontSize}
-          />
-        );
-      })}
+    <View style={[styles.tabBar, { backgroundColor: colors.header, borderTopColor: colors.border, paddingBottom: insets.bottom }]}>
+      <View
+        style={[
+          styles.tabBarInner,
+        ]}
+      >
+        {tabConfig.map((tab) => {
+          const active = currentTab === tab.name;
+          return (
+            <TabBarItem
+              key={tab.name}
+              tab={tab}
+              active={active}
+              colors={colors}
+              onPress={() => navigate(tab.name)}
+              iconContainerSize={iconContainerSize}
+              tabLabelFontSize={tabLabelFontSize}
+            />
+          );
+        })}
+      </View>
     </View>
   );
 });
@@ -137,11 +145,15 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
+    width: "100%",
+    borderTopWidth: 1,
+  },
+  tabBarInner: {
     flexDirection: "row",
     justifyContent: "space-around",
     paddingVertical: 8,
     paddingHorizontal: 4,
-    borderTopWidth: 1,
+    width: "100%",
   },
   tabItem: {
     alignItems: "center",

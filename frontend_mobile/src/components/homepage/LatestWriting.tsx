@@ -5,7 +5,7 @@ import BlogCard from "./BlogCard";
 import SectionTitle from "./SectionTitle";
 import { useTheme } from "../../context/useTheme";
 import api from "../../services/api";
-import { useResponsiveContainer } from "../../utils/responsive";
+import { useResponsiveContainer, useResponsiveColumns, gridCellStyle } from "../../utils/responsive";
 
 const unwrapList = (response: any): any[] => {
   if (response.data?.data?.data && Array.isArray(response.data.data.data)) {
@@ -34,6 +34,8 @@ export default function LatestWriting() {
   const [loading, setLoading] = useState(true);
   const mountedRef = useRef(true);
   const headerContainer = useResponsiveContainer();
+  const listContainer = useResponsiveContainer();
+  const columns = useResponsiveColumns(320, 1);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -71,27 +73,28 @@ export default function LatestWriting() {
           </Text>
         </TouchableOpacity>
       </View>
-      <View className="px-5 pt-8 gap-4">
+      <View style={[styles.list, listContainer]}>
         {loading ? (
           <ActivityIndicator size="small" color={colors.primary} />
         ) : blogs.length === 0 ? (
           <Text style={{ color: colors.secondaryText }}>No posts yet.</Text>
         ) : (
           blogs.map((blog) => (
-            <BlogCard
-              key={blog.id}
-              date={
-                blog.published_at
-                  ? new Date(blog.published_at).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })
-                  : "Draft"
-              }
-              title={blog.title}
-              link={`/(tabs)/blog`}
-            />
+            <View key={blog.id} style={gridCellStyle(columns, 16)}>
+              <BlogCard
+                date={
+                  blog.published_at
+                    ? new Date(blog.published_at).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : "Draft"
+                }
+                title={blog.title}
+                link={`/(tabs)/blog`}
+              />
+            </View>
           ))
         )}
       </View>
@@ -105,5 +108,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "flex-start",
     paddingHorizontal: 20,
+  },
+  list: {
+    paddingHorizontal: 20,
+    paddingTop: 32,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    rowGap: 16,
   },
 });

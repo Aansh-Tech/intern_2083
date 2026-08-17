@@ -140,12 +140,15 @@ export default function NotificationPanel({
         activeOpacity={1}
         onPress={onClose}
       >
-        <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+        <TouchableOpacity
+          style={{ width: "100%", paddingHorizontal: 16 }}
+          activeOpacity={1}
+          onPress={() => {}}
+        >
           <View
             style={[
               container,
               {
-                marginHorizontal: 16,
                 marginTop: 8,
                 borderRadius: 20,
                 borderWidth: 1,

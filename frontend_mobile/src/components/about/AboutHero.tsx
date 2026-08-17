@@ -134,8 +134,8 @@ export default function AboutHero() {
       {resumeUrl ? (
         <View className="flex-row gap-3 mt-1">
           <TouchableOpacity
-            className="flex-1 flex-row items-center justify-center gap-2 h-[54px] rounded-2xl"
-            style={{ backgroundColor: colors.primary }}
+            className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl"
+            style={{ backgroundColor: colors.primary, minHeight: 54, paddingVertical: 12, paddingHorizontal: 8 }}
             activeOpacity={0.85}
             onPress={() => openLink(resumeUrl)}
           >
@@ -145,8 +145,8 @@ export default function AboutHero() {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            className="flex-1 flex-row items-center justify-center gap-2 h-[54px] rounded-2xl border"
-            style={{ backgroundColor: colors.card, borderColor: colors.border }}
+            className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border"
+            style={{ backgroundColor: colors.card, borderColor: colors.border, minHeight: 54, paddingVertical: 12, paddingHorizontal: 8 }}
             activeOpacity={0.85}
             onPress={() => downloadResume(resumeUrl)}
           >
@@ -158,7 +158,7 @@ export default function AboutHero() {
         </View>
       ) : null}
 
-      <View className="flex-row gap-2.5 mt-1">
+      <View className="flex-row flex-wrap gap-2.5 mt-1">
         {socialLinks.map(({ id, iconName, url }) => (
           <TouchableOpacity
             key={id}

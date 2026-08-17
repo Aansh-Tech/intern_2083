@@ -6,7 +6,7 @@ import { usePopup } from "../../components/Popup";
 import Header from "../../components/homepage/Header";
 import PostModal from "../../components/blog/PostModal";
 import api from "../../services/api";
-import { useResponsiveContainer, useResponsiveFontSize } from "../../utils/responsive";
+import { useResponsiveContainer, useResponsiveFontSize, useResponsiveColumns, gridCellStyle } from "../../utils/responsive";
 
 
 
@@ -49,6 +49,7 @@ export default function BlogScreen() {
   const mountedRef = useRef(true);
   const headerContainer = useResponsiveContainer();
   const listContainer = useResponsiveContainer();
+  const columns = useResponsiveColumns(340, 1);
   const titleSize = useResponsiveFontSize(40);
 
   useEffect(() => {
@@ -154,37 +155,38 @@ export default function BlogScreen() {
             <Text style={{ color: colors.secondaryText }}>No posts found.</Text>
           </View>
         ) : (
-          <View style={[listContainer, { paddingHorizontal: 20, paddingBottom: 40, gap: 16 }]}>
+          <View style={[listContainer, { paddingHorizontal: 20, paddingBottom: 40, flexDirection: "row", flexWrap: "wrap", rowGap: 16 }]}>
             {posts.map((post) => (
-              <TouchableOpacity
-                key={post.id}
-                onPress={() => openPost(post)}
-                className="p-4 rounded-2xl border"
-                style={{ backgroundColor: colors.card, borderColor: colors.border }}
-                activeOpacity={0.7}
-              >
-                {post.featured_image && (
-                  <Image
-                    source={{ uri: post.featured_image }}
-                    className="w-full h-40 rounded-xl mb-3"
-                    resizeMode="cover"
-                  />
-                )}
-                <Text className="text-sm font-medium uppercase tracking-wide" style={{ color: colors.primary }}>
-                  {post.category}
-                </Text>
-                <Text className="text-xl font-bold mt-1" style={{ color: colors.text }}>
-                  {post.title}
-                </Text>
-                <Text className="text-sm mt-1" style={{ color: colors.secondaryText }} numberOfLines={2}>
-                  {post.excerpt}
-                </Text>
-                <View className="flex-row items-center mt-2">
-                  <Text className="text-xs" style={{ color: colors.secondaryText }}>
-                    {post.date} · {post.readTime}
+              <View key={post.id} style={gridCellStyle(columns, 16)}>
+                <TouchableOpacity
+                  onPress={() => openPost(post)}
+                  className="p-4 rounded-2xl border"
+                  style={{ backgroundColor: colors.card, borderColor: colors.border }}
+                  activeOpacity={0.7}
+                >
+                  {post.featured_image && (
+                    <Image
+                      source={{ uri: post.featured_image }}
+                      className="w-full h-40 rounded-xl mb-3"
+                      resizeMode="cover"
+                    />
+                  )}
+                  <Text className="text-sm font-medium uppercase tracking-wide" style={{ color: colors.primary }}>
+                    {post.category}
                   </Text>
-                </View>
-              </TouchableOpacity>
+                  <Text className="text-xl font-bold mt-1" style={{ color: colors.text }}>
+                    {post.title}
+                  </Text>
+                  <Text className="text-sm mt-1" style={{ color: colors.secondaryText }} numberOfLines={2}>
+                    {post.excerpt}
+                  </Text>
+                  <View className="flex-row items-center mt-2">
+                    <Text className="text-xs" style={{ color: colors.secondaryText }}>
+                      {post.date} · {post.readTime}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
             ))}
           </View>
         )}

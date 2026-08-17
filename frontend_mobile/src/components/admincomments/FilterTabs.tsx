@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
 import { useTheme } from "../../context/useTheme";
 import { useResponsiveContainer } from "../../utils/responsive";
 
@@ -22,32 +22,48 @@ function FilterTabs({ value, onChange }: FilterTabsProps) {
   const container = useResponsiveContainer();
 
   return (
-    <View style={[container, { flexDirection: "row", paddingHorizontal: 20, gap: 8 }]}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={[container]}
+      contentContainerStyle={{ flexDirection: "row", paddingHorizontal: 20, gap: 8, flexGrow: 1 }}
+    >
       {filters.map((f) => {
         const isActive = value === f.value;
         return (
           <TouchableOpacity
             key={f.value}
             className="h-[36px] rounded-full px-4 items-center justify-center"
-            style={{
-              backgroundColor: isActive ? colors.primary : colors.card,
-              borderWidth: isActive ? 0 : 1,
-              borderColor: colors.border,
-            }}
+            style={[
+              {
+                backgroundColor: isActive ? colors.primary : colors.card,
+                borderWidth: isActive ? 0 : 1,
+                borderColor: colors.border,
+              },
+              styles.tab,
+            ]}
             onPress={() => onChange(f.value)}
             activeOpacity={0.7}
           >
             <Text
               className="text-[13px] font-semibold"
               style={{ color: isActive ? colors.text : colors.secondaryText }}
+              numberOfLines={1}
             >
               {f.label}
             </Text>
           </TouchableOpacity>
         );
       })}
-    </View>
+    </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  tab: {
+    flexGrow: 1,
+    flexShrink: 0,
+  },
+});
 
 export default memo(FilterTabs);

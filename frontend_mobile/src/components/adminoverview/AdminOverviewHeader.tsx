@@ -5,7 +5,7 @@ import { LogOut, Sun, Moon, Bell } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
 import { useProfile } from "../../context/ProfileContext";
 import { useNotifications } from "../../context/NotificationContext";
-import { useResponsiveFontSize, useResponsiveContainer } from "../../utils/responsive";
+import { useResponsiveFontSize } from "../../utils/responsive";
 
 interface AdminOverviewHeaderProps {
   onSignOut: () => void;
@@ -17,7 +17,6 @@ function AdminOverviewHeader({ onSignOut, onNotificationPress }: AdminOverviewHe
   const { profile, photoTimestamp } = useProfile();
   const { unreadCount } = useNotifications();
   const { width } = useWindowDimensions();
-  const container = useResponsiveContainer();
   const nameSize = useResponsiveFontSize(26);
   const compact = width < 360;
 
@@ -36,7 +35,7 @@ function AdminOverviewHeader({ onSignOut, onNotificationPress }: AdminOverviewHe
   const avatarTextSize = compact ? 18 : 22;
 
   return (
-    <View style={[container, { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingTop: 8 }]}>
+    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingTop: 8 }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: compact ? 10 : 16, flex: 1 }}>
         {avatarUrl ? (
           <Image

@@ -4,6 +4,7 @@ import { Plus } from "lucide-react-native";
 import CategorySelector from "./CategorySelector";
 import PercentageSlider from "./PercentageSlider";
 import { useTheme } from "../../context/useTheme";
+import { useResponsiveContainer } from "../../utils/responsive";
 import type { SkillCategory } from "../../types/skill";
 
 interface SkillFormProps {
@@ -13,6 +14,7 @@ interface SkillFormProps {
 
 function SkillForm({ onAdd, onSuccess }: SkillFormProps) {
   const { colors } = useTheme();
+  const container = useResponsiveContainer();
   const [category, setCategory] = useState<SkillCategory>("Frontend");
   const [name, setName] = useState("");
   const [percentage, setPercentage] = useState(50);
@@ -32,8 +34,8 @@ function SkillForm({ onAdd, onSuccess }: SkillFormProps) {
 
   return (
     <View
-      className="mx-5 rounded-3xl border p-5 gap-4"
-      style={{ backgroundColor: colors.card, borderColor: colors.border }}
+      className="rounded-3xl border p-5 gap-4"
+      style={[container, { backgroundColor: colors.card, borderColor: colors.border, paddingHorizontal: 20 }]}
     >
       <Text className="text-[13px] font-bold uppercase tracking-[0.8px]" style={{ color: colors.primary }}>
         Add Skill

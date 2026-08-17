@@ -1,6 +1,7 @@
 import { View, Text, Platform } from "react-native";
 import { Lock } from "lucide-react-native";
 import { useTheme } from "../../context/useTheme";
+import { useResponsiveMaxWidth } from "../../utils/responsive";
 
 interface LoginCardProps {
   children: React.ReactNode;
@@ -8,11 +9,14 @@ interface LoginCardProps {
 
 export default function LoginCard({ children }: LoginCardProps) {
   const { colors } = useTheme();
+  const maxWidth = useResponsiveMaxWidth(480);
 
   return (
     <View
-      className="w-full max-w-[420px] rounded-[24px] border border-solid px-6 py-6"
+      className="w-full rounded-[24px] border border-solid px-6 py-6"
       style={{
+        width: "100%",
+        maxWidth,
         backgroundColor: colors.card,
         borderColor: colors.border,
         ...(Platform.OS === "ios"

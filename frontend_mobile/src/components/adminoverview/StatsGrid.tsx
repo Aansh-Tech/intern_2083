@@ -3,7 +3,7 @@ import { View } from "react-native";
 import { Folder, Inbox, Star, Eye } from "lucide-react-native";
 import DashboardStatCard from "./DashboardStatCard";
 import type { DashboardData } from "../../types/dashboard";
-import { useResponsiveContainer } from "../../utils/responsive";
+import { useResponsiveContainer, useResponsiveColumns, gridCellStyle } from "../../utils/responsive";
 
 interface StatsGridProps {
   data: DashboardData;
@@ -11,6 +11,7 @@ interface StatsGridProps {
 
 function StatsGrid({ data }: StatsGridProps) {
   const container = useResponsiveContainer();
+  const columns = Math.min(useResponsiveColumns(180, 2), 4);
 
   const featuredPct = data.totalProjects > 0
     ? Math.round((data.featuredProjects / data.totalProjects) * 100) + "%"
@@ -25,15 +26,12 @@ function StatsGrid({ data }: StatsGridProps) {
 
   return (
     <View style={[container, { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 16 }]}>
-      <View className="flex-row gap-3">
-        <View className="flex-1 gap-3">
-          <DashboardStatCard {...cards[0]} />
-          <DashboardStatCard {...cards[2]} />
-        </View>
-        <View className="flex-1 gap-3">
-          <DashboardStatCard {...cards[1]} />
-          <DashboardStatCard {...cards[3]} />
-        </View>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", rowGap: 12 }}>
+        {cards.map((card) => (
+          <View key={card.label} style={gridCellStyle(columns, 12)}>
+            <DashboardStatCard {...card} />
+          </View>
+        ))}
       </View>
     </View>
   );
